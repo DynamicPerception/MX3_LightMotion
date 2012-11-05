@@ -1,0 +1,164 @@
+/* 
+
+   MX3 LightMotion Firmware
+   
+   (c) 2008-2012 C.A. Church / Dynamic Perception LLC
+   
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+
+*/
+
+/*
+
+  ========================================
+  Alt I/O Handlers
+  ========================================
+  
+*/
+
+  // debounce threshold time
+const byte ALT_TRIG_THRESH  = 100;
+  // first alt i/o pin (digital #)
+const byte ALT_START_PIN    = 2;
+
+  // what alt i/o modes do we support?
+
+enum altMode {
+    ALT_OFF, ALT_START, ALT_STOP, ALT_TOGGLE, ALT_EXTINT, ALT_DIR
+};
+
+altMode alt_inputs[] = { ALT_OFF, ALT_OFF };
+
+
+boolean alt_force_shot = false;
+int     alt_direction  = FALLING;
+
+
+/** Handler For Alt I/O Action Trigger
+
+ Given a particular Alt I/O line being triggered in input mode, this function
+ debounces and executes any required action for an Alt I/O line.
+ 
+ @param p_which
+ The I/O line that triggered, 0 or 1.
+ 
+ @author
+ C. A. Church
+ */
+ 
+void altHandler(byte p_which) {
+ 
+  volatile static unsigned long trigLast = millis();
+  
+  if( millis() - trigLast > ALT_TRIG_THRESH ) {
+    
+    trigLast = millis();
+    
+    switch( alt_inputs[p_which] ) {
+      
+      case ALT_START:
+        startProgram();
+        break;
+        
+      case ALT_STOP:
+        stopProgram();
+        break;
+        
+      case ALT_TOGGLE:
+        if( running )
+          stopProgram();
+        else
+          startProgram();
+        break;
+        
+      case ALT_EXTINT: 
+          // set camera ok to fire
+        alt_force_shot = true;
+        Engine.state(ST_CLEAR);
+        break;
+        
+      case ALT_DIR:
+          // switch all motor directions!
+        motorDirFlip();
+        break;
+        
+      default:
+        break;
+    } // end switch
+  } //end if millis...
+}
+
+/** Handler for ISR One */
+      
+void altISROne() {
+  altHandler(0);
+}
+
+/** Handler for ISR Two */
+void altISRTwo() {
+  altHandler(1);
+}
+
+/** Connect (or Disconnect) an Alt I/O Line
+
+ This function attches or detaches the required interrupt
+ given an I/O line and a mode.
+ 
+ @param p_which
+ Which I/O, 0 or 1
+ 
+ @param p_mode
+ A valid altMode 
+ 
+ @author
+ C. A. Church
+ */
+
+void altConnect(byte p_which, byte p_mode) {
+  
+    // we do a c-style recast because arduino's juggling of
+    // declarations prevents us from placing the enum definition
+    // before the function defition without adding a separate header.
+    // i.e. - we'd have a compile time error if we tried to use
+    // altMode as the argument type.
+    // Conversion is assumed to be safe in that we'll never have
+    // more than 255 modes, nor will we ever define the enum values
+    // directly.
+    
+  alt_inputs[p_which] = (altMode) p_mode;
+
+
+    // disable the input?
+ 
+  if( p_mode == ALT_OFF ) {
+      detachInterrupt(p_which);
+      digitalWrite(ALT_START_PIN + p_which, LOW);
+      return;
+  }
+  
+    // set pin as input
+  pinMode(ALT_START_PIN + p_which, INPUT);
+    // enable pull-up resistor
+  digitalWrite(ALT_START_PIN + p_which, HIGH);
+  
+  if( p_which ) {
+    attachInterrupt(1, altISRTwo, alt_direction);
+  }
+  else {
+    attachInterrupt(0, altISROne, alt_direction);
+  }
+  
+}    
+  
