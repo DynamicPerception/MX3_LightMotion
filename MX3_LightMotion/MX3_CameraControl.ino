@@ -32,7 +32,7 @@ See dynamicperception.com for more information
   
 */
 
-  
+ 
 
  // necessary camera control variables
 
@@ -55,6 +55,7 @@ void camSetup() {
   Camera.exposeTime(camera_exposure);
   Camera.waitTime(camera_wait);
   Camera.focusTime(camera_focus);
+  Camera.exposureFocus(true);
    // attach status callback hanlder
   Camera.setHandler(camCallBack);
  

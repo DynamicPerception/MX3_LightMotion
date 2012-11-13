@@ -7,19 +7,23 @@
  */
  
 
+
 #include <TimerOne.h>
 #include <Arduino.h>
 #include <MsTimer2.h>
 #include <EEPROM.h>
-
-  // DEFINE any OM pin overrides before loading libraries
+#include <LiquidCrystal.h>
 
 #include "OMCamera.h"
 #include "OMState.h"
 #include "OMEEPROM.h"
+#include "OMMenuMgr.h"
 
- // stored memory layout version
-const unsigned int MEMORY_VERSION    = 1;
+
+const char MX3_VERSTR[]  =  "MX3 v. 0.0.1";
+const char MX3_SUBSTR[]  =  "Rabbit Food";
+const char MX3_C1STR[]   =  "(c) 2012 Dynamic";
+const char MX3_C2STR[]   =  "Perception";
 
  /*  state transitions
  
@@ -38,6 +42,11 @@ const byte ST_MOVE   = 2;
 const byte ST_RUN    = 3;
 const byte ST_EXP    = 4;
 const byte ST_WAIT   = 5;
+
+
+  
+const byte SHUTTER_PIN = 22;
+const byte FOCUS_PIN   = 21;
 
   // predefine this function to declare the default argument
 void stopProgram(boolean force_clear = true);
@@ -62,7 +71,6 @@ OMState      Engine = OMState(6);
 
 
 
-
 void setup() {
 
     // manage restoring EEPROM memory
@@ -74,10 +82,16 @@ void setup() {
  
    // setup camera defaults
  camSetup();
+ 
+   // setup Menu
+   
+ uiMenuSetup();
   
 }
 
 void loop() {
+  
+   uiCheck();
   
       // if our program is currently running...
       

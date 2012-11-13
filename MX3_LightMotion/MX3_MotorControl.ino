@@ -37,9 +37,8 @@ See dynamicperception.com for more information
 
  // define necessary constants
  
-#define MOTOR_DRV_PREG      PIND
-#define MOTOR_DRV_FMASK     PIND0
-#define MOTOR_DIR_PREG      PINC
+#define MOTOR_DRV_PREG      PINB
+#define MOTOR_DRV_FMASK     PINB1
 #define MOTOR_DIR_PINSTART  7
 
 const byte MOTOR_ENABLE_FLAG  = B10000000;
@@ -72,12 +71,14 @@ void run_motors(boolean p_once = false);
 
 struct MotorDefinition {
     /** Status flags
-     B0 = enabled for current move cycle (internally-controlled)
-     B1 = currently high pulse
-     B2 = direction flip 
-     B3 = type (rot = 1 / linear = 0)
-     B4 = user globally enabled (user-controlled)
-     B5 = current direction
+     (7) B0 = enabled for current move cycle (internally-controlled)
+     (6) B1 = currently high pulse
+     (5) B2 = direction flip 
+     (4) B3 = type (rot = 1 / linear = 0)
+     (3) B4 = user globally enabled (user-controlled)
+     (2) B5 = current direction
+     (1) B6 = 
+     (0) B7 = 
      
      Must be volatile to support B1 modulation in ISR
      */
@@ -260,7 +261,7 @@ void motorDir(byte p_motor, boolean p_dir) {
 void motorDirFlip() {
     // foreach motor, invert its direction
   for(int i = 0; i < MOTOR_COUNT; i++)
-    motorDir(i, ! (motors[i].flags & MOTOR_CDIR_FLAG) );
+    motorDir(i, ! (boolean) (motors[i].flags & MOTOR_CDIR_FLAG) );
 }
 
 /** Start All Motors Running

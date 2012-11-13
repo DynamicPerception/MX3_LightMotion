@@ -35,7 +35,7 @@ See dynamicperception.com for more information
 
 
 unsigned long  camera_tm        = 0;
-unsigned long  camera_delay     = 1;
+unsigned long  camera_delay     = 1005;
 
 
 /** Initialize State Engine
