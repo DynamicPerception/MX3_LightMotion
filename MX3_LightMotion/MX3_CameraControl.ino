@@ -42,6 +42,7 @@ byte          camera_repeat    = 0;
 unsigned long camera_exposure  = 120;
 unsigned long camera_wait      = 100;
 unsigned long camera_focus     = 0;
+byte          camera_bulb      = 0;
 
 
 /** Initialize Camera
@@ -60,6 +61,21 @@ void camSetup() {
   Camera.setHandler(camCallBack);
  
 }
+
+/** Clear Camera
+
+ To be called when stopProgram is executed
+ 
+ @author
+ C. A. Church
+ */
+ 
+void camClear() {
+  camera_fired = 0;
+    // Force a stop on the camera
+  Camera.stop();
+}
+
 /** Camera Expose State Handler
 
   @author

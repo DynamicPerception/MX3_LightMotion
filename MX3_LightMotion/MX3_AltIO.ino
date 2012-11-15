@@ -28,23 +28,21 @@
   
 */
 
-  // debounce threshold time
-const byte ALT_TRIG_THRESH  = 100;
-  // first alt i/o pin (digital #)
-const byte ALT_START_PIN    = 2;
 
-  // what alt i/o modes do we support?
-
-enum altMode {
-    ALT_OFF, ALT_START, ALT_STOP, ALT_TOGGLE, ALT_EXTINT, ALT_DIR
-};
-
-altMode alt_inputs[] = { ALT_OFF, ALT_OFF };
+byte alt_inputs[] = { ALT_OFF, ALT_OFF };
 
 
 boolean alt_force_shot = false;
 int     alt_direction  = FALLING;
 
+
+ /** Alt I/O Setup 
+ */
+ 
+void altSetup() {
+  altConnect(0,  alt_inputs[0]);
+  altConnect(1,  alt_inputs[1]); 
+}
 
 /** Handler For Alt I/O Action Trigger
 
@@ -128,16 +126,7 @@ void altISRTwo() {
 
 void altConnect(byte p_which, byte p_mode) {
   
-    // we do a c-style recast because arduino's juggling of
-    // declarations prevents us from placing the enum definition
-    // before the function defition without adding a separate header.
-    // i.e. - we'd have a compile time error if we tried to use
-    // altMode as the argument type.
-    // Conversion is assumed to be safe in that we'll never have
-    // more than 255 modes, nor will we ever define the enum values
-    // directly.
-    
-  alt_inputs[p_which] = (altMode) p_mode;
+  alt_inputs[p_which] = p_mode;
 
 
     // disable the input?

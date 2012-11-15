@@ -1,11 +1,25 @@
 /* 
 
- MX3 LightMotion Firmware
- 
- Copyright (c) 2012 Dynamic Perception LLC
- 
- */
- 
+   MX3 LightMotion Firmware
+   
+   (c) 2008-2012 C.A. Church / Dynamic Perception LLC
+   
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+
+*/
+
 
 
 #include <TimerOne.h>
@@ -14,39 +28,16 @@
 #include <EEPROM.h>
 #include <LiquidCrystal.h>
 
+
 #include "OMCamera.h"
 #include "OMState.h"
 #include "OMEEPROM.h"
 #include "OMMenuMgr.h"
 
-
-const char MX3_VERSTR[]  =  "MX3 v. 0.0.1";
-const char MX3_SUBSTR[]  =  "Rabbit Food";
-const char MX3_C1STR[]   =  "(c) 2012 Dynamic";
-const char MX3_C2STR[]   =  "Perception";
-
- /*  state transitions
+ // Our structs, constants, etc.
  
-  ST_BLOCK - do not allow any action to occur (some event is in process, block the state engine)
-  ST_CLEAR - clear to start cycle
-  ST_MOVE  - clear to move motor
-  ST_RUN   - motor is currently running
-  ST_EXP   - clear to expose camera (or not...)
-  ST_WAIT  - in camera wait 
-  
- */
- 
-const byte ST_BLOCK  = 0;
-const byte ST_CLEAR  = 1;
-const byte ST_MOVE   = 2;
-const byte ST_RUN    = 3;
-const byte ST_EXP    = 4;
-const byte ST_WAIT   = 5;
+#include "MX3.h"
 
-
-  
-const byte SHUTTER_PIN = 22;
-const byte FOCUS_PIN   = 21;
 
   // predefine this function to declare the default argument
 void stopProgram(boolean force_clear = true);
@@ -57,11 +48,17 @@ void stopProgram(boolean force_clear = true);
 boolean       motion_sms       = false;
 boolean       running          = false;
 boolean       motor_running    = false;
+boolean       metric_ui        = false;
+
+byte          lcdDisable       = 30;
+
+unsigned long run_time         = 0;
+unsigned long check_time       = 0;
 
  // initialize core objects
  
  
-OMCamera     Camera = OMCamera();
+OMCamera     Camera = OMCamera(SHUTTER_PIN, FOCUS_PIN);
     // there are 6 possible states in 
     // our engine (0-5)
 OMState      Engine = OMState(6);
@@ -84,18 +81,24 @@ void setup() {
  camSetup();
  
    // setup Menu
-   
  uiMenuSetup();
+ 
+   // Setup Alt I/O
+ altSetup();
   
 }
 
 void loop() {
-  
+   
    uiCheck();
   
       // if our program is currently running...
       
    if( running ) {
+     unsigned long time = millis();
+     run_time += time - check_time;
+     check_time = time;
+     
        // check current engine state and handle appropriately
      Engine.checkCycle();
    }
@@ -115,14 +118,13 @@ void stopProgram(boolean force_clear) {
               
    // stop/clear program
    
-  if( force_clear == true ) {
+  //  if( force_clear == true ) 
 
-  }
-
-  running = false;
+  running      = false;
+  run_time     = 0;
   
-    // Force a stop on the camera
-  Camera.stop();
+  camClear();
+  
     // Force block on state engine
   Engine.state(ST_BLOCK);
   
@@ -134,6 +136,8 @@ void startProgram() {
   running = true;
   
   Engine.state(ST_CLEAR); 
+  
+  check_time = millis();
                     
 }
 

@@ -35,7 +35,7 @@ See dynamicperception.com for more information
 
 
 unsigned long  camera_tm        = 0;
-unsigned long  camera_delay     = 1005;
+float          camera_delay     = 1.0;
 
 
 /** Initialize State Engine
@@ -84,7 +84,7 @@ void cycleCamera() {
     // if enough time has passed, and we're ok to take an exposure
     // note: for slaves, we only get here by a master signal, so we don't check interval timing
   
-  if( alt_force_shot == true || ( millis() - camera_tm ) >= camera_delay  ) {
+  if( alt_force_shot == true || ( millis() - camera_tm ) >= (unsigned long) ( camera_delay * 1000.0 )  ) {
 
       // trigger focus, if needed, which will set off the chain of
       // callback executions that will walk us through the complete exposure cycle.

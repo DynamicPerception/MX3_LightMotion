@@ -35,97 +35,12 @@ See dynamicperception.com for more information
 
 
 
- // define necessary constants
- 
-#define MOTOR_DRV_PREG      PINB
-#define MOTOR_DRV_FMASK     PINB1
-#define MOTOR_DIR_PINSTART  7
-
-const byte MOTOR_ENABLE_FLAG  = B10000000;
-const byte MOTOR_HIGH_FLAG    = B01000000;
-const byte MOTOR_DIR_FLAG     =  B00100000;
-const byte MOTOR_ROT_FLAG     = B00010000;
-const byte MOTOR_UEN_FLAG     = B00001000;
-const byte MOTOR_CDIR_FLAG    = B00000100;
-
-const byte MOTOR_COUNT        = 3;
-
-  // minimum pwm timing period is 100 uS
-const float MOTOR_PWM_MINPERIOD  = 100.0;
-  // maximum number of periods per minute
-const float MOTOR_PWM_MAXPERIOD  = ( 60000000.0 / MOTOR_PWM_MINPERIOD );
 
 
 
  // predeclare this function to provide a default in the prototype
  
 void run_motors(boolean p_once = false);
-
-
-
-/** Motor Definition Structure
-
-  Defining Parameters for a motor
-  
-  */
-
-struct MotorDefinition {
-    /** Status flags
-     (7) B0 = enabled for current move cycle (internally-controlled)
-     (6) B1 = currently high pulse
-     (5) B2 = direction flip 
-     (4) B3 = type (rot = 1 / linear = 0)
-     (3) B4 = user globally enabled (user-controlled)
-     (2) B5 = current direction
-     (1) B6 = 
-     (0) B7 = 
-     
-     Must be volatile to support B1 modulation in ISR
-     */
- volatile byte flags;
- 
-   /** On Timer Periods (minimum pulse width) */
- unsigned int onPeriods;
- 
-   /** Off Timer Periods (duty cycle, effectively) */
- unsigned long offPeriods;
- 
-   /** Error per off period from expected speed */
- float offError;
- 
-   /** Volatile, used by motor_run_isr for error overflow */
- volatile float error;
- 
-   /** Volatile, used by motor_run_isr for overflow */
- volatile unsigned int restPeriods;
- 
-   /** max output shaft RPM of motor */
- float rpm;
- 
-   /** Output ratio
-   
-     Determines how many units are moved per rotation.  E.g., if units are
-     "inches", and a drive pulley has a pitch circumference of 3.2 inches, 3.2 would be
-     input.  However, if units are "degrees" (rotational), and the motor output shaft connects to a 
-     1:1 right-angle gearbox, the ratio would be 1.0; whereas a 15:1 gearbox would use 15.0 as ratio.
-    */
-    
- float ratio;
- 
-   /** Default Constructor */
-   
- MotorDefinition() {
-   flags = 0;
-   onPeriods = 0;
-   offPeriods = 0;
-   restPeriods = 0;
-   rpm = 0.0;
-   offError = 0.0;
-   ratio = 1.0;
- }
- 
-};
-
 
 
  // control variables
@@ -424,8 +339,11 @@ void motorRunISR() {
             // going down, disable output pin
           MOTOR_DRV_PREG  &= (B11111111 ^ (1 << (MOTOR_DRV_FMASK + i)));
           motors[i].flags &= (B11111111 ^ MOTOR_HIGH_FLAG);
-            // accumulate off-period error
+            // accumulate off-period error for one period
           motors[i].error += motors[i].offError;
+          
+            // add distance moved...
+          motors[i].distance += ( motors[i].flags & MOTOR_CDIR_FLAG ) ? 1 : -1;
           
           if( motor_runOnce )
             ranCount++;
