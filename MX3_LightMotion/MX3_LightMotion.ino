@@ -34,9 +34,12 @@
 #include "OMEEPROM.h"
 #include "OMMenuMgr.h"
 
- // Our structs, constants, etc.
- 
-#include "MX3.h"
+ // Our pin mappings, structs, constants, etc.
+
+#include "MX3_PinMapping.h" 
+#include "MX3_Core.h"
+
+
 
 
   // predefine this function to declare the default argument
@@ -54,6 +57,9 @@ byte          lcdDisable       = 30;
 
 unsigned long run_time         = 0;
 unsigned long check_time       = 0;
+
+unsigned long  camera_tm        = 0;
+
 
  // initialize core objects
  
@@ -138,6 +144,7 @@ void startProgram() {
   Engine.state(ST_CLEAR); 
   
   check_time = millis();
+  camera_tm = millis();
                     
 }
 

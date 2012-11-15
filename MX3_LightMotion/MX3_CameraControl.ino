@@ -53,10 +53,18 @@ byte          camera_bulb      = 0;
  
 void camSetup() {
   
-  Camera.exposeTime(camera_exposure);
-  Camera.waitTime(camera_wait);
+  if( camera_bulb ) {
+    Camera.exposeTime(camera_exposure);
+    Camera.waitTime(camera_wait);
+  }
+  else {
+    Camera.exposeTime(CAM_MIN_TRIG);
+    Camera.waitTime(camera_wait);
+  }
+  
   Camera.focusTime(camera_focus);
   Camera.exposureFocus(true);
+  
    // attach status callback hanlder
   Camera.setHandler(camCallBack);
  
