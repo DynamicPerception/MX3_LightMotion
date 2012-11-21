@@ -113,13 +113,11 @@ void cycleCamera() {
 void cycleClearToMove() {
     
     // disables the motor if a lead-in or out is required
-    for( byte i = 0; i < MOTOR_COUNT; i++ ) {
-      if( camera_fired < motors[i].lead || camera_fired > (max_shots - motors[i].lead) )
-        motors[i] &= (B11111111 ^ MOTOR_ENABLE_FLAG);
-    }
+   // motorCheckLead();
         
          // ok to run motors, if needed
-    motorRun(motion_sms);
+   // motorRun(motion_sms);
+   motorRun(false);
         // trigger motor status check on next engine cycle
     Engine.state(ST_RUN);
 }
@@ -142,8 +140,6 @@ void cycleCheckMotor() {
          // still running
      
      // do not block on continuous motion of any sort
-   //   if( Motor.continuous() == false && mtpc == false && Motor.running() == true )
-   //     return;
 
     if( motion_sms && motor_running )
       return;

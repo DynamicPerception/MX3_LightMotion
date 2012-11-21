@@ -45,9 +45,6 @@ boolean ui_refresh   = false;
 byte     ui_curMotor = 0;
 
 
- // initialize LCD object
-LiquidCrystal lcd(LCD_RS, LCD_EN, LCD_D4, LCD_D5, LCD_D6, LCD_D7);
-
  // initialize menu manager
 OMMenuMgr Menu(&ui_it_root);
 
@@ -386,6 +383,8 @@ void uiMotorScreen(byte p_button, byte p_motor) {
   lcd.print(spd, spdPrec);
   lcd.print(spdMark);
   
+  //float spd = motors[p_motor].onTimePeriods;
+  //lcd.print(spd, 4);
   
   lcd.setCursor(12, 1);
   lcd.print('^');

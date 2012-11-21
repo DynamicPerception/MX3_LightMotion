@@ -106,7 +106,7 @@ const byte MOTOR_CDIR_FLAG    = B00000100;
 const byte MOTOR_COUNT        = 3;
 
   // minimum pwm timing period is 100 uS
-const float MOTOR_PWM_MINPERIOD  = 100.0;
+const float MOTOR_PWM_MINPERIOD  = 50.0;
   // maximum number of periods per minute
 const float MOTOR_PWM_MAXPERIOD  = ( 60000000.0 / MOTOR_PWM_MINPERIOD );
 
@@ -132,20 +132,22 @@ struct MotorDefinition {
      */
  volatile byte flags;
  
-   /** On Timer Periods (minimum pulse width) */
+   /** Minimum On Timer Periods (minimum pulse width) */
  unsigned int onPeriods;
  
-   /** Off Timer Periods (duty cycle, effectively) */
- unsigned long offPeriods;
- 
-   /** Error per off period from expected speed */
- float offError;
- 
    /** Volatile, used by motor_run_isr for error overflow */
- volatile float error;
+ volatile float offError;
+ volatile float onError;
+ 
+  /** Stored Speed Value */
+ float speed;
  
    /** Volatile, used by motor_run_isr for overflow */
- volatile unsigned int restPeriods;
+ volatile unsigned long restPeriods;
+ 
+  /** Time Periods (on periods for every off period) */
+ float onTimePeriods;
+ 
  
    /** max output shaft RPM of motor */
  float rpm;
@@ -174,15 +176,15 @@ struct MotorDefinition {
    
  MotorDefinition() {
    flags = 0;
-   onPeriods = 0;
-   offPeriods = 0;
+   onPeriods = 1;
    restPeriods = 0;
+   onTimePeriods = MOTOR_PWM_MAXPERIOD;
    rpm = 1.0;
-   offError = 0.0;
    ratio = 1.0;
    distance = 0;
    ramp = 0;
    lead = 0;
+   speed = 1.0;
  }
  
 };

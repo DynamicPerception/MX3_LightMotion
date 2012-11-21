@@ -71,6 +71,9 @@ OMState      Engine = OMState(6);
 
 
 
+ // initialize LCD object
+LiquidCrystal lcd(LCD_RS, LCD_EN, LCD_D4, LCD_D5, LCD_D6, LCD_D7);
+
 
 
 
@@ -85,6 +88,9 @@ void setup() {
  
    // setup camera defaults
  camSetup();
+ 
+   // setup motor
+ motorSetup();
  
    // setup Menu
  uiMenuSetup();
@@ -129,6 +135,7 @@ void stopProgram(boolean force_clear) {
   running      = false;
   run_time     = 0;
   
+  motorStop();
   camClear();
   
     // Force block on state engine

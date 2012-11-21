@@ -52,9 +52,15 @@ const byte   ALT_START_PIN   = 2;
   // leave motor definitions as defines!
 
   // motor driving pin register and first pin mask
-#define MOTOR_DRV_PREG      PINB
-#define MOTOR_DRV_FMASK     PINB1
+#define MOTOR_DRV_PREG      PORTB
+#define MOTOR_DRV_FMASK     PORTB1
 
   // first motor direction pin
 const byte MOTOR_DIR_PINSTART = 7;
+
+ // digital pin #s for motor output
+ 
+const byte MOTOR_PWM_0   = 14;
+const byte MOTOR_PWM_1   = 15;
+const byte MOTOR_PWM_2   = 16;
 

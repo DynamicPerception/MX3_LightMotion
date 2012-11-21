@@ -51,6 +51,31 @@ boolean motor_runOnce = false;
 MotorDefinition motors[] = { MotorDefinition(), MotorDefinition(), MotorDefinition() };
 
 
+/** Set up and Initialize Motors
+
+ @author
+ C. A. Church
+ */
+ 
+void motorSetup() {
+ 
+  for(byte i =0; i < (MOTOR_COUNT * 2); i++ ) {
+    pinMode(MOTOR_DIR_PINSTART + i, OUTPUT);
+      // set to 10% speed
+
+  }
+  
+  for(byte i = 0; i < MOTOR_COUNT; i++ ) {
+    motorDir(i, 0);
+    motorSpeed(i, 0.1);
+  }
+  
+  pinMode(MOTOR_PWM_0, OUTPUT);
+  pinMode(MOTOR_PWM_1, OUTPUT);
+  pinMode(MOTOR_PWM_2, OUTPUT);
+  
+  
+}
 
 /** Set Speed Percent for a Given Motor
  
@@ -70,10 +95,19 @@ MotorDefinition motors[] = { MotorDefinition(), MotorDefinition(), MotorDefiniti
 void motorSpeed(byte p_motor, float p_rel) {
  
     // periods off between each on period to achieve percentage of time moving per minute
-  float offTime = MOTOR_PWM_MAXPERIOD / ((1.0 - p_rel) * MOTOR_PWM_MAXPERIOD);
-  motors[p_motor].offPeriods = (unsigned long) offTime;
-  motors[p_motor].offError = offTime - ( (unsigned long) offTime );
   
+  if( p_rel >= 1.0 ) {
+      motors[p_motor].onTimePeriods = MOTOR_PWM_MAXPERIOD;
+  }
+  else {
+      float offTime       = (1.0 - p_rel) * MOTOR_PWM_MAXPERIOD;
+      float onTime        = MOTOR_PWM_MAXPERIOD - offTime;
+      float onTimePeriods = onTime / offTime;
+      motors[p_motor].onTimePeriods = onTimePeriods;
+  }
+
+  motors[p_motor].speed         = p_rel;
+
 }
 
 /** Get Speed Percent for a Given Motor
@@ -91,14 +125,7 @@ void motorSpeed(byte p_motor, float p_rel) {
  */
   
 float motorSpeed(byte p_motor) {
- 
- float offTime = (float) motors[p_motor].offPeriods + motors[p_motor].offError;
- 
- if( offTime < 1.0 )
-   return 1.0;
-   
- return( 1.0 - (MOTOR_PWM_MAXPERIOD / (offTime * MOTOR_PWM_MAXPERIOD)) );
- 
+  return( motors[p_motor].speed );
 }
 
 /** Get Speed as Output Ratio for a Given Motor
@@ -261,8 +288,10 @@ void motorRun(boolean p_once) {
   if( motor_running )
     return;
     
+    // enable each motor, if it does not have a lead-in/out
   for(byte i = 0; i < MOTOR_COUNT; i++ ) 
-    motors[i].flags |= MOTOR_ENABLE_FLAG;
+    if( ! motors[i].lead )
+      motors[i].flags |= MOTOR_ENABLE_FLAG;
     
   motorStartISR();
   
@@ -304,9 +333,12 @@ void motorStop() {
   motor_running = false;
   Timer1.detachInterrupt();
   
-  for(byte i = 0; i < MOTOR_COUNT; i++ ) 
+    // force stop on all motors
+  for(byte i = 0; i < MOTOR_COUNT; i++ ) {
     motors[i].flags &= (B11111111 ^ MOTOR_ENABLE_FLAG);
-    
+    MOTOR_DRV_PREG  &= (B11111111 ^ (1 << (MOTOR_DRV_FMASK + i)));
+  }
+  
 }
 
 /** Start Motor Driving Interrupt Service 
@@ -362,72 +394,94 @@ void motorStartISR() {
 void motorRunISR() {
   
     // track for run once (SMS) operation
- static byte startCount = 0;
- static byte ranCount   = 0;
+ volatile static byte startCount = 0;
+ volatile static byte ranCount   = 0;
  
     // check status of each motor
 
+
  
  for(byte i = 0; i <= MOTOR_COUNT; i++) {
-   if( motors[i].flags & ( MOTOR_ENABLE_FLAG | MOTOR_UEN_FLAG ) ) {
+   if( motors[i].flags & MOTOR_ENABLE_FLAG && motors[i].flags & MOTOR_UEN_FLAG ) {
        // motor is enabled
        
-       // determine which direction we go (high or low)
-     byte dir = true;
-     unsigned long rest = motors[i].offPeriods;
-     
-     if( motors[i].flags & MOTOR_HIGH_FLAG ) {
-       dir = false;
-       rest = motors[i].onPeriods;
-     }
-     
-       // if we've exceeded required waiting periods...
-       
-     if( motors[i].restPeriods >= rest ) {
-        
-         // correct for accumulated error in off-time, if overflowed
-        if( motors[i].error > 1.0 ) {
-          motors[i].error -= 1.0;
-            // skip, don't take an action here.
-          continue;
-        }
-        
-        if( dir ) {
-            // going up, enable output pin
-          MOTOR_DRV_PREG  |= (1 << (MOTOR_DRV_FMASK + i));
-          motors[i].flags |= MOTOR_HIGH_FLAG;
+   
+     if( ! (motors[i].flags & MOTOR_HIGH_FLAG) ) {
+           // motor is currently not moving
+           
           
+       bool goHigh = false;
+              
+       if( motors[i].onTimePeriods >= 1.0 ) {
+           // we are 1 off period for every X on periods
+          goHigh = true;
+       }
+       else {
+         motors[i].offError += motors[i].onTimePeriods;
+       }
+
+
+       if( motors[i].offError >= 1.0 ) {
+           // we are off more often than on, and we've been off long enough
+         goHigh = true;
+         motors[i].offError -= 1.0;
+       }
+       
+       if( goHigh ) {
+               // going up, enable output pin
+
+          MOTOR_DRV_PREG  |= (1 << (MOTOR_DRV_FMASK + i));
+          motors[i].flags |= MOTOR_HIGH_FLAG;                  
+                   
           if( motor_runOnce )
             startCount++;
-            
-        }
-        else {
-            // going down, disable output pin
-          MOTOR_DRV_PREG  &= (B11111111 ^ (1 << (MOTOR_DRV_FMASK + i)));
-          motors[i].flags &= (B11111111 ^ MOTOR_HIGH_FLAG);
-            // accumulate off-period error for one period
-          motors[i].error += motors[i].offError;
-          
-            // add distance moved...
-          motors[i].distance += ( motors[i].flags & MOTOR_CDIR_FLAG ) ? 1 : -1;
-          
-          if( motor_runOnce )
-            ranCount++;
-            
-        }
-        
-                 // at the next run, we will have already waited one period...
-        motors[i].restPeriods = 1;
+       }
 
+       
      }
      else {
-         // not enough periods past, advance
-       motors[i].restPeriods++;
        
-
-     }
-     
+                // motor is currently moving
+                
+         boolean goLow = false;
+         
+         if( motors[i].onTimePeriods > 0 ) {
+             // we are on more often than off
+             
+           if( motors[i].restPeriods >= motors[i].onTimePeriods ) {
+               // have gone enough periods.
+             if( motors[i].onError >= 1.0 ) {
+                 // but wait!  We've accumulated enough on error to wait one more cycle
+               motors[i].onError -= 1.0;
+               continue;
+             }
+             else {
+                 // not enough on error to wait one more cycle
+               goLow = true;
+             }
+           } // end if( ... restPeriods
+         } // end if onTimePeriods
+         else {
+           goLow = true;
+         }
+         
+         if( goLow ) {
+           
+           // going down, disable output pin
+            MOTOR_DRV_PREG  &= (B11111111 ^ (1 << (MOTOR_DRV_FMASK + i)));
+            motors[i].flags &= (B11111111 ^ MOTOR_HIGH_FLAG);
+              // accumulate off-period error for one period
+            motors[i].restPeriods = 0;
+            motors[i].onError += motors[i].onTimePeriods - (unsigned long) motors[i].onTimePeriods;
+         }
+         else {
+           motors[i].restPeriods++;
+         }
+             
+       
+     } //end else (motor currently high)
    } // end if motor enabled
+     
  } // end for...
  
    // if we're supposed to run our motors just once,
@@ -443,4 +497,21 @@ void motorRunISR() {
 }
 
 
+/** Set Motor Enable Based on Lead-in
+ 
+   Sets motor program-enable flag based on the lead-in amount for
+   the motor, and the current shot count
+   
+   @author
+   C. A. Church
+   */
+   
+void motorCheckLead() {
+     for( byte i = 0; i < MOTOR_COUNT; i++ ) {
+      if( motors[i].lead > 0 && ( camera_fired < motors[i].lead || camera_fired > (camera_max_shots - motors[i].lead) ) )
+        motors[i].flags &= (B11111111 ^ MOTOR_ENABLE_FLAG);
+      else if( motors[i].lead > 0 && ( camera_fired > motors[i].lead || camera_fired < (camera_max_shots - motors[i].lead) ) )
+        motors[i].flags |= MOTOR_ENABLE_FLAG;
+    } 
+}
 
