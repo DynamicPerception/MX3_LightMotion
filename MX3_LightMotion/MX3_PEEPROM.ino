@@ -33,7 +33,6 @@ See dynamicperception.com for more information
 */
 
 
-
 /** Check EEPROM Status
 
  If EEPROM hasn't been stored, or EEPROM version does not
@@ -45,7 +44,7 @@ See dynamicperception.com for more information
  */
  
 void eepromCheck() {
-  
+    
   using namespace OMEEPROM;
     
   if( saved() ) {
@@ -63,8 +62,9 @@ void eepromCheck() {
  /** Write All Variables to EEPROM */
  
 void eepromWrite() {
-  using namespace OMEEPROM;
  
+  using namespace OMEEPROM;
+    
   version(MEMORY_VERSION);
   
   write(EE_SMS, motion_sms);
@@ -75,6 +75,7 @@ void eepromWrite() {
   write(EE_CAMEXP, camera_exposure);
   write(EE_CAMWAIT, camera_wait);
   write(EE_CAMFOC, camera_focus);
+  write(EE_CAMBULB, camera_bulb);
   
     // write data about each motor  
   for(byte i = 0; i < MOTOR_COUNT; i++) {
@@ -82,6 +83,8 @@ void eepromWrite() {
     write(EE_M0ONP + (EE_MOTOR_SPACE * i), motors[i].onPeriods);
     write(EE_M0RPM + (EE_MOTOR_SPACE * i), motors[i].rpm);
     write(EE_M0RATIO + (EE_MOTOR_SPACE * i), motors[i].ratio);
+    write(EE_M0RAMP + (EE_MOTOR_SPACE * i), motors[i].ramp);
+    write(EE_M0LEAD + (EE_MOTOR_SPACE * i), motors[i].lead);
   }
   
   write(EE_LCDOFF, lcdDisable);
@@ -95,6 +98,7 @@ void eepromWrite() {
  /** Read all variables from EEPROM */
  
 void eepromRestore() {
+
   using namespace OMEEPROM;
   
   read(EE_SMS, motion_sms);
@@ -105,6 +109,8 @@ void eepromRestore() {
   read(EE_CAMEXP, camera_exposure);
   read(EE_CAMWAIT, camera_wait);
   read(EE_CAMFOC, camera_focus);
+  read(EE_CAMBULB, camera_bulb);
+
   
       // read data about each motor  
   for(byte i = 0; i < MOTOR_COUNT; i++) {
@@ -112,6 +118,8 @@ void eepromRestore() {
     read(EE_M0ONP + (EE_MOTOR_SPACE * i), motors[i].onPeriods);
     read(EE_M0RPM + (EE_MOTOR_SPACE * i), motors[i].rpm);
     read(EE_M0RATIO + (EE_MOTOR_SPACE * i), motors[i].ratio);    
+    read(EE_M0RAMP + (EE_MOTOR_SPACE * i), motors[i].ramp);
+    read(EE_M0LEAD + (EE_MOTOR_SPACE * i), motors[i].lead);
   }
   
   read(EE_LCDOFF, lcdDisable);

@@ -79,12 +79,10 @@ void cycleCamera() {
   }
   
 
-  unsigned long cTimer = (camera_delay * 1000.0);
-
     // if enough time has passed, and we're ok to take an exposure
     // note: for slaves, we only get here by a master signal, so we don't check interval timing
   
-  if( alt_force_shot == true || ( millis() - camera_tm ) >= cTimer  ) {
+  if( alt_force_shot == true || ( millis() - camera_tm ) >= (camera_delay * SECOND)  ) {
 
       // trigger focus, if needed, which will set off the chain of
       // callback executions that will walk us through the complete exposure cycle.
@@ -113,7 +111,13 @@ void cycleCamera() {
   */
  
 void cycleClearToMove() {
-      
+    
+    // disables the motor if a lead-in or out is required
+    for( byte i = 0; i < MOTOR_COUNT; i++ ) {
+      if( camera_fired < motors[i].lead || camera_fired > (max_shots - motors[i].lead) )
+        motors[i] &= (B11111111 ^ MOTOR_ENABLE_FLAG);
+    }
+        
          // ok to run motors, if needed
     motorRun(motion_sms);
         // trigger motor status check on next engine cycle

@@ -37,7 +37,7 @@ See dynamicperception.com for more information
  // necessary camera control variables
 
 unsigned int  camera_max_shots = 0;
-unsigned int  camera_fired     = 0;
+unsigned long  camera_fired    = 0;
 byte          camera_repeat    = 0;
 unsigned long camera_exposure  = 120;
 unsigned long camera_wait      = 100;

@@ -32,6 +32,8 @@
 
 
 
+const unsigned int SECOND  = 1000;
+
  /*  state transitions
  
   ST_BLOCK - do not allow any action to occur (some event is in process, block the state engine)
@@ -81,6 +83,7 @@ const byte ALT_DIR       = 5;
  */
  
 const int CAM_MIN_TRIG    = 120;
+const float CAM_MIN_BULB  = 0.1;
 
 /*
 
@@ -163,6 +166,10 @@ struct MotorDefinition {
   /** Ramp Shots */
  byte ramp;
  
+  /** Lead-in/Out */
+  
+ byte lead;
+ 
    /** Default Constructor */
    
  MotorDefinition() {
@@ -170,11 +177,12 @@ struct MotorDefinition {
    onPeriods = 0;
    offPeriods = 0;
    restPeriods = 0;
-   rpm = 0.0;
+   rpm = 1.0;
    offError = 0.0;
    ratio = 1.0;
    distance = 0;
    ramp = 0;
+   lead = 0;
  }
  
 };
@@ -189,7 +197,7 @@ struct MotorDefinition {
 */
 
  // stored memory layout version
-const unsigned int MEMORY_VERSION    = 5;
+const unsigned int MEMORY_VERSION    = 7;
 
 
 /* Locations of each variable to be stored, note correct spacing
@@ -205,18 +213,19 @@ const int EE_CAMDEL    = EE_CAMREP  + 1; // camera_delay
 const int EE_CAMEXP    = EE_CAMDEL  + 4; // cam_exposure
 const int EE_CAMWAIT   = EE_CAMEXP  + 4; // cam_wait
 const int EE_CAMFOC    = EE_CAMWAIT + 4; // cam_focus
-const int EE_CAMBULB   = EE_CAMFOC  + 4; // bulb
+const int EE_CAMBULB   = EE_CAMFOC  + 4; // bulb mode
 
 const int EE_M0FLAG    = EE_CAMBULB + 1; // flags
 const int EE_M0ONP     = EE_M0FLAG  + 1; // on periods
 const int EE_M0RPM     = EE_M0ONP   + 2; // rpm
 const int EE_M0RATIO   = EE_M0RPM   + 4; // ratio
-const int EE_M0RAMP    = EE_M0RATIO + 4; 
+const int EE_M0RAMP    = EE_M0RATIO + 4; // ramping
+const int EE_M0LEAD    = EE_M0RAMP  + 1; // lead-in/out
 
   // note: for each motor, we move the previous defs ahead 12 bytes * motor num
 
 const int EE_MOTOR_SPACE = 13;  
-const int EE_POSTMOTOR   = EE_M0RATIO + 4 + (EE_MOTOR_SPACE * 2);
+const int EE_POSTMOTOR   = EE_M0LEAD + 1 + (EE_MOTOR_SPACE * 2);
 
 const int EE_LCDOFF    = EE_POSTMOTOR + 1; // lcd off time
 const int EE_METRIC    = EE_LCDOFF + 1; // metric display

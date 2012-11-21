@@ -38,14 +38,16 @@
   
  */
  
+  // some macros to make life easier....
+ 
 #define PAD(x)         if(x < 10) lcd.print('0'); lcd.print(x, DEC);
+#define PAD3(x)        if(x < 100) lcd.print('0'); PAD(x)
 #define DCT_SIZE(x)    sizeof(x) / sizeof(uiDisplayCursorTarget*)
 #define DCT_PTR(x)     reinterpret_cast<void*>(x)
+ 
 
 
-typedef void(*uiTargetFunc)(byte);
-
- // ui setup
+// ====== Core UI Setup Data (for OMMenuMgr) ==== 
  
 
 const byte LCD_ROWS = 2;
@@ -78,7 +80,7 @@ const int BUT_MAP[5][2] = {
 // ====== Memory Strings Used in the UI ========
 
 const char MX3_VERSTR[]  =  "MX3 v. 0.0.1";
-const char MX3_SUBSTR[]  =  "Rabbit Food";
+const char MX3_SUBSTR[]  =  "dooF tibbaR";
 const char MX3_C1STR[]   =  "(c) 2012 Dynamic";
 const char MX3_C2STR[]   =  "Perception";
   // run and stop must be exact same length, pad with spaces
@@ -87,25 +89,41 @@ const char STR_STOP[]    =  "Off";
 const char STR_TIME[]    =  "Time: ";
 const char STR_CAM[]     =  "Cam ";
 const char STR_BULB[]    =  "B ";
-const char STR_ECAM[]    =  "* ";
+const char STR_ECAM[]    =  "C ";
 const char STR_BUSY[]    =  "Busy";
 const char STR_IDLE[]    =  "Idle";
 const char STR_MOTOR[]   =  "Motor ";
 const char STR_LEFT      =  'L';
 const char STR_RIGHT     =  'R';
-const char STR_CW[]      =  "CW";
-const char STR_CCW[]     =  "CCW";
+const char STR_CW        =  '+';
+const char STR_CCW       =  '-';
 const char STR_BLNK[]    =  "                ";
+const char STR_FOC[]     =  "F ";
+const char STR_EN[]      =  " On ";
+const char STR_DIS[]     =  " Off";
+const char STR_INIT[]    =  "Input Init";
+const char STR_DONE[]    =  "Done!";
+const char STR_RES1[]    =  "Reset In   Sec";
+const char STR_RES2[]    =  "Enter to Cancel";
+const char STR_RES3[]    =  "Memory Reset";
+const char STR_RES4[]    =  "Power-Cycle MX3";
+const char STR_DMRK[]    =  "icd";
 
+// ====== UI Constant Data ========
 
-// ====== UI Control Vars ========
-
-const unsigned int UI_REFRESH_TM     = 100;
+const unsigned int UI_REFRESH_TM     = 250;
 const byte         UI_SCREEN_MAIN    = 0;
 const byte         UI_SCREEN_CAMERA  = 1;
 const byte         UI_SCREEN_MOTOR1  = 2;
 const byte         UI_SCREEN_MOTOR2  = 3;
 const byte         UI_SCREEN_MOTOR3  = 4;
+
+
+
+// ====== Cursor (main screen interaction) Data =======
+
+ // function pointer for cursors
+typedef void(*uiTargetFunc)(byte);
 
 
  /** Display Cursor
@@ -146,6 +164,45 @@ struct uiDisplayCursors {
         list must be equivalent to count */
   void* targets;
 };
+
+
+ // cursor targets for each screen
+
+ // main screen
+const uiDisplayCursorTarget  ui_ct_main1     = { 0, 0, uiCursorToggleRun };
+const uiDisplayCursorTarget  ui_ct_main2     = { 0, 4, uiCursorAdjustInt };
+const uiDisplayCursorTarget* ui_dctl_main[]  = { &ui_ct_main1, &ui_ct_main2 };
+const uiDisplayCursors       ui_dc_main      = { DCT_SIZE(ui_dctl_main), DCT_PTR(&ui_dctl_main) };
+
+ // camera screen
+const uiDisplayCursorTarget  ui_ct_cam1      = { 1, 0, uiCursorChangeCamBulb };
+const uiDisplayCursorTarget  ui_ct_cam2      = { 1, 2, uiCursorChangeShutterTime };
+const uiDisplayCursorTarget  ui_ct_cam3      = { 1, 11, uiCursorChangeFocusTime };
+const uiDisplayCursorTarget* ui_dctl_cam[]   = { &ui_ct_cam1, &ui_ct_cam2, &ui_ct_cam3 };
+const uiDisplayCursors       ui_dc_cam       = { DCT_SIZE(ui_dctl_cam), DCT_PTR(&ui_dctl_cam) };
+
+ // motor screens
+const uiDisplayCursorTarget  ui_ct_mot1      = { 0, 8, uiCursorChangeMotEn };
+const uiDisplayCursorTarget  ui_ct_mot2      = { 1, 0, uiCursorChangeMotDir };
+const uiDisplayCursorTarget  ui_ct_mot3      = { 1, 2, uiCursorChangeMotSpd };
+const uiDisplayCursorTarget  ui_ct_mot4      = { 0, 13, uiCursorChangeMotLead };
+const uiDisplayCursorTarget  ui_ct_mot5      = { 1, 13, uiCursorChangeMotRamp };
+
+const uiDisplayCursorTarget* ui_dctl_mot[]   = { &ui_ct_mot1, &ui_ct_mot2, &ui_ct_mot3, &ui_ct_mot4, &ui_ct_mot5 };
+const uiDisplayCursors       ui_dc_mot       = { DCT_SIZE(ui_dctl_mot), DCT_PTR(&ui_dctl_mot) };
+
+ // screens with no targets
+const uiDisplayCursors ui_dc_none = { 0, 0 };
+
+ // all screen cursors...
+ 
+    // main, camera, m1, m2, m3
+const uiDisplayCursors*  ui_dc_list[] = { &ui_dc_main, &ui_dc_cam, &ui_dc_mot, &ui_dc_mot, &ui_dc_mot };
+
+
+  // camera shutter speed display divisions
+const float ui_camDivs[]  = { 0.001, 0.002, 0.004, 0.008, 0.01, 0.0166667, 0.033333, 0.0666667, 0.125, 0.25,  0.333333, 0.5, 0.75, 1.0, 1.3, 1.6, 2 };
+
 
 // ====== Menu Data =========== 
 
@@ -268,7 +325,7 @@ MENU_VALUE   ui_in_alt2     = { TYPE_SELECT, 0, 0, MENU_TARGET(&ui_sl_alt2), EE_
 
 MENU_ITEM    ui_it_alt1     = { {"I/O #1 Mode"}, ITEM_VALUE, 0, MENU_TARGET(&ui_in_alt1) };
 MENU_ITEM    ui_it_alt2     = { {"I/O #2 Mode"}, ITEM_VALUE, 0, MENU_TARGET(&ui_in_alt1) };
-MENU_ITEM    ui_it_altset   = { {"Init I/O"}, ITEM_ACTION, 0, MENU_TARGET(uiAltInit) };
+MENU_ITEM    ui_it_altset   = { {"Init I/O"}, ITEM_ACTION, 0, MENU_TARGET(uiMenuAltInit) };
 
 MENU_LIST    ui_list_alt[]  = { &ui_it_altset, &ui_it_alt1, &ui_it_alt2 };
 MENU_ITEM    ui_it_alt      = { {"Alt I/O"}, ITEM_MENU, MENU_SIZE(ui_list_alt), MENU_TARGET(&ui_list_alt) };
@@ -285,8 +342,10 @@ MENU_VALUE   ui_in_glMet       = { TYPE_SELECT, 0, 0, MENU_TARGET(&ui_sl_glMet),
 MENU_ITEM    ui_it_glSMS       = { {"SMS Motion"}, ITEM_VALUE, 0, MENU_TARGET(&ui_in_glSMS) };
 MENU_ITEM    ui_it_glMet       = { {"Metric Display"}, ITEM_VALUE, 0, MENU_TARGET(&ui_in_glMet) };
 MENU_ITEM    ui_it_glLCD       = { {"LCD AutoOff Sec"}, ITEM_VALUE, 0, MENU_TARGET(&ui_in_glLCD) };
+MENU_ITEM    ui_it_glMem       = { {"Reset Memory"}, ITEM_ACTION, 0, MENU_TARGET(uiMenuResetMem) };
 
-MENU_LIST    ui_list_gl[]      = { &ui_it_glSMS, &ui_it_glMet, &ui_it_glLCD, &ui_it_alt };
+
+MENU_LIST    ui_list_gl[]      = { &ui_it_glSMS, &ui_it_glMet, &ui_it_glLCD, &ui_it_alt, &ui_it_glMem };
 MENU_ITEM    ui_it_glList      = { {"Settings"}, ITEM_MENU, MENU_SIZE(ui_list_gl), MENU_TARGET(&ui_list_gl) };
 
  // ===== Main Menu

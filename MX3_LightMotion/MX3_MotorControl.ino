@@ -84,7 +84,7 @@ void motorSpeed(byte p_motor, float p_rel) {
  The motor to get the speed for, 0, 1, or 2
  
  @return
- A floating point integer, from 0.0 to 1.0
+ A floating point number, from 0.0 to 1.0
  
  @author
  C. A. Church
@@ -93,7 +93,11 @@ void motorSpeed(byte p_motor, float p_rel) {
 float motorSpeed(byte p_motor) {
  
  float offTime = (float) motors[p_motor].offPeriods + motors[p_motor].offError;
- return( (offTime * MOTOR_PWM_MAXPERIOD) / MOTOR_PWM_MAXPERIOD );  
+ 
+ if( offTime < 1.0 )
+   return 1.0;
+   
+ return( 1.0 - (MOTOR_PWM_MAXPERIOD / (offTime * MOTOR_PWM_MAXPERIOD)) );
  
 }
 
@@ -119,6 +123,50 @@ float motorSpeedRatio(byte p_motor) {
   return( spd );
 }
 
+/** Set Speed as Output Ratio for a Given Motor
+
+ Sets the current speed for the motor, expressed as the output
+ ratio (RPM * Ratio * Speed) for linear, and degrees (RPM * Ratio * Speed * 360).
+ 
+ @param p_motor
+ The motor to get the speed for, 0, 1, or 2
+ 
+ @param p_ratio
+ A floating point integer, from 0.0 to maximum possible travel
+ */
+ 
+void motorSpeedRatio(byte p_motor, float p_ratio) {
+  float spd = motors[p_motor].rpm * motors[p_motor].ratio;
+  
+  if( motors[p_motor].flags & MOTOR_ROT_FLAG )
+      spd *= 360.0;
+     
+  spd = p_ratio > spd ? 1.0 : p_ratio / spd;
+  
+  motorSpeed(p_motor, spd);
+}
+
+
+/** Get Maximum Possible Speed as Output Ratio for a Given Motor
+
+ Gets the current max speed for the motor, expressed as the output
+ ratio (RPM * Ratio * Speed) for linear, and degrees (RPM * Ratio * Speed * 360).
+ 
+ @param p_motor
+ The motor to get the speed for, 0, 1, or 2
+ 
+ @return p_ratio
+ A floating point integer
+ */
+ 
+float motorMaxSpeedRatio(byte p_motor) {
+  float spd = motors[p_motor].rpm * motors[p_motor].ratio;
+  
+  if( motors[p_motor].flags & MOTOR_ROT_FLAG )
+      spd *= 360.0;
+      
+  return spd;
+}
 /** Control Motor Direction
   
   @param p_motor
@@ -176,7 +224,22 @@ void motorDir(byte p_motor, boolean p_dir) {
 void motorDirFlip() {
     // foreach motor, invert its direction
   for(int i = 0; i < MOTOR_COUNT; i++)
-    motorDir(i, ! (boolean) (motors[i].flags & MOTOR_CDIR_FLAG) );
+    motorDirFlip(i);
+}
+
+/** Flip Motor Direction
+
+ Inverts the direction of a single motor.
+ 
+ @param p_motor
+ Motor to flip direction
+ 
+ @author
+ C. A. Church
+ */
+ 
+void motorDirFlip(byte p_motor) {
+  motorDir(p_motor, ! (boolean) (motors[p_motor].flags & MOTOR_CDIR_FLAG) );
 }
 
 /** Start All Motors Running
@@ -192,9 +255,12 @@ void motorDirFlip() {
  */
  
 void motorRun(boolean p_once) {
-  
+ 
   motor_runOnce = p_once;
   
+  if( motor_running )
+    return;
+    
   for(byte i = 0; i < MOTOR_COUNT; i++ ) 
     motors[i].flags |= MOTOR_ENABLE_FLAG;
     
