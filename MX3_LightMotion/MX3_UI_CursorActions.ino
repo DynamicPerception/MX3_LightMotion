@@ -107,7 +107,7 @@ void uiCursorChangeShutterTime(byte p_dir) {
    mod = -1;
    
  if( div >= ui_camDivs[scaleLen] ) {
-     // we are greater than or equal to the largest div, generally we must in 1 second increments above
+     // we are greater than or equal to the largest div, generally we move in 1 second increments above
      // this range
     if( div >= (ui_camDivs[scaleLen] + 1.0) ) {
        div += mod;

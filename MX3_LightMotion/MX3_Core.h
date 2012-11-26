@@ -206,7 +206,7 @@ struct MotorDefinition {
 */
 
  // stored memory layout version
-const unsigned int MEMORY_VERSION    = 10;
+const unsigned int MEMORY_VERSION    = 11;
 
 
 /* Locations of each variable to be stored, note correct spacing
@@ -236,9 +236,8 @@ const int EE_MOTOR_SPACE = 13;
 const int EE_POSTMOTOR   = EE_M0LEAD + 1 + (EE_MOTOR_SPACE * 2);
 
 const int EE_LCDOFF    = EE_POSTMOTOR + 1; // lcd off time
-const int EE_METRIC    = EE_LCDOFF + 1; // metric display
-const int EE_ALT1      = EE_METRIC + 1; // alt input 1 mode
-const int EE_ALT2      = EE_ALT1   + 1; // alt input 2 mode
-const int EE_PERIOD    = EE_ALT2   + 1; // minimum period in mS
+const int EE_ALT1      = EE_LCDOFF    + 1; // alt input 1 mode
+const int EE_ALT2      = EE_ALT1      + 1; // alt input 2 mode
+const int EE_PERIOD    = EE_ALT2      + 1; // minimum period in mS
 
 

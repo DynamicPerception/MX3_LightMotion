@@ -107,7 +107,6 @@ const char STR_RES1[]    =  "Reset In   Sec";
 const char STR_RES2[]    =  "Enter to Cancel";
 const char STR_RES3[]    =  "Memory Reset";
 const char STR_RES4[]    =  "Power-Cycle MX3";
-const char STR_DMRK[]    =  "icd";
 const char STR_RAMP[]    =  " RMP";
 
 // ====== UI Constant Data ========
@@ -328,21 +327,18 @@ MENU_ITEM    ui_it_alt      = { {"Alt I/O"}, ITEM_MENU, MENU_SIZE(ui_list_alt), 
  // ===== Global Options
 
 MENU_SELECT  ui_sl_glLCD       = { &motion_sms, MENU_SELECT_SIZE(ui_sel_list_onoff), MENU_TARGET(&ui_sel_list_onoff) };
-MENU_SELECT  ui_sl_glMet       = { &metric_ui, MENU_SELECT_SIZE(ui_sel_list_onoff), MENU_TARGET(&ui_sel_list_onoff) };
 
 MENU_VALUE   ui_in_glLCD       = { TYPE_BYTE, 0, 0, MENU_TARGET(&lcdDisable), EE_LCDOFF };   
 MENU_VALUE   ui_in_glSMS       = { TYPE_SELECT, 0, 0, MENU_TARGET(&ui_sl_glLCD), EE_SMS };
-MENU_VALUE   ui_in_glMet       = { TYPE_SELECT, 0, 0, MENU_TARGET(&ui_sl_glMet), EE_METRIC };
 MENU_VALUE   ui_in_glPer       = { TYPE_UINT, 1000, 50, MENU_TARGET(&motor_pwm_minperiod), EE_PERIOD };   
 
 MENU_ITEM    ui_it_glSMS       = { {"SMS Motion"}, ITEM_VALUE, 0, MENU_TARGET(&ui_in_glSMS) };
-MENU_ITEM    ui_it_glMet       = { {"Metric Display"}, ITEM_VALUE, 0, MENU_TARGET(&ui_in_glMet) };
 MENU_ITEM    ui_it_glLCD       = { {"LCD AutoOff Sec"}, ITEM_VALUE, 0, MENU_TARGET(&ui_in_glLCD) };
 MENU_ITEM    ui_it_glPer       = { {"Motor Timing"}, ITEM_VALUE, 0, MENU_TARGET(&ui_in_glPer) };
 MENU_ITEM    ui_it_glMem       = { {"Reset Memory"}, ITEM_ACTION, 0, MENU_TARGET(uiMenuResetMem) };
 
 
-MENU_LIST    ui_list_gl[]      = { &ui_it_glSMS, &ui_it_glMet, &ui_it_glLCD, &ui_it_alt, &ui_it_glPer, &ui_it_glMem };
+MENU_LIST    ui_list_gl[]      = { &ui_it_glSMS, &ui_it_glLCD, &ui_it_alt, &ui_it_glPer, &ui_it_glMem };
 MENU_ITEM    ui_it_glList      = { {"Settings"}, ITEM_MENU, MENU_SIZE(ui_list_gl), MENU_TARGET(&ui_list_gl) };
 
  // ===== Main Menu

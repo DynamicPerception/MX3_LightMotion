@@ -355,21 +355,14 @@ void uiMotorScreen(byte p_button, byte p_motor) {
   
   lcd.setCursor(0, 1);
   
-  char spdMark = STR_DMRK[0];
-  
   if( def->flags & MOTOR_ROT_FLAG ) {
-    
-    spdMark = STR_DMRK[2];
-    
+ 
     if( def->flags & MOTOR_CDIR_FLAG )
        lcd.print(STR_CW);
     else
        lcd.print(STR_CCW); 
   }
   else {
-    
-    if( metric_ui )
-      spdMark = STR_DMRK[1];
       
     if( def->flags & MOTOR_CDIR_FLAG )
        lcd.print(STR_RIGHT);
@@ -383,10 +376,6 @@ void uiMotorScreen(byte p_button, byte p_motor) {
   float spd = motorSpeedRatio(p_motor);
   
   lcd.print(spd, spdPrec);
-  lcd.print(spdMark);
-  
-  //float spd = motors[p_motor].onTimePeriods;
-  //lcd.print(spd, 4);
   
   lcd.setCursor(12, 1);
   lcd.print('^');
