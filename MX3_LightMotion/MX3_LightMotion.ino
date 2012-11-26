@@ -135,7 +135,7 @@ void stopProgram(boolean force_clear) {
   running      = false;
   run_time     = 0;
   
-  motorStop();
+  motorStop(false);
   camClear();
   
     // Force block on state engine

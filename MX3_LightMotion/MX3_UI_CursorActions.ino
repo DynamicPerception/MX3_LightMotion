@@ -207,12 +207,30 @@ void uiCursorChangeFocusTime(byte p_dir) {
  
 void uiCursorChangeMotEn(byte p_dir) {
   
-  if( motors[ui_curMotor].flags & MOTOR_UEN_FLAG )
-    motors[ui_curMotor].flags &= (B11111111 ^ MOTOR_UEN_FLAG);
-  else
-     motors[ui_curMotor].flags |= MOTOR_UEN_FLAG;
-    
-  OMEEPROM::write(EE_M0FLAG + (EE_MOTOR_SPACE * ui_curMotor), motors[ui_curMotor].flags);
+    // if currently running, and a ramp is set, ramp out
+  if( running == true && motors[ui_curMotor].flags & MOTOR_UEN_FLAG && motors[ui_curMotor].ramp > 0) {
+    motorForceRamp(ui_curMotor);
+  }
+  else {  
+    if( motors[ui_curMotor].flags & MOTOR_UEN_FLAG )
+      motors[ui_curMotor].flags &= (B11111111 ^ MOTOR_UEN_FLAG);
+    else {
+      
+        // program already running when motor turned on?
+      if( running ) {
+         motors[ui_curMotor].startShots = camera_fired;
+           // ramp down to zero before starting motor!
+         motorSpeed(ui_curMotor, 0, true);
+      }
+      
+      motors[ui_curMotor].flags |= MOTOR_UEN_FLAG;  
+ 
+       
+    }
+
+    OMEEPROM::write(EE_M0FLAG + (EE_MOTOR_SPACE * ui_curMotor), motors[ui_curMotor].flags);
+  }
+  
 }
 
 

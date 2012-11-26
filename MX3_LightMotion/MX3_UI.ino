@@ -342,7 +342,9 @@ void uiMotorScreen(byte p_button, byte p_motor) {
   MotorDefinition* def = &motors[p_motor];
   ui_curMotor          = p_motor;
   
-  if( def->flags & MOTOR_UEN_FLAG )
+  if( def->flags & MOTOR_RAMP_FLAG )
+    lcd.print(STR_RAMP);
+  else if( def->flags & MOTOR_UEN_FLAG )
     lcd.print(STR_EN);
   else
     lcd.print(STR_DIS);

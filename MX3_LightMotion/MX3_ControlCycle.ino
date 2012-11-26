@@ -113,13 +113,16 @@ void cycleCamera() {
 void cycleClearToMove() {
     
     // disables the motor if a lead-in or out is required
-   // motorCheckLead();
+   motorCheckLead();
+   
+    // checks ramp settings for each motor
+   motorCheckRamp();
         
          // ok to run motors, if needed
-   // motorRun(motion_sms);
-   motorRun(false);
+   motorRun(motion_sms);
+   
         // trigger motor status check on next engine cycle
-    Engine.state(ST_RUN);
+   Engine.state(ST_RUN);
 }
 
 

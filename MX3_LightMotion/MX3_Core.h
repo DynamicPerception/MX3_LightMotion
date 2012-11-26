@@ -98,17 +98,15 @@ const float CAM_MIN_BULB  = 0.1;
 
 const byte MOTOR_ENABLE_FLAG  = B10000000;
 const byte MOTOR_HIGH_FLAG    = B01000000;
-const byte MOTOR_DIR_FLAG     =  B00100000;
+const byte MOTOR_DIR_FLAG     = B00100000;
 const byte MOTOR_ROT_FLAG     = B00010000;
 const byte MOTOR_UEN_FLAG     = B00001000;
 const byte MOTOR_CDIR_FLAG    = B00000100;
+const byte MOTOR_RAMP_FLAG    = B00000010;
 
 const byte MOTOR_COUNT        = 3;
 
-  // minimum pwm timing period is 100 uS
-const float MOTOR_PWM_MINPERIOD  = 50.0;
-  // maximum number of periods per minute
-const float MOTOR_PWM_MAXPERIOD  = ( 60000000.0 / MOTOR_PWM_MINPERIOD );
+
 
 
 /** Motor Definition Structure
@@ -125,7 +123,7 @@ struct MotorDefinition {
      (4) B3 = type (rot = 1 / linear = 0)
      (3) B4 = user globally enabled (user-controlled)
      (2) B5 = current direction
-     (1) B6 = 
+     (1) B6 = force ramp out now
      (0) B7 = 
      
      Must be volatile to support B1 modulation in ISR
@@ -141,6 +139,10 @@ struct MotorDefinition {
  
   /** Stored Speed Value */
  float speed;
+ 
+  /** Stored set speed (used when ramping) */
+  
+ float setSpeed;
  
    /** Volatile, used by motor_run_isr for overflow */
  volatile unsigned long restPeriods;
@@ -172,19 +174,28 @@ struct MotorDefinition {
   
  byte lead;
  
+  /** Shot count that force ramp started at */
+ byte forceRampStart;
+ 
+  /** Shot count for rampt starting (when started motor during program run)*/
+ unsigned long startShots;
+ 
    /** Default Constructor */
    
  MotorDefinition() {
    flags = 0;
    onPeriods = 1;
    restPeriods = 0;
-   onTimePeriods = MOTOR_PWM_MAXPERIOD;
+   onTimePeriods = 1.0;
    rpm = 1.0;
    ratio = 1.0;
    distance = 0;
    ramp = 0;
    lead = 0;
    speed = 1.0;
+   setSpeed = 1.0;
+   forceRampStart = 0;
+   startShots = 0;
  }
  
 };
@@ -199,7 +210,7 @@ struct MotorDefinition {
 */
 
  // stored memory layout version
-const unsigned int MEMORY_VERSION    = 7;
+const unsigned int MEMORY_VERSION    = 9;
 
 
 /* Locations of each variable to be stored, note correct spacing
@@ -233,6 +244,6 @@ const int EE_LCDOFF    = EE_POSTMOTOR + 1; // lcd off time
 const int EE_METRIC    = EE_LCDOFF + 1; // metric display
 const int EE_ALT1      = EE_METRIC + 1; // alt input 1 mode
 const int EE_ALT2      = EE_ALT1   + 1; // alt input 2 mode
-
+const int EE_PERIOD    = EE_ALT2   + 1; // minimum period in mS
 
 

@@ -38,13 +38,20 @@ See dynamicperception.com for more information
 
 
 
- // predeclare this function to provide a default in the prototype
- 
+ // predeclare these functions to provide a default in the prototype
+
+void motorStop(boolean p_once = false);
+void motorSpeed(byte p_motor, float p_rel, boolean p_ramp = false);
+void motorSpeedRatio(byte p_motor, float p_ratio, boolean p_ramp = false);
 void run_motors(boolean p_once = false);
 
 
  // control variables
-boolean motor_runOnce = false;
+ 
+   // minimum pwm timing period is 100 uS
+unsigned int motor_pwm_minperiod  = 50;
+  // maximum number of periods per minute
+float motor_pwm_maxperiod  = ( 60000000.0 / (float) motor_pwm_minperiod );
 
  // create an array of structures for our three motors
 
@@ -88,25 +95,37 @@ void motorSetup() {
  @param p_rel
  The relative ontime, expressed as a value from 0.0 to 1.0
  
+ @param p_ramp
+ (Optional, default = false) Whether or not this speed change is part of a ramp cycle
+ 
  @author 
  C. A. Church
  */
  
-void motorSpeed(byte p_motor, float p_rel) {
+void motorSpeed(byte p_motor, float p_rel, boolean p_ramp) {
  
     // periods off between each on period to achieve percentage of time moving per minute
   
-  if( p_rel >= 1.0 ) {
-      motors[p_motor].onTimePeriods = MOTOR_PWM_MAXPERIOD;
+  motor_pwm_maxperiod  = ( 60000000.0 / (float) motor_pwm_minperiod );
+  
+  if( p_rel <= 0.0 ) {
+      motors[p_motor].onTimePeriods = 0.0;
+  }
+  else if( p_rel >= 1.0 ) {
+      motors[p_motor].onTimePeriods = motor_pwm_maxperiod;
   }
   else {
-      float offTime       = (1.0 - p_rel) * MOTOR_PWM_MAXPERIOD;
-      float onTime        = MOTOR_PWM_MAXPERIOD - offTime;
+      float offTime       = (1.0 - p_rel) * motor_pwm_maxperiod;
+      float onTime        = motor_pwm_maxperiod - offTime;
       float onTimePeriods = onTime / offTime;
       motors[p_motor].onTimePeriods = onTimePeriods;
   }
 
   motors[p_motor].speed         = p_rel;
+  
+  if( ! p_ramp ) 
+    motors[p_motor].setSpeed    = p_rel;
+    
 
 }
 
@@ -138,6 +157,9 @@ float motorSpeed(byte p_motor) {
  
  @return
  A floating point integer, from 0.0 to maximum possible travel
+ 
+  @author 
+ C. A. Church
  */
  
 float motorSpeedRatio(byte p_motor) {
@@ -160,9 +182,15 @@ float motorSpeedRatio(byte p_motor) {
  
  @param p_ratio
  A floating point integer, from 0.0 to maximum possible travel
+ 
+ @param p_ramp
+ (Optional, default = false) Whether or not this speed change is part of a ramp cycle
+ 
+  @author 
+ C. A. Church
  */
  
-void motorSpeedRatio(byte p_motor, float p_ratio) {
+void motorSpeedRatio(byte p_motor, float p_ratio, boolean p_ramp) {
   float spd = motors[p_motor].rpm * motors[p_motor].ratio;
   
   if( motors[p_motor].flags & MOTOR_ROT_FLAG )
@@ -170,7 +198,7 @@ void motorSpeedRatio(byte p_motor, float p_ratio) {
      
   spd = p_ratio > spd ? 1.0 : p_ratio / spd;
   
-  motorSpeed(p_motor, spd);
+  motorSpeed(p_motor, spd, p_ramp);
 }
 
 
@@ -184,6 +212,9 @@ void motorSpeedRatio(byte p_motor, float p_ratio) {
  
  @return p_ratio
  A floating point integer
+ 
+  @author 
+ C. A. Church
  */
  
 float motorMaxSpeedRatio(byte p_motor) {
@@ -283,8 +314,6 @@ void motorDirFlip(byte p_motor) {
  
 void motorRun(boolean p_once) {
  
-  motor_runOnce = p_once;
-  
   if( motor_running )
     return;
     
@@ -293,7 +322,7 @@ void motorRun(boolean p_once) {
     if( ! motors[i].lead )
       motors[i].flags |= MOTOR_ENABLE_FLAG;
     
-  motorStartISR();
+  motorStartISR(p_once);
   
 }
 
@@ -310,11 +339,9 @@ void motorRun(boolean p_once) {
  
 void motorRun(boolean p_once, byte p_motor) {
  
- motor_runOnce = p_once;
- 
  motors[p_motor].flags |= MOTOR_ENABLE_FLAG;
  
- motorStartISR();
+ motorStartISR(p_once);
 
 }
 
@@ -329,14 +356,23 @@ void motorRun(boolean p_once, byte p_motor) {
  C. A. Church
  */
  
-void motorStop() {
+void motorStop(boolean p_once) {
   motor_running = false;
   Timer1.detachInterrupt();
   
-    // force stop on all motors
-  for(byte i = 0; i < MOTOR_COUNT; i++ ) {
-    motors[i].flags &= (B11111111 ^ MOTOR_ENABLE_FLAG);
-    MOTOR_DRV_PREG  &= (B11111111 ^ (1 << (MOTOR_DRV_FMASK + i)));
+  
+  if( ! p_once ) {
+      // force stop on all motors (only do this for continuous motion!)
+    for(byte i = 0; i < MOTOR_COUNT; i++ ) {
+        // disable motor, set high flag to low, and disable force ramp flag
+      motors[i].flags &= (B11111111 ^ ( MOTOR_ENABLE_FLAG | MOTOR_HIGH_FLAG | MOTOR_RAMP_FLAG ) );
+        // change output pin state
+      MOTOR_DRV_PREG  &= (B11111111 ^ (1 << (MOTOR_DRV_FMASK + i)));
+        // if speed != setspeed, set new speed back!
+     motorSpeed(i, motors[i].setSpeed);
+        // get rid of forced ramp
+      motors[i].forceRampStart = 0;
+    }
   }
   
 }
@@ -345,16 +381,74 @@ void motorStop() {
 
  Starts interrupt, sets data to indicate motors are running
  
+ @param p_once
+   Whether shooting continuous (false) or shootmoveshoot (true)
  @author
  C. A. Church
  */
  
-void motorStartISR() {
+void motorStartISR(boolean p_once) {
+  
+  motor_pwm_maxperiod  = ( 60000000.0 / (float) motor_pwm_minperiod );
   
   if( ! motor_running ) { 
       motor_running = true;
-      Timer1.initialize(MOTOR_PWM_MINPERIOD);
-      Timer1.attachInterrupt(motorRunISR);
+      Timer1.initialize(motor_pwm_minperiod);
+      
+      if( p_once )
+        Timer1.attachInterrupt(motorRunISRSMS);
+      else
+        Timer1.attachInterrupt(motorRunISR);
+  }
+  
+}
+
+
+/** Motor Driving Interrupt Service Routine (SMS)
+
+   This routine moves each motor for the time period specified:
+   
+     motor_pwm_maxperiod * motor[each].speed
+     
+   It will stop the motors once each motor that must move completes the move.
+   
+   @author
+   C. A. Church
+*/
+
+void motorRunISRSMS() {
+  
+  static byte moveCnt = 0;
+  static byte moved   = 0;
+  
+  for( byte i = 0; i < MOTOR_COUNT; i++ ) {
+    if( motors[i].flags & MOTOR_ENABLE_FLAG && motors[i].flags & MOTOR_UEN_FLAG ) {
+       // motor is enabled
+       if( ! (motors[i].flags & MOTOR_HIGH_FLAG) && motors[i].speed > 0.0) {
+         // motor is not currently moving
+          MOTOR_DRV_PREG  |= (1 << (MOTOR_DRV_FMASK + i));
+          motors[i].flags |= MOTOR_HIGH_FLAG; 
+          motors[i].restPeriods = 1;
+          moveCnt++;
+       }
+     else {
+        if( motors[i].restPeriods >= (motor_pwm_maxperiod * motors[i].speed) ) {
+          moved++;
+                // going down, disable output pin
+          MOTOR_DRV_PREG  &= (B11111111 ^ (1 << (MOTOR_DRV_FMASK + i)));
+          motors[i].flags &= (B11111111 ^ MOTOR_HIGH_FLAG);
+        }
+        else
+          motors[i].restPeriods++;       
+     }
+    }
+  }
+  
+    // moved all motors the required distance?
+  if( moved == moveCnt ) {
+    moveCnt = 0;
+    moved = 0;
+    motorStop(true);
   }
   
 }
@@ -393,20 +487,16 @@ void motorStartISR() {
 
 void motorRunISR() {
   
-    // track for run once (SMS) operation
- volatile static byte startCount = 0;
- volatile static byte ranCount   = 0;
- 
     // check status of each motor
 
 
  
- for(byte i = 0; i <= MOTOR_COUNT; i++) {
+ for(byte i = 0; i < MOTOR_COUNT; i++) {
    if( motors[i].flags & MOTOR_ENABLE_FLAG && motors[i].flags & MOTOR_UEN_FLAG ) {
        // motor is enabled
        
    
-     if( ! (motors[i].flags & MOTOR_HIGH_FLAG) ) {
+     if( ! (motors[i].flags & MOTOR_HIGH_FLAG) && motors[i].speed > 0.0) {
            // motor is currently not moving
            
           
@@ -432,9 +522,6 @@ void motorRunISR() {
 
           MOTOR_DRV_PREG  |= (1 << (MOTOR_DRV_FMASK + i));
           motors[i].flags |= MOTOR_HIGH_FLAG;                  
-                   
-          if( motor_runOnce )
-            startCount++;
        }
 
        
@@ -484,15 +571,6 @@ void motorRunISR() {
      
  } // end for...
  
-   // if we're supposed to run our motors just once,
-   // then check to see if we're done, and stop
-   // the interrupt
-   
- if( motor_runOnce && startCount == ranCount ) {
-     startCount = 0;
-     ranCount   = 0;
-     motorStop();
- }
   
 }
 
@@ -513,5 +591,83 @@ void motorCheckLead() {
       else if( motors[i].lead > 0 && ( camera_fired > motors[i].lead || camera_fired < (camera_max_shots - motors[i].lead) ) )
         motors[i].flags |= MOTOR_ENABLE_FLAG;
     } 
+}
+
+
+/** Set Motor Speed Based on Ramp
+
+  Controls linear ramping for each motor
+  
+  @author
+  C. A. Church
+  */
+  
+void motorCheckRamp() {
+  
+      for( byte i = 0; i < MOTOR_COUNT; i++ ) {
+        if(motors[i].flags & MOTOR_UEN_FLAG ) {
+          if( motors[i].ramp > 0 ) {
+            
+              // do not apply ramp if still in lead-in, or in lead-out
+            if( motors[i].lead > 0 && ( camera_fired < motors[i].lead || camera_fired > (camera_max_shots - motors[i].lead) ) )
+              continue;
+             
+            unsigned int rampEnd = motors[i].lead + motors[i].ramp;
+            float diff;
+            
+              // if we started during run time, set new ramp start point, in shots
+            if( motors[i].startShots > 0 )
+              rampEnd = rampEnd + motors[i].startShots;
+              
+            if( motors[i].flags & MOTOR_RAMP_FLAG ) {
+                // force ramp down?
+              diff = motors[i].ramp - (camera_fired - motors[i].forceRampStart);
+              if( diff <= 0.0 ) {
+                  // disable motor (user wanted the motor off when ramp completed...)
+                  motors[i].flags &= (B11111111 ^ (MOTOR_RAMP_FLAG | MOTOR_UEN_FLAG));
+                  motorSpeed(i, motors[i].setSpeed);
+                  continue;
+              }
+            }
+            else if( camera_fired == rampEnd ) {
+              diff = motors[i].ramp;
+                // reset startshots, just in case they were set - since our lead-out/ramp-out is
+                // doesn't care about that part.
+              motors[i].startShots = 0;
+            }
+            else if( camera_fired < rampEnd ) {
+              diff = camera_fired - motors[i].startShots - motors[i].lead;
+            }
+            else if( camera_fired > (camera_max_shots - rampEnd) ) {
+              diff = camera_max_shots - camera_fired - motors[i].lead;
+            }
+            else {
+              continue;
+            }
+            
+              // calculate new speed
+            diff = diff / (float) motors[i].ramp;
+            diff = motors[i].setSpeed * diff;
+              
+            motorSpeed(i, diff, true);
+          } // end if motors[i].ramp  
+        } // end if motors[i].flags
+      } // end for loop
+}
+
+/** Force Down Ramp of Motor
+
+ Forces a motor to start a down ramp now.
+ 
+ @param p_motor
+ The motor to force to ramp down (0-2)
+ 
+ @author
+ C. A. Church
+ */
+ 
+void motorForceRamp(byte p_motor) {
+  motors[p_motor].flags |= MOTOR_RAMP_FLAG;
+  motors[p_motor].forceRampStart = camera_fired;
 }
 

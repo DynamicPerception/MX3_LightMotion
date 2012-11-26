@@ -132,8 +132,7 @@ void camCallBack(byte code) {
   
   if( code == OM_CAM_FFIN ) {
       // focus done
-//    Engine.state(ST_EXP);
-    Engine.state(ST_WAIT);
+    Engine.state(ST_EXP);
   }
   else if( code == OM_CAM_EFIN ) {
       // exposure done

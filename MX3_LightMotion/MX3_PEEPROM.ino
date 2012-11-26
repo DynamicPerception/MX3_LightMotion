@@ -91,6 +91,7 @@ void eepromWrite() {
   write(EE_METRIC, metric_ui);
   write(EE_ALT1, alt_inputs[0]);
   write(EE_ALT2, alt_inputs[1]);
+  write(EE_PERIOD, motor_pwm_minperiod);
   
 }
 
@@ -126,7 +127,7 @@ void eepromRestore() {
   read(EE_METRIC, metric_ui);
   read(EE_ALT1, alt_inputs[0]);
   read(EE_ALT2, alt_inputs[1]);
-  
+  read(EE_PERIOD, motor_pwm_minperiod);
 }
 
 
