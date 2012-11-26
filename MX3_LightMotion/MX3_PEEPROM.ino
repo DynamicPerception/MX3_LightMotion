@@ -80,7 +80,6 @@ void eepromWrite() {
     // write data about each motor  
   for(byte i = 0; i < MOTOR_COUNT; i++) {
     write(EE_M0FLAG + (EE_MOTOR_SPACE * i), *((byte*) &motors[i].flags));
-    write(EE_M0ONP + (EE_MOTOR_SPACE * i), motors[i].onPeriods);
     write(EE_M0RPM + (EE_MOTOR_SPACE * i), motors[i].rpm);
     write(EE_M0RATIO + (EE_MOTOR_SPACE * i), motors[i].ratio);
     write(EE_M0RAMP + (EE_MOTOR_SPACE * i), motors[i].ramp);
@@ -116,7 +115,6 @@ void eepromRestore() {
       // read data about each motor  
   for(byte i = 0; i < MOTOR_COUNT; i++) {
     read(EE_M0FLAG + (EE_MOTOR_SPACE * i), *((byte*) &motors[i].flags));
-    read(EE_M0ONP + (EE_MOTOR_SPACE * i), motors[i].onPeriods);
     read(EE_M0RPM + (EE_MOTOR_SPACE * i), motors[i].rpm);
     read(EE_M0RATIO + (EE_MOTOR_SPACE * i), motors[i].ratio);    
     read(EE_M0RAMP + (EE_MOTOR_SPACE * i), motors[i].ramp);

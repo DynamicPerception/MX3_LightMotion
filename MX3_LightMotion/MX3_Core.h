@@ -129,10 +129,7 @@ struct MotorDefinition {
      Must be volatile to support B1 modulation in ISR
      */
  volatile byte flags;
- 
-   /** Minimum On Timer Periods (minimum pulse width) */
- unsigned int onPeriods;
- 
+
    /** Volatile, used by motor_run_isr for error overflow */
  volatile float offError;
  volatile float onError;
@@ -184,7 +181,6 @@ struct MotorDefinition {
    
  MotorDefinition() {
    flags = 0;
-   onPeriods = 1;
    restPeriods = 0;
    onTimePeriods = 1.0;
    rpm = 1.0;
@@ -210,7 +206,7 @@ struct MotorDefinition {
 */
 
  // stored memory layout version
-const unsigned int MEMORY_VERSION    = 9;
+const unsigned int MEMORY_VERSION    = 10;
 
 
 /* Locations of each variable to be stored, note correct spacing
@@ -229,8 +225,7 @@ const int EE_CAMFOC    = EE_CAMWAIT + 4; // cam_focus
 const int EE_CAMBULB   = EE_CAMFOC  + 4; // bulb mode
 
 const int EE_M0FLAG    = EE_CAMBULB + 1; // flags
-const int EE_M0ONP     = EE_M0FLAG  + 1; // on periods
-const int EE_M0RPM     = EE_M0ONP   + 2; // rpm
+const int EE_M0RPM     = EE_M0FLAG  + 1; // rpm
 const int EE_M0RATIO   = EE_M0RPM   + 4; // ratio
 const int EE_M0RAMP    = EE_M0RATIO + 4; // ramping
 const int EE_M0LEAD    = EE_M0RAMP  + 1; // lead-in/out

@@ -470,15 +470,8 @@ void motorRunISRSMS() {
  
   - motor enabled
   - motor drive pin currently held high
-  
- Additionally, we record two required pieces of information:
  
-  - onPeriods: on pulse periods
-  - offPeriods: off pulse periods
-
- We store back into the structure the current period counter.
- 
- Motor PWM input pins are REQUIRED to be sequential on the SAME pin register!
+ Motor PWM input pins are REQUIRED to be sequential on the SAME port register!
  
  @author 
  C. A. Church

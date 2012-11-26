@@ -405,6 +405,7 @@ void uiShowShotsFired() {
   lcd.setCursor(OM_MENU_COLS - 4, 0);
   lcd.print("    ");
   
+    // adjust position of display
   if( camera_fired >= 1000 )
     bkMove = 4;
   else if( camera_fired >= 100 )
