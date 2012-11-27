@@ -217,7 +217,7 @@ void uiCursorChangeMotEn(byte p_dir) {
     else {
       
         // program already running when motor turned on?
-      if( running ) {
+      if( running && motors[ui_curMotor].ramp > 0 ) {
          motors[ui_curMotor].startShots = camera_fired;
            // ramp down to zero before starting motor!
          motorSpeed(ui_curMotor, 0, true);

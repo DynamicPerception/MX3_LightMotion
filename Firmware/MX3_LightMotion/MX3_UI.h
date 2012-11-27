@@ -111,7 +111,7 @@ const char STR_RAMP[]    =  " RMP";
 
 // ====== UI Constant Data ========
 
-const unsigned int UI_REFRESH_TM     = 250;
+const unsigned int UI_REFRESH_TM     = 500;
 const byte         UI_SCREEN_MAIN    = 0;
 const byte         UI_SCREEN_CAMERA  = 1;
 const byte         UI_SCREEN_MOTOR1  = 2;
