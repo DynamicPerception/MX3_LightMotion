@@ -40,9 +40,8 @@ See dynamicperception.com for more information
 
  // global cursor display data
 uiDisplayCursor ui_cursor = { 0, 0, 0 };
-
-boolean ui_refresh   = false;
-byte     ui_curMotor = 0;
+boolean        ui_refresh = false;
+byte          ui_curMotor = 0;
 
 
  // initialize menu manager
@@ -196,7 +195,7 @@ void uiBaseScreen(byte p_button) {
   if( ! ui_cursor.enabled ) {
     if( p_button == BUTTON_INCREASE ) {
       lcd.clear();
-      screen = screen > UI_SCREEN_MOTOR3 ? UI_SCREEN_MAIN : screen + 1;
+      screen++;
     }
     else if( p_button == BUTTON_DECREASE ) {
       lcd.clear();
@@ -223,11 +222,11 @@ void uiBaseScreen(byte p_button) {
  
       // first page of display
     if( screen == UI_SCREEN_MAIN )
-      uiMainScreen(p_button);
+      uiMainScreen();
     else if( screen == UI_SCREEN_CAMERA )
-      uiCamScreen(p_button);
-    else if( screen == UI_SCREEN_MOTOR1 || screen == UI_SCREEN_MOTOR2 || screen == UI_SCREEN_MOTOR3 )
-      uiMotorScreen(p_button, screen);
+      uiCamScreen();
+    else
+      uiMotorScreen(screen);
       
   }
  
@@ -239,7 +238,7 @@ void uiBaseScreen(byte p_button) {
 
 /** Main Display Screen */
 
-byte uiMainScreen(byte p_button) {
+byte uiMainScreen() {
 
   float minInt = 0.0;
   
@@ -268,8 +267,13 @@ byte uiMainScreen(byte p_button) {
   
   lcd.print("s ");
   
+  lcd.setCursor(12, 0);
   
-  uiShowShotsFired();
+  if( motion_sms ) 
+    lcd.print(STR_SMS);
+  else
+    lcd.print(STR_CONT);
+    
   
   lcd.setCursor(0, 1);
   
@@ -289,9 +293,11 @@ byte uiMainScreen(byte p_button) {
   
 }
 
+
+  
  /** Display Screen for Camera */
  
-void uiCamScreen(byte p_button) {
+void uiCamScreen() {
     
   lcd.print(STR_CAM);
 
@@ -327,7 +333,7 @@ void uiCamScreen(byte p_button) {
 
 /** Display Screen for Motors */
 
-void uiMotorScreen(byte p_button, byte p_motor) {
+void uiMotorScreen(byte p_motor) {
 
 
   lcd.print(STR_MOTOR);

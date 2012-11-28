@@ -74,8 +74,21 @@ void uiCursorAdjustInt(byte p_dir) {
       
 }
 
+/** Adjust SMS setting
+*/
 
-
+void uiCursorAdjustSMS(byte p_dir) {
+  
+    // can't switch to SMS while running!
+  if( running )
+    return;
+    
+  motion_sms = !motion_sms;
+  
+  OMEEPROM::write(EE_SMS, motion_sms);
+    
+  
+}
 
 /*
 

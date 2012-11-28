@@ -108,6 +108,9 @@ const char STR_RES2[]    =  "Enter to Cancel";
 const char STR_RES3[]    =  "Memory Reset";
 const char STR_RES4[]    =  "Power-Cycle MX3";
 const char STR_RAMP[]    =  " RMP";
+const char STR_SMS[]     =  "SMS ";
+const char STR_CONT[]    =  "Cont";
+
 
 // ====== UI Constant Data ========
 
@@ -171,7 +174,8 @@ struct uiDisplayCursors {
  // main screen
 const uiDisplayCursorTarget  ui_ct_main1     = { 0, 0, uiCursorToggleRun };
 const uiDisplayCursorTarget  ui_ct_main2     = { 0, 4, uiCursorAdjustInt };
-const uiDisplayCursorTarget* ui_dctl_main[]  = { &ui_ct_main1, &ui_ct_main2 };
+const uiDisplayCursorTarget  ui_ct_main3     = { 0, 12, uiCursorAdjustSMS };
+const uiDisplayCursorTarget* ui_dctl_main[]  = { &ui_ct_main1, &ui_ct_main2, &ui_ct_main3 };
 const uiDisplayCursors       ui_dc_main      = { DCT_SIZE(ui_dctl_main), DCT_PTR(&ui_dctl_main) };
 
  // camera screen
@@ -196,8 +200,8 @@ const uiDisplayCursors ui_dc_none = { 0, 0 };
 
  // all screen cursors...
  
-    // main, camera, m1, m2, m3
-const uiDisplayCursors*  ui_dc_list[] = { &ui_dc_main, &ui_dc_cam, &ui_dc_mot, &ui_dc_mot, &ui_dc_mot };
+    // main, camera, m1, m2, m3, set1
+const uiDisplayCursors*  ui_dc_list[] = { &ui_dc_main, &ui_dc_cam, &ui_dc_mot, &ui_dc_mot, &ui_dc_mot, &ui_dc_none };
 
 
   // camera shutter speed display divisions
