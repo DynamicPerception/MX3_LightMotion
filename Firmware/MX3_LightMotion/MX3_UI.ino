@@ -215,12 +215,11 @@ void uiBaseScreen(byte p_button) {
       // display, or update the screen?
   if( ui_refresh || screen != lastScreen || millis() - lastUpdTm > UI_REFRESH_TM ) {
     
+   lcd.clear();
    ui_refresh = false;
    lastScreen = screen;
    lastUpdTm = millis();
-   
-   lcd.setCursor(0,0);
- 
+
       // first page of display
     if( screen == UI_SCREEN_MAIN )
       uiMainScreen();
@@ -357,7 +356,7 @@ void uiMotorScreen(byte p_motor) {
     lcd.print(STR_DIS);
     
   lcd.setCursor(12, 0);
-  lcd.print('>');
+  lcd.print(STR_RA);
   PAD3(def->lead);
   
   lcd.setCursor(0, 1);
@@ -377,7 +376,7 @@ void uiMotorScreen(byte p_motor) {
        lcd.print(STR_LEFT); 
   }  
   
-  lcd.print(' ');
+  lcd.print(STR_SPACE);
   
   byte spdPrec = (motorMaxSpeedRatio(p_motor) / 100 < 0.1) ? 2 : 1;
   float spd = motorSpeedRatio(p_motor);
@@ -385,7 +384,7 @@ void uiMotorScreen(byte p_motor) {
   lcd.print(spd, spdPrec);
   
   lcd.setCursor(12, 1);
-  lcd.print('^');
+  lcd.print(STR_UA);
   PAD3(def->ramp);
   
   
@@ -399,8 +398,7 @@ void uiShowShotsFired() {
   byte bkMove = 1;
   
   lcd.setCursor(OM_MENU_COLS - 4, 0);
-  lcd.print("    ");
-  
+
     // adjust position of display
   if( camera_fired >= 1000 )
     bkMove = 4;
@@ -510,18 +508,19 @@ void uiDisplayCamTime(unsigned long p_time) {
     
     unsigned int s = p_time / SECOND;
     unsigned int p = (p_time - (s * SECOND)) / 100;
+    
     lcd.print(s, DEC);
     
     if( p > 0 ) {
-      lcd.print('.');
+      lcd.print(STR_DOT);
       lcd.print(p, DEC);
     }
     
-    lcd.print('"');
+    lcd.print(STR_QUOTE);
   }
   else {
     unsigned int s = SECOND / p_time;
-    lcd.print("1/");
+    lcd.print(STR_DIV);
     lcd.print(s, DEC);
   }
   

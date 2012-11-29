@@ -105,8 +105,7 @@ void uiCursorAdjustSMS(byte p_dir) {
 void uiCursorChangeShutterTime(byte p_dir) {
  
   unsigned long *ptr = &camera_wait;
-  byte      scaleLen = (sizeof(ui_camDivs) / sizeof(float)) - 1;
-  int            mod = 1;
+  int            mod = p_dir ? 1 : -1;
   int            mem = EE_CAMWAIT;
   
  if( camera_bulb ) {
@@ -115,40 +114,35 @@ void uiCursorChangeShutterTime(byte p_dir) {
  }
 
  float          div = (float) *ptr / 1000.0;
-
- if( p_dir != 1 )
-   mod = -1;
    
- if( div >= ui_camDivs[scaleLen] ) {
+ if( div >= UI_CAMDIVS[UI_CAMDIVSIZE] ) {
      // we are greater than or equal to the largest div, generally we move in 1 second increments above
      // this range
-    if( div >= (ui_camDivs[scaleLen] + 1.0) ) {
+    if( div >= (UI_CAMDIVS[UI_CAMDIVSIZE] + 1.0) ) {
        div += mod;
     }
     else { 
        if( p_dir )
-         div = ui_camDivs[scaleLen] + 1.0;
+         div = UI_CAMDIVS[UI_CAMDIVSIZE] + 1.0;
        else 
-         div = ui_camDivs[scaleLen - 1];
+         div = UI_CAMDIVS[UI_CAMDIVSIZE - 1];
     }
  }
  else {
-     // we are below the largest div, we move around in divs here
+   
+     // we are below the largest div, we locate our current division, and move up or down
+     // to the next
+     
    byte pos = 0;
-   for( pos = 0; pos <= scaleLen; pos++ ) {
-     if( ui_camDivs[pos] >= div ) {
+   
+   for( pos = 0; pos <= UI_CAMDIVSIZE; pos++ )
+     if( UI_CAMDIVS[pos] >= div ) 
        break;
-     }
-   }
    
-   //div = ui_camDivs[pos + mod];
-   
-   if( pos == scaleLen && mod )
-     div = ui_camDivs[scaleLen] + 1.0;
-   else if( pos == 0 && ! mod) 
-     ; // do nothing!
-   else
-     div = ui_camDivs[pos + mod];
+     // if we're not trying to go below zero index,
+     // change to next index
+   if( ! ( pos == 0 && ! mod ) ) 
+     div = UI_CAMDIVS[pos + mod];
  
  }
  
@@ -160,18 +154,15 @@ void uiCursorChangeShutterTime(byte p_dir) {
    // set correct wait value
  *ptr = (unsigned long) (1000.0 * div);
  
+   // never go below 1ms exposure time
  if( *ptr == 0 )
    *ptr = 1;
    
-   // write new value to eeprom
  OMEEPROM::write(mem, *ptr);
  
    // if already running, re-configure camera
  if( running )
    camSetup();
-  
-   // overwrite exposure display area...
- lcd.print(STR_BLNK); 
  
 }
 
@@ -186,8 +177,6 @@ void uiCursorChangeCamBulb(byte p_dir) {
     
   OMEEPROM::write(EE_CAMBULB, camera_bulb);
   
-     // overwrite exposure display area...
-  lcd.print(STR_BLNK); 
 }
 
 
@@ -203,9 +192,6 @@ void uiCursorChangeFocusTime(byte p_dir) {
  if( running )
     camSetup(); // reinitialize cam
     
-     // overwrite exposure display area...
- lcd.print(STR_BLNK); 
-  
 }
 
 
@@ -248,49 +234,29 @@ void uiCursorChangeMotEn(byte p_dir) {
         }
         
         motorRun(motion_sms, ui_curMotor);
-      }
+      } // end if(running
       
       motors[ui_curMotor].flags |= MOTOR_UEN_FLAG;  
       
-      
-    }
+    } // end else (motor uen)
 
     OMEEPROM::write(EE_M0FLAG + (EE_MOTOR_SPACE * ui_curMotor), motors[ui_curMotor].flags);
-  }
+  } // end else (currently running, ramp set...)
   
 }
 
 
 void uiCursorChangeMotSpd(byte p_dir) {
  
-  
- lcd.setCursor(0, 1);
- lcd.print(STR_BLNK);
- 
  float maxSpeed = motorMaxSpeedRatio(ui_curMotor);
- 
- float curSpd = motorSpeedRatio(ui_curMotor);
- 
- float mod = 0.1;
- 
- if( maxSpeed / 100.0 < 0.1 )
-   mod = 0.01;
-   
- if( p_dir ) {
-   
-   if( curSpd >= maxSpeed ) 
-     curSpd = maxSpeed;
-   else
-     curSpd += mod;
- }
- else {
-   if( curSpd <= mod )
-      curSpd = mod;
-   else     
-     curSpd -= mod;
- }
- 
+ float   curSpd = motorSpeedRatio(ui_curMotor);
+ float   mod    = ( maxSpeed / 100.0 < 0.1 ) ? 0.01 : 0.1;
 
+ curSpd += p_dir ? mod : mod * -1;
+ 
+  // ceiling/floor
+ curSpd = curSpd > maxSpeed ? maxSpeed : curSpd < mod ? mod : curSpd;
+ 
  motorSpeedRatio(ui_curMotor, curSpd);
   
 }
@@ -301,11 +267,7 @@ void uiCursorChangeMotDir(byte p_dir) {
 
 
 void uiCursorChangeMotLead(byte p_dir) {
-  
-  if( p_dir )
-    motors[ui_curMotor].lead += 1;
-  else
-    motors[ui_curMotor].lead -= 1;
+  motors[ui_curMotor].lead += p_dir ? 1 : -1;
 }
 
 void uiCursorChangeMotRamp(byte p_dir) {
@@ -313,10 +275,7 @@ void uiCursorChangeMotRamp(byte p_dir) {
     // don't allow ramp change during ramp execution, that would be bad.
   if( motor_inRamp & (1 << ui_curMotor) ) 
     return;
-    
-  if( p_dir )
-    motors[ui_curMotor].ramp += 1;
-  else
-    motors[ui_curMotor].ramp -= 1;
+ 
+  motors[ui_curMotor].ramp += p_dir ? 1 : -1;
 }
 

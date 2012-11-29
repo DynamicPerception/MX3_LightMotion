@@ -136,15 +136,19 @@ void uiMenuManual(byte p_motor) {
 
   lcd.clear();
   lcd.print(STR_RES2);
-  lcd.setCursor(0, 1);
-  lcd.print(spd, spdPrec); 
  
-   // user-enable motor
+   // user-enable motor (necessary if the user had it disabled)
   motors[p_motor].flags |= MOTOR_UEN_FLAG;
   
+  // need to do this for the use of uiCursorChangeMotSpd below
   ui_curMotor = p_motor;
   
   while( 1 ) {
+    
+    lcd.setCursor(0, 1);
+    lcd.print(STR_BLNK);
+    lcd.print(spd, spdPrec); 
+     
     byte button = Menu.checkInput();
     
     if( button == BUTTON_FORWARD || button == BUTTON_BACK ) {
@@ -158,7 +162,7 @@ void uiMenuManual(byte p_motor) {
         motorRun(false, p_motor);
         run = true;
       }
-    }
+    } // end if( button ==...
     else {
         // not forward or back, we only move when forward or
         // back are held!
@@ -171,9 +175,6 @@ void uiMenuManual(byte p_motor) {
         uiCursorChangeMotSpd(dir);
           // display new speed
         spd = motorSpeedRatio(p_motor);
-        lcd.setCursor(0, 1);
-        lcd.print(STR_BLNK);
-        lcd.print(spd, spdPrec); 
       }
       else if( button == BUTTON_SELECT ) {
           // enter exits, recover state and exit action
@@ -185,7 +186,7 @@ void uiMenuManual(byte p_motor) {
     }
     
     wasButton = button;
-  }
+  } // end while
       
 }
 

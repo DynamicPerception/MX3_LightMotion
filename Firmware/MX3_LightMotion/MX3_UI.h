@@ -112,10 +112,16 @@ const char STR_SMS[]     =  "SMS ";
 const char STR_CONT[]    =  "Cont";
 const char STR_WARN1[]   =  "Unavailable";
 const char STR_WARN2[]   =  "Stop First";
+const char STR_DOT       =  '.';
+const char STR_QUOTE     =  '"';
+const char STR_DIV[]     =  "1/";
+const char STR_RA        =  '>';
+const char STR_UA        =  '^';
+const char STR_SPACE     =  ' ';
 
 // ====== UI Constant Data ========
 
-const unsigned int UI_REFRESH_TM     = 500;
+const unsigned int UI_REFRESH_TM     = 333;
 const byte         UI_SCREEN_MAIN    = 0;
 const byte         UI_SCREEN_CAMERA  = 1;
 const byte         UI_SCREEN_MOTOR1  = 2;
@@ -202,12 +208,12 @@ const uiDisplayCursors ui_dc_none = { 0, 0 };
  // all screen cursors...
  
     // main, camera, m1, m2, m3, set1
-const uiDisplayCursors*  ui_dc_list[] = { &ui_dc_main, &ui_dc_cam, &ui_dc_mot, &ui_dc_mot, &ui_dc_mot, &ui_dc_none };
+const uiDisplayCursors*  ui_dc_list[] = { &ui_dc_main, &ui_dc_cam, &ui_dc_mot, &ui_dc_mot, &ui_dc_mot };
 
 
   // camera shutter speed display divisions
-const float ui_camDivs[]  = { 0.001, 0.002, 0.004, 0.008, 0.01, 0.0166667, 0.033333, 0.0666667, 0.125, 0.25,  0.333333, 0.5, 0.75, 1.0, 1.3, 1.6, 2 };
-
+const float UI_CAMDIVS[]  = { 0.001, 0.002, 0.004, 0.008, 0.01, 0.0166667, 0.033333, 0.0666667, 0.125, 0.25,  0.333333, 0.5, 0.75, 1.0, 1.3, 1.6, 2 };
+const byte  UI_CAMDIVSIZE = ( sizeof(UI_CAMDIVS) / sizeof(float) ) - 1;
 
 // ====== Menu Data =========== 
 
@@ -264,7 +270,7 @@ MENU_VALUE   ui_in_m0_flip     = { TYPE_BFLAG, 0, 0, MENU_TARGET(&ui_flag_m0_fli
 MENU_VALUE   ui_in_m0_rpm      = { TYPE_FLOAT_100, 500, 0, MENU_TARGET(&motors[0].rpm), EE_M0RPM };
 MENU_VALUE   ui_in_m0_ratio    = { TYPE_FLOAT_100, 5000, 0, MENU_TARGET(&motors[0].ratio), EE_M0RATIO };
 
-// MENU_ITEM    ui_it_m0_man      = { {"Manual Move"}, ITEM_ACTION, 0, MENU_TARGET(uiMenuManualOne) };
+//MENU_ITEM    ui_it_m0_man      = { {"Manual Move"}, ITEM_ACTION, 0, MENU_TARGET(uiMenuManualOne) };
 MENU_ITEM    ui_it_m0_rot      = { {"Rotary"}, ITEM_VALUE, 0, MENU_TARGET(&ui_in_m0_rot) };
 MENU_ITEM    ui_it_m0_flip     = { {"Invert Dir"}, ITEM_VALUE, 0, MENU_TARGET(&ui_in_m0_flip) };
 MENU_ITEM    ui_it_m0_rpm      = { {"RPM"}, ITEM_VALUE, 0, MENU_TARGET(&ui_in_m0_rpm) };
