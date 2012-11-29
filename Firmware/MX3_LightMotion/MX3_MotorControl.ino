@@ -53,6 +53,8 @@ unsigned int motor_pwm_minperiod  = 50;
   // maximum number of periods per minute
 float motor_pwm_maxperiod  = ( 60000000.0 / (float) motor_pwm_minperiod );
 
+byte motor_inRamp = 0;
+
  // create an array of structures for our three motors
 
 MotorDefinition motors[] = { MotorDefinition(), MotorDefinition(), MotorDefinition() };
@@ -341,7 +343,8 @@ void motorRun(boolean p_once, byte p_motor) {
  
  motors[p_motor].flags |= MOTOR_ENABLE_FLAG;
  
- motorStartISR(p_once);
+ if( ! running )
+   motorStartISR(p_once);
 
 }
 
@@ -362,20 +365,33 @@ void motorStop(boolean p_once) {
   
   
   if( ! p_once ) {
-      // force stop on all motors (only do this for continuous motion!)
+      // force stop on all motors (only do this UI inputs or continuous motion)
+      // SMS ISR routine should not perform this activity
     for(byte i = 0; i < MOTOR_COUNT; i++ ) {
-        // disable motor, set high flag to low, and disable force ramp flag
-      motors[i].flags &= (B11111111 ^ ( MOTOR_ENABLE_FLAG | MOTOR_HIGH_FLAG | MOTOR_RAMP_FLAG ) );
-        // change output pin state
-      MOTOR_DRV_PREG  &= (B11111111 ^ (1 << (MOTOR_DRV_FMASK + i)));
-        // if speed != setspeed, set new speed back!
-     motorSpeed(i, motors[i].setSpeed);
-        // get rid of forced ramp
-      motors[i].forceRampStart = 0;
+      motorStopThis(i);
     }
   }
   
 }
+
+
+/** Stop this Motor
+
+ Performs the activities for stopping one motor.
+ 
+ */
+ 
+void motorStopThis(byte p_motor) {
+         // disable motor, set high flag to low, and disable force ramp flag
+     motors[p_motor].flags &= (B11111111 ^ ( MOTOR_ENABLE_FLAG | MOTOR_HIGH_FLAG | MOTOR_RAMP_FLAG ) );
+        // change output pin state
+     MOTOR_DRV_PREG  &= (B11111111 ^ (1 << (MOTOR_DRV_FMASK + p_motor)));
+        // if speed != setspeed, set new speed back!
+     motorSpeed(p_motor, motors[p_motor].setSpeed);
+        // get rid of forced ramp
+     motors[p_motor].forceRampStart = 0; 
+}
+
 
 /** Start Motor Driving Interrupt Service 
 
@@ -615,24 +631,33 @@ void motorCheckRamp() {
             if( motors[i].flags & MOTOR_RAMP_FLAG ) {
                 // force ramp down?
               diff = motors[i].ramp - (camera_fired - motors[i].forceRampStart);
+              
               if( diff <= 0.0 ) {
                   // disable motor (user wanted the motor off when ramp completed...)
                   motors[i].flags &= (B11111111 ^ (MOTOR_RAMP_FLAG | MOTOR_UEN_FLAG));
                   motorSpeed(i, motors[i].setSpeed);
                   continue;
               }
+                // set motor currently ramping flag
+              motor_inRamp |= (1 << i);
             }
             else if( camera_fired == rampEnd ) {
               diff = motors[i].ramp;
                 // reset startshots, just in case they were set - since our lead-out/ramp-out is
                 // doesn't care about that part.
               motors[i].startShots = 0;
+                // disable motor currently ramping flag
+              motor_inRamp &= (B11111111 ^ (1 << i));
             }
             else if( camera_fired < rampEnd ) {
               diff = camera_fired - motors[i].startShots - motors[i].lead;
+                 // set motor currently ramping flag
+              motor_inRamp |= (1 << i);
             }
             else if( camera_fired > (camera_max_shots - rampEnd) ) {
               diff = camera_max_shots - camera_fired - motors[i].lead;
+                 // set motor currently ramping flag
+              motor_inRamp |= (1 << i);
             }
             else {
               continue;
@@ -641,7 +666,7 @@ void motorCheckRamp() {
               // calculate new speed
             diff = diff / (float) motors[i].ramp;
             diff = motors[i].setSpeed * diff;
-              
+
             motorSpeed(i, diff, true);
           } // end if motors[i].ramp  
         } // end if motors[i].flags

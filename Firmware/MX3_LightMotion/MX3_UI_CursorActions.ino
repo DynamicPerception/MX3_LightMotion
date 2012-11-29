@@ -225,20 +225,34 @@ void uiCursorChangeMotEn(byte p_dir) {
     motorForceRamp(ui_curMotor);
   }
   else {  
-    if( motors[ui_curMotor].flags & MOTOR_UEN_FLAG )
+      // not currently running and enabled and with ramp... =)
+    if( motors[ui_curMotor].flags & MOTOR_UEN_FLAG ) {
+        // motor is currently enabled
+        
+          // if already running, make sure motor is properly stopped
+      if( running) 
+        motorStopThis(ui_curMotor);
+        
+        // disable motor
       motors[ui_curMotor].flags &= (B11111111 ^ MOTOR_UEN_FLAG);
+    }
     else {
       
         // program already running when motor turned on?
-      if( running && motors[ui_curMotor].ramp > 0 ) {
-         motors[ui_curMotor].startShots = camera_fired;
-           // ramp down to zero before starting motor!
-         motorSpeed(ui_curMotor, 0, true);
+      if( running ) {
+        
+        if( motors[ui_curMotor].ramp > 0 ) {
+          motors[ui_curMotor].startShots = camera_fired;
+           // set speed to zero before starting motor!
+          motorSpeed(ui_curMotor, 0, true);
+        }
+        
+        motorRun(motion_sms, ui_curMotor);
       }
       
       motors[ui_curMotor].flags |= MOTOR_UEN_FLAG;  
- 
-       
+      
+      
     }
 
     OMEEPROM::write(EE_M0FLAG + (EE_MOTOR_SPACE * ui_curMotor), motors[ui_curMotor].flags);
@@ -282,9 +296,7 @@ void uiCursorChangeMotSpd(byte p_dir) {
 }
 
 void uiCursorChangeMotDir(byte p_dir) {
- 
  motorDirFlip(ui_curMotor);
- 
 }
 
 
@@ -298,6 +310,10 @@ void uiCursorChangeMotLead(byte p_dir) {
 
 void uiCursorChangeMotRamp(byte p_dir) {
   
+    // don't allow ramp change during ramp execution, that would be bad.
+  if( motor_inRamp & (1 << ui_curMotor) ) 
+    return;
+    
   if( p_dir )
     motors[ui_curMotor].ramp += 1;
   else

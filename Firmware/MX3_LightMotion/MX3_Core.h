@@ -82,7 +82,7 @@ const byte ALT_DIR       = 5;
  
  */
  
-const int CAM_MIN_TRIG    = 120;
+const int   CAM_MIN_TRIG  = 250;
 const float CAM_MIN_BULB  = 0.1;
 
 /*
@@ -147,7 +147,6 @@ struct MotorDefinition {
   /** Time Periods (on periods for every off period) */
  float onTimePeriods;
  
- 
    /** max output shaft RPM of motor */
  float rpm;
  
@@ -162,7 +161,7 @@ struct MotorDefinition {
  float ratio;
  
   /** Distance traveled (in on pulses) */
- unsigned long distance;
+// unsigned long distance;
  
   /** Ramp Shots */
  byte ramp;
@@ -174,7 +173,7 @@ struct MotorDefinition {
   /** Shot count that force ramp started at */
  byte forceRampStart;
  
-  /** Shot count for rampt starting (when started motor during program run)*/
+  /** Shot count for ramp starting (when started motor during program run)*/
  unsigned long startShots;
  
    /** Default Constructor */
@@ -185,7 +184,7 @@ struct MotorDefinition {
    onTimePeriods = 1.0;
    rpm = 1.0;
    ratio = 1.0;
-   distance = 0;
+//   distance = 0;
    ramp = 0;
    lead = 0;
    speed = 1.0;

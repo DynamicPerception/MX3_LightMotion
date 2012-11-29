@@ -97,14 +97,15 @@ void uiMenuSetup() {
    */
   
 void uiCheck() {
+  
  static unsigned long lastButTm = 0;
- static boolean       lcdOn     = true;
- byte button                    = Menu.checkInput();
+ static boolean           lcdOn = true;
+ byte                    button = Menu.checkInput();
  
   // check for disabling the LCD backlight
   
  if( button == BUTTON_NONE ) {
-   if(lcdOn == true && millis() - lastButTm > (lcdDisable * SECOND) ) {
+   if(lcdOn == true && (lcdDisable > 0 && millis() - lastButTm > (lcdDisable * SECOND) ) ) {
      uiLCDBackLight(false);
      lcdOn = false;
    }

@@ -110,7 +110,8 @@ const char STR_RES4[]    =  "Power-Cycle MX3";
 const char STR_RAMP[]    =  " RMP";
 const char STR_SMS[]     =  "SMS ";
 const char STR_CONT[]    =  "Cont";
-
+const char STR_WARN1[]   =  "Unavailable";
+const char STR_WARN2[]   =  "Stop First";
 
 // ====== UI Constant Data ========
 
@@ -263,6 +264,7 @@ MENU_VALUE   ui_in_m0_flip     = { TYPE_BFLAG, 0, 0, MENU_TARGET(&ui_flag_m0_fli
 MENU_VALUE   ui_in_m0_rpm      = { TYPE_FLOAT_100, 500, 0, MENU_TARGET(&motors[0].rpm), EE_M0RPM };
 MENU_VALUE   ui_in_m0_ratio    = { TYPE_FLOAT_100, 5000, 0, MENU_TARGET(&motors[0].ratio), EE_M0RATIO };
 
+// MENU_ITEM    ui_it_m0_man      = { {"Manual Move"}, ITEM_ACTION, 0, MENU_TARGET(uiMenuManualOne) };
 MENU_ITEM    ui_it_m0_rot      = { {"Rotary"}, ITEM_VALUE, 0, MENU_TARGET(&ui_in_m0_rot) };
 MENU_ITEM    ui_it_m0_flip     = { {"Invert Dir"}, ITEM_VALUE, 0, MENU_TARGET(&ui_in_m0_flip) };
 MENU_ITEM    ui_it_m0_rpm      = { {"RPM"}, ITEM_VALUE, 0, MENU_TARGET(&ui_in_m0_rpm) };
@@ -281,6 +283,7 @@ MENU_VALUE   ui_in_m1_flip     = { TYPE_BFLAG, 0, 0, MENU_TARGET(&ui_flag_m1_fli
 MENU_VALUE   ui_in_m1_rpm      = { TYPE_FLOAT_100, 500, 0, MENU_TARGET(&motors[1].rpm), EE_M0RPM + EE_MOTOR_SPACE};
 MENU_VALUE   ui_in_m1_ratio    = { TYPE_FLOAT_100, 5000, 0, MENU_TARGET(&motors[1].ratio), EE_M0RATIO + EE_MOTOR_SPACE};
 
+// MENU_ITEM    ui_it_m1_man      = { {"Manual Move"}, ITEM_ACTION, 0, MENU_TARGET(uiMenuManualTwo) };
 MENU_ITEM    ui_it_m1_rot      = { {"Rotary"}, ITEM_VALUE, 0, MENU_TARGET(&ui_in_m1_rot) };
 MENU_ITEM    ui_it_m1_flip     = { {"Invert Dir"}, ITEM_VALUE, 0, MENU_TARGET(&ui_in_m1_flip) };
 MENU_ITEM    ui_it_m1_rpm      = { {"RPM"}, ITEM_VALUE, 0, MENU_TARGET(&ui_in_m1_rpm) };
@@ -299,6 +302,7 @@ MENU_VALUE   ui_in_m2_flip     = { TYPE_BFLAG, 0, 0, MENU_TARGET(&ui_flag_m2_fli
 MENU_VALUE   ui_in_m2_rpm      = { TYPE_FLOAT_100, 500, 0, MENU_TARGET(&motors[2].rpm), EE_M0RPM + EE_MOTOR_SPACE * 2};
 MENU_VALUE   ui_in_m2_ratio    = { TYPE_FLOAT_100, 5000, 0, MENU_TARGET(&motors[2].ratio), EE_M0RATIO + EE_MOTOR_SPACE * 2};
 
+// MENU_ITEM    ui_it_m2_man      = { {"Manual Move"}, ITEM_ACTION, 0, MENU_TARGET(uiMenuManualThree) };
 MENU_ITEM    ui_it_m2_rot      = { {"Rotary"}, ITEM_VALUE, 0, MENU_TARGET(&ui_in_m2_rot) };
 MENU_ITEM    ui_it_m2_flip     = { {"Invert Dir"}, ITEM_VALUE, 0, MENU_TARGET(&ui_in_m2_flip) };
 MENU_ITEM    ui_it_m2_rpm      = { {"RPM"}, ITEM_VALUE, 0, MENU_TARGET(&ui_in_m2_rpm) };
