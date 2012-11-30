@@ -168,14 +168,13 @@ void checkCameraRepeat() {
       Engine.state(ST_MOVE);
       return;
     }
-    
-   if( repdone >= camera_repeat ) {
+    else if( repdone >= camera_repeat ) {
        // we've done all of the repeat cycles
-     repdone = 0;
+      repdone = 0;
        // clear for moving
-     Engine.state(ST_MOVE);
-     return;
-   }
+      Engine.state(ST_MOVE);
+      return;
+    }
    
      // trigger another exposure
    repdone++;

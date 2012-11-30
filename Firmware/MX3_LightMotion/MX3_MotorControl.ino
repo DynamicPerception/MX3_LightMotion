@@ -367,9 +367,8 @@ void motorStop(boolean p_once) {
   if( ! p_once ) {
       // force stop on all motors (only do this UI inputs or continuous motion)
       // SMS ISR routine should not perform this activity
-    for(byte i = 0; i < MOTOR_COUNT; i++ ) {
+    for(byte i = 0; i < MOTOR_COUNT; i++ )
       motorStopThis(i);
-    }
   }
   
 }

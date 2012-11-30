@@ -64,37 +64,24 @@ void altHandler(byte p_which) {
     
     trigLast = millis();
     
-    switch( alt_inputs[p_which] ) {
-      
-      case ALT_START:
+    if( alt_inputs[p_which] == ALT_START) 
         startProgram();
-        break;
-        
-      case ALT_STOP:
+    else if( alt_inputs[p_which] == ALT_STOP)
         stopProgram();
-        break;
-        
-      case ALT_TOGGLE:
+    else if( alt_inputs[p_which] == ALT_TOGGLE) {
         if( running )
           stopProgram();
         else
           startProgram();
-        break;
-        
-      case ALT_EXTINT: 
+    }
+    else if( alt_inputs[p_which] == ALT_EXTINT ) {
           // set camera ok to fire
         alt_force_shot = true;
         Engine.state(ST_CLEAR);
-        break;
-        
-      case ALT_DIR:
-          // switch all motor directions!
+    }
+    else if( alt_inputs[p_which] == ALT_DIR)
         motorDirFlip();
-        break;
         
-      default:
-        break;
-    } // end switch
   } //end if millis...
 }
 
@@ -142,12 +129,11 @@ void altConnect(byte p_which, byte p_mode) {
     // enable pull-up resistor
   digitalWrite(ALT_START_PIN + p_which, HIGH);
   
-  if( p_which ) {
+  if( p_which )
     attachInterrupt(1, altISRTwo, alt_direction);
-  }
-  else {
+  else 
     attachInterrupt(0, altISROne, alt_direction);
-  }
+ 
   
 }    
   

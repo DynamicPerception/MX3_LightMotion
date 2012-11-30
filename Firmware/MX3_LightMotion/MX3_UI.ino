@@ -70,7 +70,7 @@ void uiMenuSetup() {
   Menu.setAnalogButtonPin(BUT_PIN, BUT_MAP, BUT_THRESH);
   Menu.enable(true); 
   
-  lcd.print(MX3_VERSTR);
+/*  lcd.print(MX3_VERSTR);
   lcd.setCursor(0, 1);
   lcd.print(MX3_SUBSTR);
   
@@ -81,7 +81,7 @@ void uiMenuSetup() {
   lcd.setCursor(0,1);
   lcd.print(MX3_C2STR);
 
-  delay(2000);
+  delay(2000); */
   uiClear();
   
 }
@@ -258,14 +258,14 @@ byte uiMainScreen() {
   else
     lcd.print(STR_STOP);
     
-  lcd.print(' ');
+  lcd.print(STR_SPACE);
   
   if( minInt > camera_delay )
     lcd.print(minInt, 1);
   else
     lcd.print(camera_delay, 1);
   
-  lcd.print("s ");
+  lcd.print(STR_SEC);
   
   lcd.setCursor(12, 0);
   
@@ -283,9 +283,9 @@ byte uiMainScreen() {
   
   lcd.print(STR_TIME);
   PAD(hours);
-  lcd.print('\'');
+  lcd.print(STR_SQUOTE);
   PAD(mins);
-  lcd.print('"');
+  lcd.print(STR_QUOTE);
   PAD(secs);
   
 
@@ -306,7 +306,8 @@ void uiCamScreen() {
   else
     lcd.print(STR_IDLE);
     
-  uiShowShotsFired();
+  lcd.setCursor(OM_MENU_COLS - 4, 0);
+  PAD3(camera_fired)
    
   lcd.setCursor(0, 1);
 
@@ -390,27 +391,6 @@ void uiMotorScreen(byte p_motor) {
   
 }
 
-/** Display Shots Fired On-Screen
-*/
-
-void uiShowShotsFired() {
-  
-  byte bkMove = 1;
-  
-  lcd.setCursor(OM_MENU_COLS - 4, 0);
-
-    // adjust position of display
-  if( camera_fired >= 1000 )
-    bkMove = 4;
-  else if( camera_fired >= 100 )
-    bkMove = 3;
-  else if( camera_fired >= 10 )
-    bkMove = 2;
-    
-  lcd.setCursor( OM_MENU_COLS - bkMove, 0);
-  lcd.print(camera_fired, DEC);
-  
-}
 
  /** Screen Input Handler
  
@@ -437,8 +417,8 @@ void uiScreenInput(byte p_screen, byte p_button) {
     // reset cursor if screen has changed
   if( p_screen != wasScreen ) {
         uiPos = 0;
-    wasScreen = p_screen;
-    ui_cursor.enabled = 0;
+        wasScreen = p_screen;
+        ui_cursor.enabled = 0;
   }
 
 
@@ -501,10 +481,7 @@ void uiScreenInput(byte p_screen, byte p_button) {
 
 void uiDisplayCamTime(unsigned long p_time) {
   
- if( p_time == 0 ) {
-   lcd.print(0, DEC);
- }
- else if( p_time >= 300 ) {
+ if( p_time >= 300 ) {
     
     unsigned int s = p_time / SECOND;
     unsigned int p = (p_time - (s * SECOND)) / 100;

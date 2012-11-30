@@ -184,8 +184,10 @@ void uiCursorChangeFocusTime(byte p_dir) {
  
  if( p_dir ) 
   camera_focus += 500;
- else
+ else if(camera_focus >= 500)
   camera_focus -= 500;
+ else
+  camera_focus = 0;
  
  OMEEPROM::write(EE_CAMFOC, camera_focus);
   
