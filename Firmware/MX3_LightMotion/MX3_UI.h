@@ -39,13 +39,11 @@
  */
  
   // some macros to make life easier....
- 
-#define PAD(x)         if(x < 10) lcd.print('0'); lcd.print(x, DEC);
-#define PAD3(x)        if(x < 100) lcd.print('0'); PAD(x)
-#define DCT_SIZE(x)    sizeof(x) / sizeof(uiDisplayCursorTarget*)
-#define DCT_PTR(x)     reinterpret_cast<void*>(x)
- 
 
+
+#define DCT_SIZE(x)    sizeof(x) / sizeof(uiDisplayCursorTarget*)
+#define DCT_PTR(x)     reinterpret_cast<void*>(x)  
+  
 
 // ====== Core UI Setup Data (for OMMenuMgr) ==== 
  
@@ -269,16 +267,16 @@ MENU_FLAG    ui_flag_m0_flip   = { 5, (byte*) &motors[0].flags };
 
 MENU_VALUE   ui_in_m0_rot      = { TYPE_BFLAG, 0, 0, MENU_TARGET(&ui_flag_m0_rot), EE_M0FLAG };
 MENU_VALUE   ui_in_m0_flip     = { TYPE_BFLAG, 0, 0, MENU_TARGET(&ui_flag_m0_flip), EE_M0FLAG };
-MENU_VALUE   ui_in_m0_rpm      = { TYPE_FLOAT_100, 500, 0, MENU_TARGET(&motors[0].rpm), EE_M0RPM };
-MENU_VALUE   ui_in_m0_ratio    = { TYPE_FLOAT_100, 5000, 0, MENU_TARGET(&motors[0].ratio), EE_M0RATIO };
+MENU_VALUE   ui_in_m0_rpm      = { TYPE_FLOAT_100, 1000, 0, MENU_TARGET(&motors[0].rpm), EE_M0RPM };
+MENU_VALUE   ui_in_m0_ratio    = { TYPE_FLOAT_1000, 5000, 0, MENU_TARGET(&motors[0].ratio), EE_M0RATIO };
 
-MENU_ITEM    ui_it_m0_man      = { {"Manual Move"}, ITEM_ACTION, 0, MENU_TARGET(uiMenuManualOne) };
+//MENU_ITEM    ui_it_m0_man      = { {"Manual Move"}, ITEM_ACTION, 0, MENU_TARGET(uiMenuManualOne) };
 MENU_ITEM    ui_it_m0_rot      = { {"Rotary"}, ITEM_VALUE, 0, MENU_TARGET(&ui_in_m0_rot) };
 MENU_ITEM    ui_it_m0_flip     = { {"Invert Dir"}, ITEM_VALUE, 0, MENU_TARGET(&ui_in_m0_flip) };
 MENU_ITEM    ui_it_m0_rpm      = { {"RPM"}, ITEM_VALUE, 0, MENU_TARGET(&ui_in_m0_rpm) };
 MENU_ITEM    ui_it_m0_ratio    = { {"Ratio"}, ITEM_VALUE, 0, MENU_TARGET(&ui_in_m0_ratio) };
 
-MENU_LIST    ui_list_m0[]      = { &ui_it_m0_man, &ui_it_m0_rot, &ui_it_m0_flip, &ui_it_m0_rpm, &ui_it_m0_ratio };
+MENU_LIST    ui_list_m0[]      = { &ui_it_m0_rot, &ui_it_m0_flip, &ui_it_m0_rpm, &ui_it_m0_ratio };
 MENU_ITEM    ui_it_m0List      = { {"Axis 1"}, ITEM_MENU, MENU_SIZE(ui_list_m0), MENU_TARGET(&ui_list_m0) };
 
   // motor 2 inputs
@@ -288,16 +286,16 @@ MENU_FLAG    ui_flag_m1_flip   = { 5, (byte*) &motors[1].flags };
 
 MENU_VALUE   ui_in_m1_rot      = { TYPE_BFLAG, 0, 0, MENU_TARGET(&ui_flag_m1_rot), EE_M0FLAG + EE_MOTOR_SPACE};
 MENU_VALUE   ui_in_m1_flip     = { TYPE_BFLAG, 0, 0, MENU_TARGET(&ui_flag_m1_flip), EE_M0FLAG + EE_MOTOR_SPACE};
-MENU_VALUE   ui_in_m1_rpm      = { TYPE_FLOAT_100, 500, 0, MENU_TARGET(&motors[1].rpm), EE_M0RPM + EE_MOTOR_SPACE};
-MENU_VALUE   ui_in_m1_ratio    = { TYPE_FLOAT_100, 5000, 0, MENU_TARGET(&motors[1].ratio), EE_M0RATIO + EE_MOTOR_SPACE};
+MENU_VALUE   ui_in_m1_rpm      = { TYPE_FLOAT_100, 1000, 0, MENU_TARGET(&motors[1].rpm), EE_M0RPM + EE_MOTOR_SPACE};
+MENU_VALUE   ui_in_m1_ratio    = { TYPE_FLOAT_1000, 5000, 0, MENU_TARGET(&motors[1].ratio), EE_M0RATIO + EE_MOTOR_SPACE};
 
-MENU_ITEM    ui_it_m1_man      = { {"Manual Move"}, ITEM_ACTION, 0, MENU_TARGET(uiMenuManualTwo) };
+//MENU_ITEM    ui_it_m1_man      = { {"Manual Move"}, ITEM_ACTION, 0, MENU_TARGET(uiMenuManualTwo) };
 MENU_ITEM    ui_it_m1_rot      = { {"Rotary"}, ITEM_VALUE, 0, MENU_TARGET(&ui_in_m1_rot) };
 MENU_ITEM    ui_it_m1_flip     = { {"Invert Dir"}, ITEM_VALUE, 0, MENU_TARGET(&ui_in_m1_flip) };
 MENU_ITEM    ui_it_m1_rpm      = { {"RPM"}, ITEM_VALUE, 0, MENU_TARGET(&ui_in_m1_rpm) };
 MENU_ITEM    ui_it_m1_ratio    = { {"Ratio"}, ITEM_VALUE, 0, MENU_TARGET(&ui_in_m1_ratio) };
 
-MENU_LIST    ui_list_m1[]      = { &ui_it_m1_man, &ui_it_m1_rot, &ui_it_m1_flip, &ui_it_m1_rpm, &ui_it_m1_ratio };
+MENU_LIST    ui_list_m1[]      = { &ui_it_m1_rot, &ui_it_m1_flip, &ui_it_m1_rpm, &ui_it_m1_ratio };
 MENU_ITEM    ui_it_m1List      = { {"Axis 2"}, ITEM_MENU, MENU_SIZE(ui_list_m1), MENU_TARGET(&ui_list_m1) };
 
   // motor 2 inputs
@@ -307,16 +305,16 @@ MENU_FLAG    ui_flag_m2_flip   = { 5, (byte*) &motors[2].flags };
 
 MENU_VALUE   ui_in_m2_rot      = { TYPE_BFLAG, 0, 0, MENU_TARGET(&ui_flag_m2_rot), EE_M0FLAG + EE_MOTOR_SPACE * 2};
 MENU_VALUE   ui_in_m2_flip     = { TYPE_BFLAG, 0, 0, MENU_TARGET(&ui_flag_m2_flip), EE_M0FLAG + EE_MOTOR_SPACE * 2};
-MENU_VALUE   ui_in_m2_rpm      = { TYPE_FLOAT_100, 500, 0, MENU_TARGET(&motors[2].rpm), EE_M0RPM + EE_MOTOR_SPACE * 2};
-MENU_VALUE   ui_in_m2_ratio    = { TYPE_FLOAT_100, 5000, 0, MENU_TARGET(&motors[2].ratio), EE_M0RATIO + EE_MOTOR_SPACE * 2};
+MENU_VALUE   ui_in_m2_rpm      = { TYPE_FLOAT_100, 1000, 0, MENU_TARGET(&motors[2].rpm), EE_M0RPM + EE_MOTOR_SPACE * 2};
+MENU_VALUE   ui_in_m2_ratio    = { TYPE_FLOAT_1000, 5000, 0, MENU_TARGET(&motors[2].ratio), EE_M0RATIO + EE_MOTOR_SPACE * 2};
 
-MENU_ITEM    ui_it_m2_man      = { {"Manual Move"}, ITEM_ACTION, 0, MENU_TARGET(uiMenuManualThree) };
+// MENU_ITEM    ui_it_m2_man      = { {"Manual Move"}, ITEM_ACTION, 0, MENU_TARGET(uiMenuManualThree) };
 MENU_ITEM    ui_it_m2_rot      = { {"Rotary"}, ITEM_VALUE, 0, MENU_TARGET(&ui_in_m2_rot) };
 MENU_ITEM    ui_it_m2_flip     = { {"Invert Dir"}, ITEM_VALUE, 0, MENU_TARGET(&ui_in_m2_flip) };
 MENU_ITEM    ui_it_m2_rpm      = { {"RPM"}, ITEM_VALUE, 0, MENU_TARGET(&ui_in_m2_rpm) };
 MENU_ITEM    ui_it_m2_ratio    = { {"Ratio"}, ITEM_VALUE, 0, MENU_TARGET(&ui_in_m2_ratio) };
 
-MENU_LIST    ui_list_m2[]      = { &ui_it_m2_man, &ui_it_m2_rot, &ui_it_m2_flip, &ui_it_m2_rpm, &ui_it_m2_ratio };
+MENU_LIST    ui_list_m2[]      = { &ui_it_m2_rot, &ui_it_m2_flip, &ui_it_m2_rpm, &ui_it_m2_ratio };
 MENU_ITEM    ui_it_m2List      = { {"Axis 3"}, ITEM_MENU, MENU_SIZE(ui_list_m2), MENU_TARGET(&ui_list_m2) };
 
 
@@ -346,7 +344,7 @@ MENU_SELECT  ui_sl_glLCD       = { &motion_sms, MENU_SELECT_SIZE(ui_sel_list_ono
 
 MENU_VALUE   ui_in_glLCD       = { TYPE_BYTE, 0, 0, MENU_TARGET(&lcdDisable), EE_LCDOFF };   
 MENU_VALUE   ui_in_glSMS       = { TYPE_SELECT, 0, 0, MENU_TARGET(&ui_sl_glLCD), EE_SMS };
-MENU_VALUE   ui_in_glPer       = { TYPE_UINT, 1000, 50, MENU_TARGET(&motor_pwm_minperiod), EE_PERIOD };   
+MENU_VALUE   ui_in_glPer       = { TYPE_UINT, 5000, 50, MENU_TARGET(&motor_pwm_minperiod), EE_PERIOD };   
 
 MENU_ITEM    ui_it_glSMS       = { {"SMS Motion"}, ITEM_VALUE, 0, MENU_TARGET(&ui_in_glSMS) };
 MENU_ITEM    ui_it_glLCD       = { {"LCD AutoOff Sec"}, ITEM_VALUE, 0, MENU_TARGET(&ui_in_glLCD) };
@@ -355,6 +353,7 @@ MENU_ITEM    ui_it_glMem       = { {"Reset Memory"}, ITEM_ACTION, 0, MENU_TARGET
 
 
 MENU_LIST    ui_list_gl[]      = { &ui_it_glSMS, &ui_it_glLCD, &ui_it_alt, &ui_it_glPer, &ui_it_glMem };
+//MENU_LIST    ui_list_gl[]      = { &ui_it_glSMS, &ui_it_glLCD, &ui_it_alt, &ui_it_glPer };
 MENU_ITEM    ui_it_glList      = { {"Settings"}, ITEM_MENU, MENU_SIZE(ui_list_gl), MENU_TARGET(&ui_list_gl) };
 
  // ===== Main Menu

@@ -107,6 +107,10 @@ const byte MOTOR_RAMP_FLAG    = B00000010;
 const byte MOTOR_COUNT        = 3;
 
 
+ // these are parameters for our speed fitting function
+const double MOTOR_SCA = 4.8756308185438346E+00; 
+const double MOTOR_SCB = 4.0945526450071874E+00; 
+const double MOTOR_SCC = -1.5602646081740568E+00;
 
 
 /** Motor Definition Structure
@@ -182,8 +186,8 @@ struct MotorDefinition {
    flags = 0;
    restPeriods = 0;
    onTimePeriods = 1.0;
-   rpm = 1.0;
-   ratio = 1.0;
+   rpm = 8.13;
+   ratio = 3.229;
 //   distance = 0;
    ramp = 0;
    lead = 0;
@@ -205,7 +209,7 @@ struct MotorDefinition {
 */
 
  // stored memory layout version
-const unsigned int MEMORY_VERSION    = 11;
+const unsigned int MEMORY_VERSION    = 12;
 
 
 /* Locations of each variable to be stored, note correct spacing

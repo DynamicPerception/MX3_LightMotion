@@ -249,17 +249,16 @@ void uiCursorChangeMotEn(byte p_dir) {
 
 
 void uiCursorChangeMotSpd(byte p_dir) {
- 
- float maxSpeed = motorMaxSpeedRatio(ui_curMotor);
- float   curSpd = motorSpeedRatio(ui_curMotor);
- float   mod    = ( maxSpeed / 100.0 < 0.1 ) ? 0.01 : 0.1;
 
- curSpd += p_dir ? mod : mod * -1;
+ float   curSpd = motorSpeed(ui_curMotor);
+ float   mod    = 0.01;
+
+ curSpd += p_dir ? mod : mod * -1.0;
  
   // ceiling/floor
- curSpd = curSpd > maxSpeed ? maxSpeed : curSpd < mod ? mod : curSpd;
+ curSpd = curSpd > 1.0 ? 1.0 : curSpd < mod ? mod : curSpd;
  
- motorSpeedRatio(ui_curMotor, curSpd);
+ motorSpeed(ui_curMotor, curSpd);
   
 }
 

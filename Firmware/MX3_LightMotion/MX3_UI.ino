@@ -282,11 +282,11 @@ byte uiMainScreen() {
   unsigned int secs  = ( run_time - (hours * 3600000) - (mins * 60000L) ) / SECOND;
   
   lcd.print(STR_TIME);
-  PAD(hours);
+  uiPad(2, hours);
   lcd.print(STR_SQUOTE);
-  PAD(mins);
+  uiPad(2, mins);
   lcd.print(STR_QUOTE);
-  PAD(secs);
+  uiPad(2, secs);
   
 
   return UI_SCREEN_MAIN;
@@ -307,7 +307,7 @@ void uiCamScreen() {
     lcd.print(STR_IDLE);
     
   lcd.setCursor(OM_MENU_COLS - 4, 0);
-  PAD3(camera_fired)
+  uiPad(4, camera_fired);
    
   lcd.setCursor(0, 1);
 
@@ -358,7 +358,7 @@ void uiMotorScreen(byte p_motor) {
     
   lcd.setCursor(12, 0);
   lcd.print(STR_RA);
-  PAD3(def->lead);
+  uiPad(3,def->lead);
   
   lcd.setCursor(0, 1);
   
@@ -379,14 +379,16 @@ void uiMotorScreen(byte p_motor) {
   
   lcd.print(STR_SPACE);
   
-  byte spdPrec = (motorMaxSpeedRatio(p_motor) / 100 < 0.1) ? 2 : 1;
+  byte spdPrec = (motorMaxSpeedRatio(p_motor) / 100 < 0.1) ? 3 : 2;
+  //byte spdPrec = 2;
   float spd = motorSpeedRatio(p_motor);
+  //float spd = motors[p_motor].speed;
   
   lcd.print(spd, spdPrec);
   
   lcd.setCursor(12, 1);
   lcd.print(STR_UA);
-  PAD3(def->ramp);
+  uiPad(3, def->ramp);
   
   
 }
@@ -480,9 +482,10 @@ void uiScreenInput(byte p_screen, byte p_button) {
  */
 
 void uiDisplayCamTime(unsigned long p_time) {
-  
- if( p_time >= 300 ) {
-    
+ 
+ if( p_time == 0 )
+    lcd.print(0, DEC);
+ else if( p_time >= 300 ) {
     unsigned int s = p_time / SECOND;
     unsigned int p = (p_time - (s * SECOND)) / 100;
     
@@ -502,5 +505,40 @@ void uiDisplayCamTime(unsigned long p_time) {
   }
   
 }
+
+
+/** Pad Displayed Numnbers
+
+ Displays a number on-screen, with specified length of
+ zero padding.
+ 
+ @param p_count
+ Total digits to display
+ 
+ @param p_val
+ Value to display
+ 
+ @author
+ C. A. Church
+ */
+ 
+void uiPad(byte p_count, unsigned long p_val) {
+    for(byte i = p_count; i > 1; i--) {
+        // this is less flash intensive than pow()
+      byte x = 1;
+      unsigned long z = 1;
+      while( x < i) { 
+        z *= 10;
+        x++;
+      }
+      
+      if( p_val <  z)
+        lcd.print('0');
+      else
+        break;
+    }
+    
+    lcd.print(p_val, DEC);
+  }
 
 

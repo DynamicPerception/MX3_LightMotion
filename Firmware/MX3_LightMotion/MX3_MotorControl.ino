@@ -35,9 +35,6 @@ See dynamicperception.com for more information
 
 
 
-
-
-
  // predeclare these functions to provide a default in the prototype
 
 void motorStop(boolean p_once = false);
@@ -49,7 +46,7 @@ void run_motors(boolean p_once = false);
  // control variables
  
    // minimum pwm timing period is 100 uS
-unsigned int motor_pwm_minperiod  = 50;
+unsigned int motor_pwm_minperiod  = 600;
   // maximum number of periods per minute
 float motor_pwm_maxperiod  = ( 60000000.0 / (float) motor_pwm_minperiod );
 
@@ -117,8 +114,9 @@ void motorSpeed(byte p_motor, float p_rel, boolean p_ramp) {
       motors[p_motor].onTimePeriods = motor_pwm_maxperiod;
   }
   else {
+   //   double newRel       = (1.0 * pow(MOT_SCA+MOT_SCB * exp(MOT_SCC * p_rel), MOT_SCD)) - MOT_SCO;
       float offTime       = (1.0 - p_rel) * motor_pwm_maxperiod;
-      float onTime        = motor_pwm_maxperiod - offTime;
+        float onTime        = motor_pwm_maxperiod - offTime;
       float onTimePeriods = onTime / offTime;
       motors[p_motor].onTimePeriods = onTimePeriods;
   }
@@ -166,11 +164,19 @@ float motorSpeed(byte p_motor) {
  
 float motorSpeedRatio(byte p_motor) {
   float spdPct = motorSpeed(p_motor);
-  float spd = motors[p_motor].rpm * motors[p_motor].ratio * spdPct;
+  
+    // simple equation 25 - we need to deal with the fact
+    // that the DC motors are not linear.  We use a curve-fit function
+    // to extrapolate percentage speed drive to actual movement ratio
+
+  double weighted = MOTOR_SCA / ( MOTOR_SCB + pow(spdPct, MOTOR_SCC) );
+  
+  float spd = motors[p_motor].rpm * motors[p_motor].ratio * weighted;
+
   
   if( motors[p_motor].flags & MOTOR_ROT_FLAG )
     spd *= 360.0;
-    
+ 
   return( spd );
 }
 
@@ -481,9 +487,10 @@ void motorRunISRSMS() {
  It controls the on/off state of three motors, based on the contents
  of the MotorState structure for each of the three motors.
  
- Each motor has two flags:
+ Each motor has three flags:
  
-  - motor enabled
+  - motor (programatically) enabled
+  - motor (user) enabled
   - motor drive pin currently held high
  
  Motor PWM input pins are REQUIRED to be sequential on the SAME port register!
@@ -497,17 +504,13 @@ void motorRunISR() {
   
     // check status of each motor
 
-
- 
  for(byte i = 0; i < MOTOR_COUNT; i++) {
    if( motors[i].flags & MOTOR_ENABLE_FLAG && motors[i].flags & MOTOR_UEN_FLAG ) {
        // motor is enabled
        
-   
      if( ! (motors[i].flags & MOTOR_HIGH_FLAG) && motors[i].speed > 0.0) {
            // motor is currently not moving
            
-          
        bool goHigh = false;
               
        if( motors[i].onTimePeriods >= 1.0 ) {
@@ -527,15 +530,12 @@ void motorRunISR() {
        
        if( goHigh ) {
                // going up, enable output pin
-
           MOTOR_DRV_PREG  |= (1 << (MOTOR_DRV_FMASK + i));
           motors[i].flags |= MOTOR_HIGH_FLAG;                  
        }
 
-       
      }
      else {
-       
                 // motor is currently moving
                 
          boolean goLow = false;
@@ -573,13 +573,11 @@ void motorRunISR() {
            motors[i].restPeriods++;
          }
              
-       
      } //end else (motor currently high)
    } // end if motor enabled
      
  } // end for...
  
-  
 }
 
 

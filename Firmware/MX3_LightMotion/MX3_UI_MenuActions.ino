@@ -154,7 +154,6 @@ void uiMenuManual(byte p_motor) {
     lcd.print(spd, 2); 
     
     if( button == BUTTON_FORWARD || button == BUTTON_BACK ) {
- 
         // if not already running, run it
       if( ! run ) {
         byte dir = (button == BUTTON_FORWARD) ? 1 : 0;
@@ -163,6 +162,7 @@ void uiMenuManual(byte p_motor) {
         run = true;
       }
       else {
+          // already running, stop the motor
         motorStop();
         run = false;
       }
