@@ -207,3 +207,84 @@ void uiMenuManualThree() {
 }
 
 
+void uiMenuPreset(byte p_motor) {
+ 
+    // disable menu key processing
+ Menu.enable(false);
+ 
+ byte totalPresets = sizeof(motorPresets) / sizeof(MotorPreset);
+ byte    curPreset = motorPresetSelected[p_motor];
+ 
+ MotorPreset thsPreset = motorPresets[curPreset];
+ 
+
+ lcd.clear();
+ lcd.setCursor(0, 0);
+ lcd.print(STR_PRESET);
+ lcd.setCursor(0,1);
+ lcd.print(thsPreset.name);
+ 
+ while(1) {
+   byte button = Menu.checkInput();
+   
+   if( button == BUTTON_NONE ) 
+     continue;
+   else if( button == BUTTON_BACK ) {
+     Menu.enable(true);
+     return;
+   }
+   else if( button == BUTTON_SELECT || button == BUTTON_FORWARD ) {
+       // user has chosen to save values
+     motorPresetSelected[p_motor] = curPreset;
+     
+       // get a pointer to the definition of this motor
+     MotorDefinition* motDef = &motors[p_motor];
+     
+      // set new preset values
+      
+     if( ! thsPreset.rotary )
+       motDef->flags &= (B1111111 ^ MOTOR_ROT_FLAG);
+     else
+       motDef->flags |= MOTOR_ROT_FLAG;
+       
+     motDef->rpm   = thsPreset.rpm;
+     motDef->ratio = thsPreset.ratio;
+     motorPresetSelected[p_motor] = curPreset;
+     
+       // save new values to eeprom
+     OMEEPROM::write(EE_M0FLAG + EE_MOTOR_SPACE * p_motor, motDef->flags);
+     OMEEPROM::write(EE_M0RPM + EE_MOTOR_SPACE * p_motor, motDef->rpm);
+     OMEEPROM::write(EE_M0RATIO + EE_MOTOR_SPACE * p_motor, motDef->ratio);
+     OMEEPROM::write(EE_MPRESET, *((byte*)motorPresetSelected), sizeof(motorPresetSelected) / sizeof(byte));
+     
+     Menu.enable(true);
+     return;
+   }
+   else if( button == BUTTON_INCREASE ) 
+     curPreset = (curPreset == totalPresets - 1) ? 0 : curPreset + 1;
+   else if( button == BUTTON_DECREASE )
+     curPreset = curPreset == 0 ? totalPresets - 1 : curPreset - 1;
+     
+     
+   thsPreset = motorPresets[curPreset];
+   
+   lcd.setCursor(0,1);
+   lcd.print(STR_BLNK);
+   lcd.setCursor(0,1);
+   lcd.print(thsPreset.name);
+ }
+    
+}
+
+void uiMenuPresetOne() {
+  uiMenuPreset(0);
+}
+
+void uiMenuPresetTwo() {
+  uiMenuPreset(1);
+}
+
+void uiMenuPresetThree() {
+  uiMenuPreset(2);
+}
+

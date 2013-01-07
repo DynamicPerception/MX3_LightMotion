@@ -31,36 +31,36 @@
 */
 
   
-const byte   SHUTTER_PIN     = 22;
-const byte   FOCUS_PIN       = 21;
+const byte   SHUTTER_PIN     = 35;
+const byte   FOCUS_PIN       = 15;
 
     // lcd pins
-const byte   LCD_RS          = 7;
-const byte   LCD_EN          = 6;
-const byte   LCD_D4          = 2;
-const byte   LCD_D5          = 3;
-const byte   LCD_D6          = 4;
-const byte   LCD_D7          = 5;
-const byte   LCD_BKL         = 19;
+const byte   LCD_RS          = 21;
+const byte   LCD_EN          = 20;
+const byte   LCD_D4          = 16;
+const byte   LCD_D5          = 17;
+const byte   LCD_D6          = 18;
+const byte   LCD_D7          = 19;
+const byte   LCD_BKL         = 22;
 
  // which input is our button
-const byte   BUT_PIN         = 23;
+const byte   BUT_PIN         = 40;
 
   // first alt i/o pin (digital #)
-const byte   ALT_START_PIN   = 2;
+const byte   ALT_START_PIN   = 36;
 
   // leave motor definitions as defines!
 
   // motor driving pin register and first pin mask
-#define MOTOR_DRV_PREG      PORTB
-#define MOTOR_DRV_FMASK     PORTB1
+#define MOTOR_DRV_PREG      PORTA
+#define MOTOR_DRV_FMASK     PORTA0
 
   // first motor direction pin
-const byte MOTOR_DIR_PINSTART = 7;
+const byte MOTOR_DIR_PINSTART = 3;
 
  // digital pin #s for motor output
  
-const byte MOTOR_PWM_0   = 14;
-const byte MOTOR_PWM_1   = 15;
-const byte MOTOR_PWM_2   = 16;
+const byte MOTOR_PWM_0   = 0;
+const byte MOTOR_PWM_1   = 1;
+const byte MOTOR_PWM_2   = 2;
 

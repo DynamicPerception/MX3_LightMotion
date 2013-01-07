@@ -112,6 +112,17 @@ const double MOTOR_SCA = 4.8756308185438346E+00;
 const double MOTOR_SCB = 4.0945526450071874E+00; 
 const double MOTOR_SCC = -1.5602646081740568E+00;
 
+const byte MOTOR_PRESET_STRLEN = 15;
+
+struct MotorPreset {
+  
+  char name[MOTOR_PRESET_STRLEN];
+  float rpm;
+  float ratio;
+  byte rotary;
+ 
+};
+
 
 /** Motor Definition Structure
 
@@ -209,7 +220,7 @@ struct MotorDefinition {
 */
 
  // stored memory layout version
-const unsigned int MEMORY_VERSION    = 12;
+const unsigned int MEMORY_VERSION    = 14;
 
 
 /* Locations of each variable to be stored, note correct spacing
@@ -226,6 +237,7 @@ const int EE_CAMEXP    = EE_CAMDEL  + 4; // cam_exposure
 const int EE_CAMWAIT   = EE_CAMEXP  + 4; // cam_wait
 const int EE_CAMFOC    = EE_CAMWAIT + 4; // cam_focus
 const int EE_CAMBULB   = EE_CAMFOC  + 4; // bulb mode
+const int EE_CAMLOCK   = EE_CAMBULB + 1; // focus lock
 
 const int EE_M0FLAG    = EE_CAMBULB + 1; // flags
 const int EE_M0RPM     = EE_M0FLAG  + 1; // rpm
@@ -242,5 +254,7 @@ const int EE_LCDOFF    = EE_POSTMOTOR + 1; // lcd off time
 const int EE_ALT1      = EE_LCDOFF    + 1; // alt input 1 mode
 const int EE_ALT2      = EE_ALT1      + 1; // alt input 2 mode
 const int EE_PERIOD    = EE_ALT2      + 1; // minimum period in mS
+
+const int EE_MPRESET   = EE_PERIOD    + 2; // selected presets
 
 

@@ -76,6 +76,7 @@ void eepromWrite() {
   write(EE_CAMWAIT, camera_wait);
   write(EE_CAMFOC, camera_focus);
   write(EE_CAMBULB, camera_bulb);
+  write(EE_CAMLOCK, camera_focLock);
   
     // write data about each motor  
   for(byte i = 0; i < MOTOR_COUNT; i++) {
@@ -90,6 +91,7 @@ void eepromWrite() {
   write(EE_ALT1, alt_inputs[0]);
   write(EE_ALT2, alt_inputs[1]);
   write(EE_PERIOD, motor_pwm_minperiod);
+  write(EE_MPRESET, *((byte*) motorPresetSelected), sizeof(motorPresetSelected) / sizeof(byte));
   
 }
 
@@ -109,6 +111,7 @@ void eepromRestore() {
   read(EE_CAMWAIT, camera_wait);
   read(EE_CAMFOC, camera_focus);
   read(EE_CAMBULB, camera_bulb);
+  read(EE_CAMLOCK, camera_focLock);
 
   
       // read data about each motor  
@@ -124,6 +127,7 @@ void eepromRestore() {
   read(EE_ALT1, alt_inputs[0]);
   read(EE_ALT2, alt_inputs[1]);
   read(EE_PERIOD, motor_pwm_minperiod);
+  read(EE_MPRESET, *((byte*) motorPresetSelected), sizeof(motorPresetSelected) / sizeof(byte));
 }
 
 

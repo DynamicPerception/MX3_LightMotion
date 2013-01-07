@@ -70,7 +70,7 @@ void uiMenuSetup() {
   Menu.setAnalogButtonPin(BUT_PIN, BUT_MAP, BUT_THRESH);
   Menu.enable(true); 
   
-/*  lcd.print(MX3_VERSTR);
+  lcd.print(MX3_VERSTR);
   lcd.setCursor(0, 1);
   lcd.print(MX3_SUBSTR);
   
@@ -81,7 +81,7 @@ void uiMenuSetup() {
   lcd.setCursor(0,1);
   lcd.print(MX3_C2STR);
 
-  delay(2000); */
+  delay(2000); 
   uiClear();
   
 }

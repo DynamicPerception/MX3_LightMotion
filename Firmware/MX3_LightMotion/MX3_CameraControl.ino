@@ -43,6 +43,7 @@ unsigned long camera_exposure  = 120;
 unsigned long camera_wait      = 100;
 unsigned long camera_focus     = 0;
 byte          camera_bulb      = 0;
+byte          camera_focLock   = 1;
 
 
 /** Initialize Camera
@@ -63,7 +64,7 @@ void camSetup() {
   }
   
   Camera.focusTime(camera_focus);
-  Camera.exposureFocus(true);
+  Camera.exposureFocus(camera_focLock);
   
    // attach status callback hanlder
   Camera.setHandler(camCallBack);

@@ -56,6 +56,21 @@ byte motor_inRamp = 0;
 
 MotorDefinition motors[] = { MotorDefinition(), MotorDefinition(), MotorDefinition() };
 
+ // Motor Presets
+ 
+MotorPreset motorPresets[] = { 
+                                {{"Custom"}, 1.0, 1.0, 0},
+                                {{"Dolly 1.56"}, 1.56, 3.229, 0},
+                                {{"Pan/Tilt 1.56"}, 1.56, 10.0, 1},
+                                {{"Dolly 8.23"}, 8.23, 3.229, 0},
+                                {{"Pan/Tilt 8.23"}, 8.23, 10.0, 1},
+                                {{"Dolly 21.58"}, 21.58, 3.229, 0},
+                                {{"Pan/Tilt 21.58"}, 21.58, 10.0, 1},
+                                {{"Dolly 42.13"}, 42.13, 3.229, 0},
+                                {{"Pan/Tilt 42.13"}, 42.13, 10.0, 1}
+};
+                                
+byte motorPresetSelected[] = { 0, 0, 0 };
 
 /** Set up and Initialize Motors
 
@@ -275,8 +290,8 @@ void motorDir(byte p_motor, boolean p_dir) {
     motors[p_motor].flags &= (B11111111 ^ MOTOR_CDIR_FLAG);
   }
     
-  digitalWrite(MOTOR_DIR_PINSTART + (p_motor * 2), mask);
-  digitalWrite(MOTOR_DIR_PINSTART + 1 + (p_motor * 2), !mask);
+  digitalWrite(MOTOR_DIR_PINSTART + (p_motor), mask);
+  digitalWrite(MOTOR_DIR_PINSTART + 3 + (p_motor), !mask);
 }
 
 /** Flip All Motor Directions
