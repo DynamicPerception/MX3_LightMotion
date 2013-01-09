@@ -224,12 +224,14 @@ void uiMenuPreset(byte p_motor) {
  lcd.setCursor(0,1);
  lcd.print(thsPreset.name);
  
+   // process user input to act like a normal menu option
  while(1) {
    byte button = Menu.checkInput();
    
    if( button == BUTTON_NONE ) 
      continue;
    else if( button == BUTTON_BACK ) {
+       // user has canceled, change nothing
      Menu.enable(true);
      return;
    }

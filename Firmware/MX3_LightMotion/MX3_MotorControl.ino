@@ -186,11 +186,14 @@ float motorSpeedRatio(byte p_motor) {
 
   double weighted = MOTOR_SCA / ( MOTOR_SCB + pow(spdPct, MOTOR_SCC) );
   
-  float spd = motors[p_motor].rpm * motors[p_motor].ratio * weighted;
+  float spd = motors[p_motor].rpm;
 
   
+    // handle rotary different than linear
   if( motors[p_motor].flags & MOTOR_ROT_FLAG )
-    spd *= 360.0;
+    spd = ( spd * 360.0 / motors[p_motor].ratio ) * weighted;
+  else
+    spd = spd * motors[p_motor].ratio * weighted;
  
   return( spd );
 }
