@@ -33,10 +33,6 @@ See dynamicperception.com for more information
 
 
 
-
-float          camera_delay     = 1.0;
-
-
 /** Initialize State Engine
 
   @author

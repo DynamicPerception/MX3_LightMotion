@@ -33,7 +33,7 @@ byte alt_inputs[] = { ALT_OFF, ALT_OFF };
 
 
 boolean alt_force_shot = false;
-int     alt_direction  = FALLING;
+int      alt_direction = FALLING;
 
 
  /** Alt I/O Setup 

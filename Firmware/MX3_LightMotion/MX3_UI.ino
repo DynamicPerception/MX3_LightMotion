@@ -100,6 +100,10 @@ void uiCheck() {
   
  static unsigned long lastButTm = 0;
  static boolean           lcdOn = true;
+ static byte            wasSens = sensor_statFlags;
+ static unsigned long lastSenTm = 0;
+ static boolean       clearSens = false;
+ 
  byte                    button = Menu.checkInput();
  
   // check for disabling the LCD backlight
@@ -120,8 +124,42 @@ void uiCheck() {
  
    // show base screen, if desired
    
- if( ! Menu.shown() ) 
-   uiBaseScreen(button);
+ if( ! Menu.shown() ) {
+   
+    // clear any ignore sensor warnings flag, if enough time has passed or
+    // stat flags change
+    
+   if( sensor_statFlags != wasSens || ( clearSens == true && millis() - lastSenTm > SENS_RST_TIME ) ) {
+     clearSens = false;
+     wasSens   = sensor_statFlags;
+     lcdOn     = true;
+     Menu.enable(true);
+     uiLCDBackLight(true);     
+   }
+   
+     // don't show base screen if there are any sensor errors
+   if( sensor_statFlags && clearSens == false ) {
+     
+     uiSensorErrorScreen();
+     
+     Menu.enable(false);
+     
+       // is user has pressed select, make the error go away for SENS_RST_TM
+     if( button == BUTTON_SELECT ) {
+       clearSens = true;
+       lastSenTm = millis();
+       lcdOn     = true;
+       Menu.enable(true);
+       uiLCDBackLight(true);
+       return;
+     }
+       
+   } // end if( sensor_stagFlags...
+   else {
+     uiBaseScreen(button); 
+   }
+   
+ }
      
 }
 
@@ -541,3 +579,58 @@ void uiPad(byte p_count, unsigned long p_val) {
   }
 
 
+/** Display Sensor Error Warnings
+
+@author
+C. A. Church
+*/
+
+void uiSensorErrorScreen() {
+  
+  boolean           refresh = false;
+  static boolean   ledState = true;
+  static byte      wasSense = 0;
+  static unsigned long uiTm = millis();
+  static unsigned long blTm = millis();
+  
+  
+  if( wasSense != sensor_statFlags || millis() - uiTm > UI_ERR_REFRESH_TM ) {
+    wasSense = sensor_statFlags;
+    refresh  = true;
+    uiTm     = millis();
+  }
+  
+  
+  if( refresh ) {
+    lcd.clear();
+    lcd.setCursor(0,0);
+    
+    if( wasSense & SENS_TEMP_FLAG ) {
+      lcd.print(STR_MTEMP);
+      lcd.setCursor(0,1);
+      lcd.print( sensorTempMax(), 2 );
+    }
+    else if( wasSense & SENS_CURRENT_FLAG ) {
+      lcd.print(STR_MTEMP);
+      lcd.setCursor(0,1);
+      lcd.print( sensorCurrent() );
+      lcd.print(STR_MA);
+    }
+    else if( wasSense & SENS_VOLT_FLAG ) {
+      lcd.print(STR_MVOLT);
+      lcd.setCursor(0,1);
+      lcd.print( sensorVoltage(), 2 );
+      lcd.print(STR_V);
+    }
+   
+   } // end if refresh 
+    
+      // flash LCD backlight
+   if( millis() - blTm > UI_ERR_BLINK_TM ) {
+     ledState = ! ledState;
+     uiLCDBackLight(ledState);
+     blTm = millis();
+   }
+     
+  
+}

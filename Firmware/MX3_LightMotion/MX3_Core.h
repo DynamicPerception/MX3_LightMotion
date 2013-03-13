@@ -32,7 +32,7 @@
 
 
 
-const unsigned int SECOND  = 1000;
+const unsigned int SECOND = 1000;
 
  /*  state transitions
  
@@ -45,32 +45,27 @@ const unsigned int SECOND  = 1000;
   
  */
  
-const byte ST_BLOCK  = 0;
-const byte ST_CLEAR  = 1;
-const byte ST_MOVE   = 2;
-const byte ST_RUN    = 3;
-const byte ST_EXP    = 4;
-const byte ST_WAIT   = 5;
+const byte ST_BLOCK = 0;
+const byte ST_CLEAR = 1;
+const byte  ST_MOVE = 2;
+const byte   ST_RUN = 3;
+const byte   ST_EXP = 4;
+const byte  ST_WAIT = 5;
 
 /*
 
-  Sensor Data
+  Sensor Data Constants
   
 */
 
- const int max_current = 6000;
- const int max_temp = 90;
+const unsigned int    MAX_CURRENT = 6000;
+const float              MAX_TEMP = 90.0;
+const unsigned int  SENS_RST_TIME = 30000;
+const unsigned int SENS_POLL_TIME = 10000;
 
- volatile int voltage = 0.0;
- volatile int current = 0.0;
- volatile int temp[3] = {0,0,0};
- 
- volatile byte over_current = 0;
- volatile byte over_temp = 0;
- volatile byte low_voltage = 0;
- 
- int voltage_th = 9000;
-
+const byte SENS_CURRENT_FLAG = B00000001;
+const byte    SENS_TEMP_FLAG = B00000010;
+const byte    SENS_VOLT_FLAG = B00000100;
 
 /*
 
@@ -83,12 +78,12 @@ const byte ALT_TRIG_THRESH  = 100;
 
   // what alt i/o modes do we support?
 
-const byte ALT_OFF       = 0;
-const byte ALT_START     = 1;
-const byte ALT_STOP      = 2;
-const byte ALT_TOGGLE    = 3;
-const byte ALT_EXTINT    = 4;
-const byte ALT_DIR       = 5;
+const byte    ALT_OFF = 0;
+const byte  ALT_START = 1;
+const byte   ALT_STOP = 2;
+const byte ALT_TOGGLE = 3;
+const byte ALT_EXTINT = 4;
+const byte    ALT_DIR = 5;
 
 
 /*
@@ -113,15 +108,15 @@ const float CAM_MIN_BULB  = 0.1;
  
 
 
-const byte MOTOR_ENABLE_FLAG  = B10000000;
-const byte MOTOR_HIGH_FLAG    = B01000000;
-const byte MOTOR_DIR_FLAG     = B00100000;
-const byte MOTOR_ROT_FLAG     = B00010000;
-const byte MOTOR_UEN_FLAG     = B00001000;
-const byte MOTOR_CDIR_FLAG    = B00000100;
-const byte MOTOR_RAMP_FLAG    = B00000010;
+const byte MOTOR_ENABLE_FLAG = B10000000;
+const byte   MOTOR_HIGH_FLAG = B01000000;
+const byte    MOTOR_DIR_FLAG = B00100000;
+const byte    MOTOR_ROT_FLAG = B00010000;
+const byte    MOTOR_UEN_FLAG = B00001000;
+const byte   MOTOR_CDIR_FLAG = B00000100;
+const byte   MOTOR_RAMP_FLAG = B00000010;
 
-const byte MOTOR_COUNT        = 3;
+const byte MOTOR_COUNT = 3;
 
 
  // these are parameters for our speed fitting function
@@ -237,7 +232,7 @@ struct MotorDefinition {
 */
 
  // stored memory layout version
-const unsigned int MEMORY_VERSION    = 16;
+const unsigned int MEMORY_VERSION    = 18;
 
 
 /* Locations of each variable to be stored, note correct spacing
@@ -265,15 +260,14 @@ const int EE_M0LEAD    = EE_M0RAMP  + 1; // lead-in/out
   // note: for each motor, we move the previous defs ahead 12 bytes * motor num
 
 const int EE_MOTOR_SPACE = 13;  
-const int EE_POSTMOTOR   = EE_M0LEAD + 1 + (EE_MOTOR_SPACE * 2);
+const int EE_POSTMOTOR = EE_M0LEAD + 1 + (EE_MOTOR_SPACE * 2);
 
 const int EE_LCDOFF    = EE_POSTMOTOR + 1; // lcd off time
 const int EE_ALT1      = EE_LCDOFF    + 1; // alt input 1 mode
 const int EE_ALT2      = EE_ALT1      + 1; // alt input 2 mode
 const int EE_PERIOD    = EE_ALT2      + 1; // minimum period in mS
-
 const int EE_MPRESET   = EE_PERIOD    + 2; // selected presets
-
-const int EE_VOLTH     = EE_MPRESET   + 1; // voltage threshold
+const int EE_VOLTH     = EE_MPRESET   + 4; // voltage threshold
+const int EE_VOLWARN   = EE_VOLTH     + 4; // voltage warning flag
 
 

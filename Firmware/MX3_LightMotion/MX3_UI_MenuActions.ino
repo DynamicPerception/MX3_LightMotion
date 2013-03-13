@@ -111,43 +111,37 @@ void uiMenuResetMem() {
  Parker Dillmann
  */
  
-void uiVoltage() 
-{
+void uiMenuVoltage() {
  int  update_voltage = 0;
  
  lcd.clear();
-
  Menu.enable(false);
  
- lcd.print("Voltage Level");
+ lcd.print(STR_MVOLT);
  
- while(1) 
- {
+ while(1)  {
    byte button = Menu.checkInput();
    
-   if(button == BUTTON_SELECT) 
-   {
+   if(button != BUTTON_NONE) {
      Menu.enable(true);
      return;
    }
-   else if(update_voltage == 0)
-   {
+   else if(update_voltage == 0) {
      lcd.setCursor(0,1);
-     lcd.print("                ");
+     lcd.print(STR_BLNK);
      lcd.setCursor(0,1);
-     lcd.print(getVoltage());
-     lcd.print(" mV");
+     lcd.print( sensorVoltage(), 2 );
+     lcd.print(STR_V);
      update_voltage++;
    }
-   else
-   {
+   else {
      update_voltage++;
      if(update_voltage > 1000)
-     {
        update_voltage = 0;
-     } 
-   }
- }
+     
+   } // end else
+ } // end while
+ 
 }
 
 /** Current Value
@@ -158,43 +152,73 @@ void uiVoltage()
  Parker Dillmann
  */
  
-void uiCurrent() 
-{
+void uiMenuCurrent() {
  int  update_current = 0;
  
  lcd.clear();
-
  Menu.enable(false);
  
- lcd.print("Current Level");
+ lcd.print(STR_MCURR);
  
- while(1) 
- {
+ while(1) {
    byte button = Menu.checkInput();
    
-   if(button == BUTTON_SELECT) 
-   {
+   if(button != BUTTON_NONE) {
      Menu.enable(true);
      return;
    }
-   else if(update_current == 0)
-   {
+   else if(update_current == 0) {
      lcd.setCursor(0,1);
-     lcd.print("                ");
+     lcd.print(STR_BLNK);
      lcd.setCursor(0,1);
-     lcd.print(getCurrent());
-     lcd.print(" mA");
+     lcd.print( sensorCurrent(), DEC );
+     lcd.print(STR_MA);
      update_current++;
    }
-   else
-   {
+   else {
      update_current++;
      if(update_current > 1000)
-     {
        update_current = 0;
-     } 
+   } // end else
+ } // end while
+ 
+}
+
+
+void uiMenuTemp(byte p_sens) {
+  
+ int  update_temp = 0;
+ 
+ lcd.clear();
+ Menu.enable(false);
+ 
+ lcd.print(STR_MTEMP);
+ lcd.print(p_sens + 1, DEC);
+ 
+ while(1)  {
+   byte button = Menu.checkInput();
+   
+   if(button != BUTTON_NONE) {
+     Menu.enable(true);
+     return;
    }
- }
+   else if(update_temp == 0) {
+     lcd.setCursor(0,1);
+     lcd.print(STR_BLNK);
+     lcd.setCursor(0,1);
+     
+     lcd.print(sensorTemp(0), 2);
+     
+     lcd.print(STR_ECAM);
+     update_temp++;
+   }
+   else {
+     update_temp++;
+     if(update_temp > 1000)
+       update_temp = 0;
+   } // end else
+ } // end while
+ 
 }
 
 /** Temp0 Value
@@ -205,43 +229,8 @@ void uiCurrent()
  Parker Dillmann
  */
  
-void uiTemp0() 
-{
- int  update_temp = 0;
- 
- lcd.clear();
-
- Menu.enable(false);
- 
- lcd.print("Temp Motor 1");
- 
- while(1) 
- {
-   byte button = Menu.checkInput();
-   
-   if(button == BUTTON_SELECT) 
-   {
-     Menu.enable(true);
-     return;
-   }
-   else if(update_temp == 0)
-   {
-     lcd.setCursor(0,1);
-     lcd.print("                ");
-     lcd.setCursor(0,1);
-     lcd.print(getTemp(0));
-     lcd.print(" C");
-     update_temp++;
-   }
-   else
-   {
-     update_temp++;
-     if(update_temp > 1000)
-     {
-       update_temp = 0;
-     } 
-   }
- }
+void uiMenuTemp0() {
+  uiMenuTemp(0);
 }
 
 /** Temp1 Value
@@ -252,43 +241,8 @@ void uiTemp0()
  Parker Dillmann
  */
  
-void uiTemp1() 
-{
- int  update_temp = 0;
- 
- lcd.clear();
-
- Menu.enable(false);
- 
- lcd.print("Temp Motor 2");
- 
- while(1) 
- {
-   byte button = Menu.checkInput();
-   
-   if(button == BUTTON_SELECT) 
-   {
-     Menu.enable(true);
-     return;
-   }
-   else if(update_temp == 0)
-   {
-     lcd.setCursor(0,1);
-     lcd.print("                ");
-     lcd.setCursor(0,1);
-     lcd.print(getTemp(1));
-     lcd.print(" C");
-     update_temp++;
-   }
-   else
-   {
-     update_temp++;
-     if(update_temp > 1000)
-     {
-       update_temp = 0;
-     } 
-   }
- }
+void uiMenuTemp1() {
+  uiMenuTemp(1);
 }
 
 /** Temp2 Value
@@ -299,43 +253,8 @@ void uiTemp1()
  Parker Dillmann
  */
  
-void uiTemp2() 
-{
- int  update_temp = 0;
- 
- lcd.clear();
-
- Menu.enable(false);
- 
- lcd.print("Temp Motor 3");
- 
- while(1) 
- {
-   byte button = Menu.checkInput();
-   
-   if(button == BUTTON_SELECT) 
-   {
-     Menu.enable(true);
-     return;
-   }
-   else if(update_temp == 0)
-   {
-     lcd.setCursor(0,1);
-     lcd.print("                ");
-     lcd.setCursor(0,1);
-     lcd.print(getTemp(2));
-     lcd.print(" C");
-     update_temp++;
-   }
-   else
-   {
-     update_temp++;
-     if(update_temp > 1000)
-     {
-       update_temp = 0;
-     } 
-   }
- }
+void uiMenuTemp2() {
+  uiMenuTemp(2);
 }
 
 

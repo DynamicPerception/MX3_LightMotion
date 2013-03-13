@@ -20,11 +20,25 @@
 
 */
 
+/*
+
+  ========================================
+  Sensor Functions
+  ========================================
+  
+*/
+
+
+byte sensor_statFlags = 0;
+
+
 /** Set up and Initialize Sensors
 
+@author
+PDillmann
+
  */
-void sensorSetup()
-{
+void sensorSetup() {
    pinMode(CUR_SENSOR, INPUT);
    pinMode(VOL_SENSOR, INPUT);
    pinMode(TEMP_SENSOR_0, INPUT);
@@ -32,91 +46,124 @@ void sensorSetup()
    pinMode(TEMP_SENSOR_2, INPUT);
 }
 
-/** Get the current for the motors
+/** Get the current for all motors (combined)
 
-    Returns amperage in mA.
-
+  @return
+  Amerpage, in milliAmps
+  
+  @author
+  PDillmann
  */
-int getCurrent()
-{
-  int current;
+unsigned int sensorCurrent() {
   
-  current = analogRead(CUR_SENSOR);
+  int current = analogRead(CUR_SENSOR);
   
-  current = (current * 16.292) - 16;
+  current = ((float) current * 16.292) - 16;
      
   return current;
 }
 
-/** Get the voltage for the motors
+/** Get Input Power Voltage
 
-    Returns voltage in mV.
+    @return
+    Voltage, in fractional volts
 
+   @author
+   PDillmann
  */
-int getVoltage()
-{
-  int voltage;
+float sensorVoltage() {
 
-  voltage = analogRead(VOL_SENSOR);
+
+  int voltage = analogRead(VOL_SENSOR);
   
-  voltage = voltage * 29.307;
+  float outVolts = ((float) voltage * 29.307) / 1000.0;
   
-  return voltage;
+  return outVolts;
 }
 
 /** Get the temperature for a motor controller
 
-    Returns temperature in C.
-
+    @param p_sensor
+    The sensor to read
+    
+    @return
+    Temperature, in Celsius
+    
+   @author
+   PDillmann
  */
-int getTemp(byte sensor)
-{
-  int temp;
+float sensorTemp(byte p_sensor) {
+  
+  int temp = analogRead(TEMP_SENSOR_0 - p_sensor);
  
-  temp = analogRead(TEMP_SENSOR_0 - sensor);
+  float outTemp = ((float) temp - 82.0) / 4.0;
  
-  temp = (temp - 82) / 4;
- 
- return temp;
+ return outTemp;
 }
 
-void poleSensors()
-{
-   voltage = getVoltage(); 
-   if(voltage < voltage_th)
-   {
-     low_voltage = 1; 
-   }
-   else
-   {
-     low_voltage = 0;
-   }
+/** Poll Sensors
+
+ @author
+ PDillmann
+ */
  
-   current = getCurrent();
-   if(current > max_current)
-   {
-     over_current = 1; 
-     motorStop();
+void sensorPoll() {
+  
+    // check input voltage
+ 
+   if( sensor_enVWarn ) {
+     if(sensorVoltage() < sensor_minVoltage) {
+       sensor_statFlags |= SENS_VOLT_FLAG; 
+     }
+     else {
+       sensor_statFlags &= ~SENS_VOLT_FLAG;
+     }
    }
-   else
-   {
-     over_current = 0;
+   else {
+     sensor_statFlags &= ~SENS_VOLT_FLAG;
    }
-   for(int i = 0; i < 3; i++)
-   {
-      temp[i] = getTemp(i); 
-      if(temp[i] > max_temp)
-      {
-         over_temp = 1; 
-         motorStop();
-      }
-      else
-      {
-         over_temp = 0;
-      }
+   
+     // check total motor current draw
+
+   if(sensorCurrent() > MAX_CURRENT) {
+     sensor_statFlags |= SENS_CURRENT_FLAG; 
+     motorStop(); // force a motor stop
    }
+   else {
+     sensor_statFlags &= ~SENS_CURRENT_FLAG;
+   }
+   
+     // for each sensor, check temperature
+
+   if(sensorTempMax() > MAX_TEMP) {
+         sensor_statFlags |= SENS_TEMP_FLAG; 
+         motorStop(); // force a motor stop
+    }
+    else {
+         sensor_statFlags &= ~SENS_TEMP_FLAG;
+    }
+   
 }
 
+/** Maximum Temperature Across All Temp Sensors
 
+  @return 
+  Maximum temperature (in celsius) read from any temp sensor
+  
+  @author
+  C. A. Church
+  */
+  
+float sensorTempMax() {
+  
+  float maxTemp = 0.0;
+  
+  for( byte i = 0; i < 3; i++ ) {
+    float temp = sensorTemp(i);
+    maxTemp = temp > maxTemp ? temp : maxTemp;
+  }
+  
+  return maxTemp;
+}
 
 

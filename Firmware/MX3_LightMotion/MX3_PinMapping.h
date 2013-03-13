@@ -31,43 +31,44 @@
 */
 
   
-const byte   SHUTTER_PIN     = 13;
-const byte   FOCUS_PIN       = 15;
+const byte SHUTTER_PIN = 13;
+const byte   FOCUS_PIN = 15;
 
     // lcd pins
-const byte   LCD_RS          = 21;
-const byte   LCD_EN          = 20;
-const byte   LCD_D4          = 16;
-const byte   LCD_D5          = 17;
-const byte   LCD_D6          = 18;
-const byte   LCD_D7          = 19;
-const byte   LCD_BKL         = 22;
+const byte  LCD_RS = 21;
+const byte  LCD_EN = 20;
+const byte  LCD_D4 = 16;
+const byte  LCD_D5 = 17;
+const byte  LCD_D6 = 18;
+const byte  LCD_D7 = 19;
+const byte LCD_BKL = 22;
 
  // which input is our button
-const byte   BUT_PIN         = 40;
+const byte BUT_PIN = 40;
 
   // first alt i/o pin (digital #)
-const byte   ALT_START_PIN   = 36;
+const byte ALT_START_PIN = 36;
 
   // leave motor definitions as defines!
 
   // motor driving pin register and first pin mask
-#define MOTOR_DRV_PREG      PORTA
-#define MOTOR_DRV_FMASK     PORTA0
+#define  MOTOR_DRV_PREG PORTA
+#define MOTOR_DRV_FMASK PORTA0
 
   // first motor direction pin
 const byte MOTOR_DIR_PINSTART = 0;
 
  // digital pin #s for motor inhibit
  
-const byte MOTOR_INH_0   = 2;
-const byte MOTOR_INH_1   = 5;
-const byte MOTOR_INH_2   = 8;
+const byte MOTOR_INH_0 = 2;
+const byte MOTOR_INH_1 = 5;
+const byte MOTOR_INH_2 = 8;
 
  // analog pins for sensors
  
-const byte CUR_SENSOR  = 41;
-const byte VOL_SENSOR  = 42;
+const byte    CUR_SENSOR = 41;
+const byte    VOL_SENSOR = 42;
 const byte TEMP_SENSOR_0 = 45;
 const byte TEMP_SENSOR_1 = 44;
 const byte TEMP_SENSOR_2 = 43;
+

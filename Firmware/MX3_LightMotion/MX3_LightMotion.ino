@@ -4,6 +4,8 @@
    
    (c) 2008-2012 C.A. Church / Dynamic Perception LLC
    
+   Additional Code by Parker Dillmann
+   
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
@@ -48,25 +50,25 @@ void stopProgram(boolean force_clear = true);
 
   // Prep Control Variables
 
-boolean       motion_sms       = false;
-boolean       running          = false;
-boolean       motor_running    = false;
-boolean       metric_ui        = false;
+boolean       motion_sms    = false;
+boolean       running       = false;
+boolean       motor_running = false;
+boolean       metric_ui     = false;
+byte          lcdDisable    = 30;
+unsigned long check_time    = 0;
+unsigned long run_time      = 0;
+unsigned long camera_tm     = 0;
+float     sensor_minVoltage = 10.5;
+boolean      sensor_enVWarn = true;
 
-byte          lcdDisable       = 30;
-
-unsigned long run_time         = 0;
-unsigned long check_time       = 0;
-
-unsigned long  camera_tm        = 0;
 
 
  // initialize core objects
  
  
 OMCamera     Camera = OMCamera(SHUTTER_PIN, FOCUS_PIN);
-    // there are 6 possible states in 
-    // our engine (0-5)
+    // there are 7 possible states in 
+    // our engine (0-6)
 OMState      Engine = OMState(6);
 
 
@@ -104,13 +106,23 @@ void setup() {
 }
 
 void loop() {
+  
+  static unsigned long  sensor_tm = 0;
    
+       // check sensors
+   if( millis() - sensor_tm > SENS_POLL_TIME ) {
+     sensorPoll();
+     sensor_tm = millis();
+   }
+
+       // handle UI interaction/updates
    uiCheck();
   
       // if our program is currently running...
       
    if( running ) {
      unsigned long time = millis();
+     
      run_time += time - check_time;
      check_time = time;
      
@@ -118,8 +130,6 @@ void loop() {
      Engine.checkCycle();
    }
    
-   poleSensors();
-
  
 }
 
@@ -137,8 +147,8 @@ void stopProgram(boolean force_clear) {
    
   //  if( force_clear == true ) 
 
-  running      = false;
-  run_time     = 0;
+  running  = false;
+  run_time = 0;
   
   motorStop(false);
   camClear();
@@ -156,7 +166,7 @@ void startProgram() {
   Engine.state(ST_CLEAR); 
   
   check_time = millis();
-  camera_tm = millis();
+  camera_tm  = millis();
                     
 }
 

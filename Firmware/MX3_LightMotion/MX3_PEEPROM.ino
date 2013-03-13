@@ -92,7 +92,8 @@ void eepromWrite() {
   write(EE_ALT2, alt_inputs[1]);
   write(EE_PERIOD, motor_pwm_minperiod);
   write(EE_MPRESET, *((byte*) motorPresetSelected), sizeof(motorPresetSelected) / sizeof(byte));
-  write(EE_VOLTH, voltage_th);
+  write(EE_VOLTH, sensor_minVoltage);
+  write(EE_VOLWARN, sensor_enVWarn);
   
 }
 
@@ -129,7 +130,8 @@ void eepromRestore() {
   read(EE_ALT2, alt_inputs[1]);
   read(EE_PERIOD, motor_pwm_minperiod);
   read(EE_MPRESET, *((byte*) motorPresetSelected), sizeof(motorPresetSelected) / sizeof(byte));
-  read(EE_VOLTH, voltage_th);
+  read(EE_VOLTH, sensor_minVoltage);
+  read(EE_VOLWARN, sensor_enVWarn);
 }
 
 
