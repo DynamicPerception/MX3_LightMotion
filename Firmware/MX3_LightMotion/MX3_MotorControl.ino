@@ -80,7 +80,7 @@ byte motorPresetSelected[] = { 0, 0, 0 };
  
 void motorSetup() {
  
-  for(byte i =0; i < (MOTOR_COUNT * 2); i++ ) {
+  for(byte i =0; i < (MOTOR_COUNT * 3); i++ ) {
     pinMode(MOTOR_DIR_PINSTART + i, OUTPUT);
       // set to 10% speed
 
@@ -90,11 +90,11 @@ void motorSetup() {
     motorDir(i, 0);
     motorSpeed(i, 0.1);
   }
-  
-  pinMode(MOTOR_PWM_0, OUTPUT);
-  pinMode(MOTOR_PWM_1, OUTPUT);
-  pinMode(MOTOR_PWM_2, OUTPUT);
-  
+ 
+   digitalWrite(MOTOR_INH_0, HIGH);
+   digitalWrite(MOTOR_INH_1, HIGH);
+   digitalWrite(MOTOR_INH_2, HIGH);
+   
   
 }
 
@@ -280,21 +280,21 @@ void motorDir(byte p_motor, boolean p_dir) {
   
     // determine which direction to go based on input and
     // direction flip
-  byte mask = motors[p_motor].flags & MOTOR_DIR_FLAG ? LOW : HIGH;
+  //byte mask = motors[p_motor].flags & MOTOR_DIR_FLAG ? LOW : HIGH;
  
     
     // swap mask based on direction, and record what direction
     // the user asked for
   if( p_dir ) {
-    mask = !mask;
+    //mask = !mask;
     motors[p_motor].flags |= MOTOR_CDIR_FLAG;
   }
   else {
     motors[p_motor].flags &= (B11111111 ^ MOTOR_CDIR_FLAG);
   }
-    
-  digitalWrite(MOTOR_DIR_PINSTART + (p_motor), mask);
-  digitalWrite(MOTOR_DIR_PINSTART + 3 + (p_motor), !mask);
+  motors[p_motor].flags &= (B11111111 ^ MOTOR_HIGH_FLAG);
+  digitalWrite(MOTOR_DIR_PINSTART + (3*p_motor), LOW);
+  digitalWrite(MOTOR_DIR_PINSTART + 1+ (3*p_motor), LOW);
 }
 
 /** Flip All Motor Directions
@@ -408,13 +408,12 @@ void motorStopThis(byte p_motor) {
          // disable motor, set high flag to low, and disable force ramp flag
      motors[p_motor].flags &= (B11111111 ^ ( MOTOR_ENABLE_FLAG | MOTOR_HIGH_FLAG | MOTOR_RAMP_FLAG ) );
         // change output pin state
-     MOTOR_DRV_PREG  &= (B11111111 ^ (1 << (MOTOR_DRV_FMASK + p_motor)));
+     MOTOR_DRV_PREG  &= (B11111111 ^ (B00000011 << (p_motor*3)));
         // if speed != setspeed, set new speed back!
      motorSpeed(p_motor, motors[p_motor].setSpeed);
         // get rid of forced ramp
      motors[p_motor].forceRampStart = 0; 
 }
-
 
 /** Start Motor Driving Interrupt Service 
 
@@ -465,7 +464,7 @@ void motorRunISRSMS() {
        // motor is enabled
        if( ! (motors[i].flags & MOTOR_HIGH_FLAG) && motors[i].speed > 0.0) {
          // motor is not currently moving
-          MOTOR_DRV_PREG  |= (1 << (MOTOR_DRV_FMASK + i));
+          MOTOR_DRV_PREG  |= (B00000001 << (i*3 + ((motors[i].flags & MOTOR_CDIR_FLAG) >> 2)));
           motors[i].flags |= MOTOR_HIGH_FLAG; 
           motors[i].restPeriods = 1;
           moveCnt++;
@@ -474,7 +473,7 @@ void motorRunISRSMS() {
         if( motors[i].restPeriods >= (motor_pwm_maxperiod * motors[i].speed) ) {
           moved++;
                 // going down, disable output pin
-          MOTOR_DRV_PREG  &= (B11111111 ^ (1 << (MOTOR_DRV_FMASK + i)));
+          MOTOR_DRV_PREG  &= (B11111111 ^ (B00000001 << (i*3 + ((motors[i].flags & MOTOR_CDIR_FLAG) >> 2))));
           motors[i].flags &= (B11111111 ^ MOTOR_HIGH_FLAG);
         }
         else
@@ -548,7 +547,7 @@ void motorRunISR() {
        
        if( goHigh ) {
                // going up, enable output pin
-          MOTOR_DRV_PREG  |= (1 << (MOTOR_DRV_FMASK + i));
+          MOTOR_DRV_PREG  |= (B00000001 << (i*3 + ((motors[i].flags & MOTOR_CDIR_FLAG) >> 2)));
           motors[i].flags |= MOTOR_HIGH_FLAG;                  
        }
 
@@ -581,7 +580,7 @@ void motorRunISR() {
          if( goLow ) {
            
            // going down, disable output pin
-            MOTOR_DRV_PREG  &= (B11111111 ^ (1 << (MOTOR_DRV_FMASK + i)));
+            MOTOR_DRV_PREG  &= (B11111111 ^ (B00000001 << (i*3 + ((motors[i].flags & MOTOR_CDIR_FLAG) >> 2))));
             motors[i].flags &= (B11111111 ^ MOTOR_HIGH_FLAG);
               // accumulate off-period error for one period
             motors[i].restPeriods = 0;

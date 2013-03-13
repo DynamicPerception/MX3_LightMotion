@@ -103,6 +103,241 @@ void uiMenuResetMem() {
   ; // block all activity 
 }
 
+/** Voltage Value
+
+ Pulls up data from the onboard Sensors 
+ 
+ @author
+ Parker Dillmann
+ */
+ 
+void uiVoltage() 
+{
+ int  update_voltage = 0;
+ 
+ lcd.clear();
+
+ Menu.enable(false);
+ 
+ lcd.print("Voltage Level");
+ 
+ while(1) 
+ {
+   byte button = Menu.checkInput();
+   
+   if(button == BUTTON_SELECT) 
+   {
+     Menu.enable(true);
+     return;
+   }
+   else if(update_voltage == 0)
+   {
+     lcd.setCursor(0,1);
+     lcd.print("                ");
+     lcd.setCursor(0,1);
+     lcd.print(getVoltage());
+     lcd.print(" mV");
+     update_voltage++;
+   }
+   else
+   {
+     update_voltage++;
+     if(update_voltage > 1000)
+     {
+       update_voltage = 0;
+     } 
+   }
+ }
+}
+
+/** Current Value
+
+ Pulls up data from the onboard Sensors 
+ 
+ @author
+ Parker Dillmann
+ */
+ 
+void uiCurrent() 
+{
+ int  update_current = 0;
+ 
+ lcd.clear();
+
+ Menu.enable(false);
+ 
+ lcd.print("Current Level");
+ 
+ while(1) 
+ {
+   byte button = Menu.checkInput();
+   
+   if(button == BUTTON_SELECT) 
+   {
+     Menu.enable(true);
+     return;
+   }
+   else if(update_current == 0)
+   {
+     lcd.setCursor(0,1);
+     lcd.print("                ");
+     lcd.setCursor(0,1);
+     lcd.print(getCurrent());
+     lcd.print(" mA");
+     update_current++;
+   }
+   else
+   {
+     update_current++;
+     if(update_current > 1000)
+     {
+       update_current = 0;
+     } 
+   }
+ }
+}
+
+/** Temp0 Value
+
+ Pulls up data from the onboard Sensors 
+ 
+ @author
+ Parker Dillmann
+ */
+ 
+void uiTemp0() 
+{
+ int  update_temp = 0;
+ 
+ lcd.clear();
+
+ Menu.enable(false);
+ 
+ lcd.print("Temp Motor 1");
+ 
+ while(1) 
+ {
+   byte button = Menu.checkInput();
+   
+   if(button == BUTTON_SELECT) 
+   {
+     Menu.enable(true);
+     return;
+   }
+   else if(update_temp == 0)
+   {
+     lcd.setCursor(0,1);
+     lcd.print("                ");
+     lcd.setCursor(0,1);
+     lcd.print(getTemp(0));
+     lcd.print(" C");
+     update_temp++;
+   }
+   else
+   {
+     update_temp++;
+     if(update_temp > 1000)
+     {
+       update_temp = 0;
+     } 
+   }
+ }
+}
+
+/** Temp1 Value
+
+ Pulls up data from the onboard Sensors 
+ 
+ @author
+ Parker Dillmann
+ */
+ 
+void uiTemp1() 
+{
+ int  update_temp = 0;
+ 
+ lcd.clear();
+
+ Menu.enable(false);
+ 
+ lcd.print("Temp Motor 2");
+ 
+ while(1) 
+ {
+   byte button = Menu.checkInput();
+   
+   if(button == BUTTON_SELECT) 
+   {
+     Menu.enable(true);
+     return;
+   }
+   else if(update_temp == 0)
+   {
+     lcd.setCursor(0,1);
+     lcd.print("                ");
+     lcd.setCursor(0,1);
+     lcd.print(getTemp(1));
+     lcd.print(" C");
+     update_temp++;
+   }
+   else
+   {
+     update_temp++;
+     if(update_temp > 1000)
+     {
+       update_temp = 0;
+     } 
+   }
+ }
+}
+
+/** Temp2 Value
+
+ Pulls up data from the onboard Sensors 
+ 
+ @author
+ Parker Dillmann
+ */
+ 
+void uiTemp2() 
+{
+ int  update_temp = 0;
+ 
+ lcd.clear();
+
+ Menu.enable(false);
+ 
+ lcd.print("Temp Motor 3");
+ 
+ while(1) 
+ {
+   byte button = Menu.checkInput();
+   
+   if(button == BUTTON_SELECT) 
+   {
+     Menu.enable(true);
+     return;
+   }
+   else if(update_temp == 0)
+   {
+     lcd.setCursor(0,1);
+     lcd.print("                ");
+     lcd.setCursor(0,1);
+     lcd.print(getTemp(2));
+     lcd.print(" C");
+     update_temp++;
+   }
+   else
+   {
+     update_temp++;
+     if(update_temp > 1000)
+     {
+       update_temp = 0;
+     } 
+   }
+ }
+}
+
 
 /** Manual Move Screen
 

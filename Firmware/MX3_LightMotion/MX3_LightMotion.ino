@@ -97,6 +97,9 @@ void setup() {
  
    // Setup Alt I/O
  altSetup();
+ 
+   // Setup Sensors
+ sensorSetup();
   
 }
 
@@ -114,6 +117,8 @@ void loop() {
        // check current engine state and handle appropriately
      Engine.checkCycle();
    }
+   
+   poleSensors();
 
  
 }

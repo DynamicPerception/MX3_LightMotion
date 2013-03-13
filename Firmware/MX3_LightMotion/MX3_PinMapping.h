@@ -31,7 +31,7 @@
 */
 
   
-const byte   SHUTTER_PIN     = 35;
+const byte   SHUTTER_PIN     = 13;
 const byte   FOCUS_PIN       = 15;
 
     // lcd pins
@@ -56,11 +56,18 @@ const byte   ALT_START_PIN   = 36;
 #define MOTOR_DRV_FMASK     PORTA0
 
   // first motor direction pin
-const byte MOTOR_DIR_PINSTART = 3;
+const byte MOTOR_DIR_PINSTART = 0;
 
- // digital pin #s for motor output
+ // digital pin #s for motor inhibit
  
-const byte MOTOR_PWM_0   = 0;
-const byte MOTOR_PWM_1   = 1;
-const byte MOTOR_PWM_2   = 2;
+const byte MOTOR_INH_0   = 2;
+const byte MOTOR_INH_1   = 5;
+const byte MOTOR_INH_2   = 8;
 
+ // analog pins for sensors
+ 
+const byte CUR_SENSOR  = 41;
+const byte VOL_SENSOR  = 42;
+const byte TEMP_SENSOR_0 = 45;
+const byte TEMP_SENSOR_1 = 44;
+const byte TEMP_SENSOR_2 = 43;

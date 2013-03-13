@@ -52,7 +52,24 @@ const byte ST_RUN    = 3;
 const byte ST_EXP    = 4;
 const byte ST_WAIT   = 5;
 
+/*
 
+  Sensor Data
+  
+*/
+
+ const int max_current = 6000;
+ const int max_temp = 90;
+
+ volatile int voltage = 0.0;
+ volatile int current = 0.0;
+ volatile int temp[3] = {0,0,0};
+ 
+ volatile byte over_current = 0;
+ volatile byte over_temp = 0;
+ volatile byte low_voltage = 0;
+ 
+ int voltage_th = 9000;
 
 
 /*
@@ -220,7 +237,7 @@ struct MotorDefinition {
 */
 
  // stored memory layout version
-const unsigned int MEMORY_VERSION    = 14;
+const unsigned int MEMORY_VERSION    = 16;
 
 
 /* Locations of each variable to be stored, note correct spacing
@@ -256,5 +273,7 @@ const int EE_ALT2      = EE_ALT1      + 1; // alt input 2 mode
 const int EE_PERIOD    = EE_ALT2      + 1; // minimum period in mS
 
 const int EE_MPRESET   = EE_PERIOD    + 2; // selected presets
+
+const int EE_VOLTH     = EE_MPRESET   + 1; // voltage threshold
 
 

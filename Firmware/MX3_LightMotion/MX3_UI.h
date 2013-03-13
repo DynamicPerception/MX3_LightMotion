@@ -304,7 +304,7 @@ MENU_ITEM    ui_it_m1_ratio    = { {"Ratio"}, ITEM_VALUE, 0, MENU_TARGET(&ui_in_
 MENU_LIST    ui_list_m1[]      = { &ui_it_m1_pres, &ui_it_m1_man, &ui_it_m1_rot, &ui_it_m1_flip, &ui_it_m1_rpm, &ui_it_m1_ratio };
 MENU_ITEM    ui_it_m1List      = { {"Axis 2"}, ITEM_MENU, MENU_SIZE(ui_list_m1), MENU_TARGET(&ui_list_m1) };
 
-  // motor 2 inputs
+  // motor 3 inputs
   
 MENU_FLAG    ui_flag_m2_rot    = { 4, (byte*) &motors[2].flags };
 MENU_FLAG    ui_flag_m2_flip   = { 5, (byte*) &motors[2].flags };
@@ -345,6 +345,20 @@ MENU_ITEM    ui_it_altset   = { {"Init I/O"}, ITEM_ACTION, 0, MENU_TARGET(uiMenu
 MENU_LIST    ui_list_alt[]  = { &ui_it_altset, &ui_it_alt1, &ui_it_alt2 };
 MENU_ITEM    ui_it_alt      = { {"Alt I/O"}, ITEM_MENU, MENU_SIZE(ui_list_alt), MENU_TARGET(&ui_list_alt) };
 
+ // ===== Sensor Options
+ 
+MENU_VALUE   ui_in_volth    = { TYPE_INT, 25000, 6000, MENU_TARGET(&voltage_th), EE_VOLTH };
+
+MENU_ITEM    ui_it_vol      = { {"Voltage Level"}, ITEM_ACTION, 0, MENU_TARGET(uiVoltage) };
+MENU_ITEM    ui_it_cur      = { {"Motor Current"}, ITEM_ACTION, 0, MENU_TARGET(uiCurrent) };
+MENU_ITEM    ui_it_temp0    = { {"Temp Motor 1"}, ITEM_ACTION, 0, MENU_TARGET(uiTemp0) };
+MENU_ITEM    ui_it_temp1    = { {"Temp Motor 2"}, ITEM_ACTION, 0, MENU_TARGET(uiTemp1) };
+MENU_ITEM    ui_it_temp2    = { {"Temp Motor 3"}, ITEM_ACTION, 0, MENU_TARGET(uiTemp2) };
+MENU_ITEM    ui_it_volth   = { {"Voltage Thresh"}, ITEM_VALUE, 0, MENU_TARGET(&ui_in_volth) };
+
+MENU_LIST    ui_list_sen[]  = { &ui_it_vol, &ui_it_cur, &ui_it_temp0, &ui_it_temp1, &ui_it_temp2, &ui_it_volth };
+MENU_ITEM    ui_it_sen      = { {"Sensors"}, ITEM_MENU, MENU_SIZE(ui_list_sen), MENU_TARGET(&ui_list_sen) };
+
  // ===== Global Options
 
 MENU_SELECT  ui_sl_glLCD       = { &motion_sms, MENU_SELECT_SIZE(ui_sel_list_onoff), MENU_TARGET(&ui_sel_list_onoff) };
@@ -359,7 +373,7 @@ MENU_ITEM    ui_it_glPer       = { {"Motor Timing"}, ITEM_VALUE, 0, MENU_TARGET(
 MENU_ITEM    ui_it_glMem       = { {"Reset Memory"}, ITEM_ACTION, 0, MENU_TARGET(uiMenuResetMem) };
 
 
-MENU_LIST    ui_list_gl[]      = { &ui_it_glSMS, &ui_it_glLCD, &ui_it_alt, &ui_it_glPer, &ui_it_glMem };
+MENU_LIST    ui_list_gl[]      = { &ui_it_glSMS, &ui_it_glLCD, &ui_it_alt, &ui_it_glPer, &ui_it_sen, &ui_it_glMem };
 MENU_ITEM    ui_it_glList      = { {"Settings"}, ITEM_MENU, MENU_SIZE(ui_list_gl), MENU_TARGET(&ui_list_gl) };
 
  // ===== Main Menu
