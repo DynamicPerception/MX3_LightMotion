@@ -50,7 +50,9 @@ unsigned int motor_pwm_minperiod  = 600;
   // maximum number of periods per minute
 float motor_pwm_maxperiod  = ( 60000000.0 / (float) motor_pwm_minperiod );
 
-byte motor_inRamp = 0;
+unsigned int motor_inRamp = 0;
+
+boolean motor_flushSMS = false;
 
  // create an array of structures for our three motors
 
@@ -343,7 +345,7 @@ void motorRun(boolean p_once) {
   if( motor_running )
     return;
     
-    // enable each motor, if it does not have a lead-in/out
+    // (program)-enable each motor, if it does not have a lead-in/out
   for(byte i = 0; i < MOTOR_COUNT; i++ ) 
     if( ! motors[i].lead )
       motors[i].flags |= MOTOR_ENABLE_FLAG;
@@ -413,6 +415,8 @@ void motorStopThis(byte p_motor) {
      motorSpeed(p_motor, motors[p_motor].setSpeed);
         // get rid of forced ramp
      motors[p_motor].forceRampStart = 0; 
+         // clear ramp flag
+     motor_inRamp &= ~(1 << p_motor);
 }
 
 /** Start Motor Driving Interrupt Service 
@@ -459,6 +463,13 @@ void motorRunISRSMS() {
   static byte moveCnt = 0;
   static byte moved   = 0;
   
+    // we've got to be careful when stopping during a move
+  if( motor_flushSMS ) {
+    moveCnt = 0;
+    moved   = 0;  
+    motor_flushSMS = false;
+  }
+  
   for( byte i = 0; i < MOTOR_COUNT; i++ ) {
     if( motors[i].flags & MOTOR_ENABLE_FLAG && motors[i].flags & MOTOR_UEN_FLAG ) {
        // motor is enabled
@@ -485,7 +496,7 @@ void motorRunISRSMS() {
     // moved all motors the required distance?
   if( moved == moveCnt ) {
     moveCnt = 0;
-    moved = 0;
+    moved   = 0;
     motorStop(true);
   }
   

@@ -191,14 +191,14 @@ struct MotorDefinition {
 // unsigned long distance;
  
   /** Ramp Shots */
- byte ramp;
+ unsigned int ramp;
  
   /** Lead-in/Out */
   
- byte lead;
+ unsigned int lead;
  
   /** Shot count that force ramp started at */
- byte forceRampStart;
+ unsigned long forceRampStart;
  
   /** Shot count for ramp starting (when started motor during program run)*/
  unsigned long startShots;
@@ -232,7 +232,7 @@ struct MotorDefinition {
 */
 
  // stored memory layout version
-const unsigned int MEMORY_VERSION    = 18;
+const unsigned int MEMORY_VERSION    = 19;
 
 
 /* Locations of each variable to be stored, note correct spacing
@@ -255,12 +255,12 @@ const int EE_M0FLAG    = EE_CAMBULB + 1; // flags
 const int EE_M0RPM     = EE_M0FLAG  + 1; // rpm
 const int EE_M0RATIO   = EE_M0RPM   + 4; // ratio
 const int EE_M0RAMP    = EE_M0RATIO + 4; // ramping
-const int EE_M0LEAD    = EE_M0RAMP  + 1; // lead-in/out
+const int EE_M0LEAD    = EE_M0RAMP  + 2; // lead-in/out
 
   // note: for each motor, we move the previous defs ahead 12 bytes * motor num
 
-const int EE_MOTOR_SPACE = 13;  
-const int EE_POSTMOTOR = EE_M0LEAD + 1 + (EE_MOTOR_SPACE * 2);
+const int EE_MOTOR_SPACE = 15;  
+const int EE_POSTMOTOR = EE_M0LEAD + 2 + (EE_MOTOR_SPACE * 2);
 
 const int EE_LCDOFF    = EE_POSTMOTOR + 1; // lcd off time
 const int EE_ALT1      = EE_LCDOFF    + 1; // alt input 1 mode
