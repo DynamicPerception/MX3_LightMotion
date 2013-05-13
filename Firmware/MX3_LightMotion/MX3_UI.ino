@@ -611,7 +611,7 @@ void uiSensorErrorScreen() {
       lcd.print( sensorTempMax(), 2 );
     }
     else if( wasSense & SENS_CURRENT_FLAG ) {
-      lcd.print(STR_MTEMP);
+      lcd.print(STR_MCURR);
       lcd.setCursor(0,1);
       lcd.print( sensorCurrent() );
       lcd.print(STR_MA);

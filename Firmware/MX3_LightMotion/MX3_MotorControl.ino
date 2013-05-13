@@ -82,14 +82,13 @@ byte motorPresetSelected[] = { 0, 0, 0 };
  
 void motorSetup() {
  
-  for(byte i =0; i < (MOTOR_COUNT * 3); i++ ) {
+  for(byte i = 0; i < (MOTOR_COUNT * 3); i++ ) {
     pinMode(MOTOR_DIR_PINSTART + i, OUTPUT);
-      // set to 10% speed
-
   }
   
   for(byte i = 0; i < MOTOR_COUNT; i++ ) {
     motorDir(i, 0);
+          // set to 10% speed
     motorSpeed(i, 0.1);
   }
  
@@ -131,7 +130,6 @@ void motorSpeed(byte p_motor, float p_rel, boolean p_ramp) {
       motors[p_motor].onTimePeriods = motor_pwm_maxperiod;
   }
   else {
-   //   double newRel       = (1.0 * pow(MOT_SCA+MOT_SCB * exp(MOT_SCC * p_rel), MOT_SCD)) - MOT_SCO;
       float offTime       = (1.0 - p_rel) * motor_pwm_maxperiod;
         float onTime        = motor_pwm_maxperiod - offTime;
       float onTimePeriods = onTime / offTime;
@@ -296,7 +294,7 @@ void motorDir(byte p_motor, boolean p_dir) {
   }
   motors[p_motor].flags &= (B11111111 ^ MOTOR_HIGH_FLAG);
   digitalWrite(MOTOR_DIR_PINSTART + (3*p_motor), LOW);
-  digitalWrite(MOTOR_DIR_PINSTART + 1+ (3*p_motor), LOW);
+  digitalWrite(MOTOR_DIR_PINSTART + 1 + (3*p_motor), LOW);
 }
 
 /** Flip All Motor Directions
@@ -437,8 +435,10 @@ void motorStartISR(boolean p_once) {
       motor_running = true;
       Timer1.initialize(motor_pwm_minperiod);
       
-      if( p_once )
+      if( p_once ) {
+        motor_flushSMS = true;
         Timer1.attachInterrupt(motorRunISRSMS);
+      }
       else
         Timer1.attachInterrupt(motorRunISR);
   }

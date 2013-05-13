@@ -139,6 +139,8 @@ void cycleCheckMotor() {
          // still running
      
      // do not block on continuous motion of any sort
+     // (if we're in SMS, and the motor is running, do not
+     // change state engine state)
 
     if( motion_sms && motor_running )
       return;

@@ -112,7 +112,11 @@ void sensorPoll() {
     // check input voltage
  
    if( sensor_enVWarn ) {
-     if(sensorVoltage() < sensor_minVoltage) {
+     
+     float volts = sensorVoltage();
+     
+      // ignore voltage warning if running on USB only
+     if(volts > 5.5 && volts < sensor_minVoltage) {
        sensor_statFlags |= SENS_VOLT_FLAG; 
      }
      else {
