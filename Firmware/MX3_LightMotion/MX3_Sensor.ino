@@ -60,6 +60,8 @@ unsigned int sensorCurrent() {
   
   current = ((float) current * 16.292) - 16;
      
+  current = current <= 0.0 ? 0.1 : current;
+  
   return current;
 }
 
@@ -75,6 +77,8 @@ float sensorVoltage() {
 
 
   int voltage = analogRead(VOL_SENSOR);
+  
+  voltage = voltage <= 0 ? 1 : voltage;
   
   float outVolts = ((float) voltage * 29.307) / 1000.0;
   
@@ -96,6 +100,9 @@ float sensorTemp(byte p_sensor) {
   
   int temp = analogRead(TEMP_SENSOR_0 - p_sensor);
  
+   // deal with negative values
+  temp = temp < 0 ? 1 : temp;
+  
   float outTemp = ((float) temp - 82.0) / 4.0;
  
  return outTemp;

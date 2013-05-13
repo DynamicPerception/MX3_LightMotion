@@ -42,6 +42,7 @@ const unsigned int SECOND = 1000;
   ST_RUN   - motor is currently running
   ST_EXP   - clear to expose camera (or not...)
   ST_WAIT  - in camera wait 
+  ST_ALTP  - check for alt output post 
   
  */
  
@@ -51,6 +52,7 @@ const byte  ST_MOVE = 2;
 const byte   ST_RUN = 3;
 const byte   ST_EXP = 4;
 const byte  ST_WAIT = 5;
+const byte  ST_ALTP = 6;
 
 /*
 
@@ -74,7 +76,7 @@ const byte    SENS_VOLT_FLAG = B00000100;
 */
 
   // debounce threshold time
-const byte ALT_TRIG_THRESH  = 100;
+const byte ALT_TRIG_THRESH  = 50;
 
   // what alt i/o modes do we support?
 
@@ -84,6 +86,19 @@ const byte   ALT_STOP = 2;
 const byte ALT_TOGGLE = 3;
 const byte ALT_EXTINT = 4;
 const byte    ALT_DIR = 5;
+const byte  ALT_OUT_B = 6;
+const byte  ALT_OUT_A = 7;
+
+const byte ALT_OUT_FLAG_B = B00010000;
+const byte ALT_OUT_FLAG_A = B00000001;
+const byte  ALT_OUT_ANY_B = B11110000;
+const byte  ALT_OUT_ANY_A = B00001111;
+const byte     ALT_TRIG_B = 1;
+const byte     ALT_TRIG_A = 2;
+const byte ALT_BLOCK_NONE = 0;
+const byte    ALT_BLOCK_B = ALT_TRIG_B;
+const byte    ALT_BLOCK_A = ALT_TRIG_A;
+
 
 
 /*
@@ -95,7 +110,7 @@ const byte    ALT_DIR = 5;
  */
  
 const int   CAM_MIN_TRIG  = 250;
-const float CAM_MIN_BULB  = 0.1;
+const float CAM_MIN_BULB  = 0.25;
 
 /*
 
@@ -232,7 +247,8 @@ struct MotorDefinition {
 */
 
  // stored memory layout version
-const unsigned int MEMORY_VERSION    = 19;
+ // this number MUST be changed every time the memory layout is changed
+const unsigned int MEMORY_VERSION    = 22;
 
 
 /* Locations of each variable to be stored, note correct spacing
@@ -240,9 +256,8 @@ const unsigned int MEMORY_VERSION    = 19;
 
 const int EE_NONE      = 0; // do not store
 const int EE_SMS       = 1; // motion_sms
-const int EE_ALTDIR    = EE_SMS     + 1; // alt_direction
 
-const int EE_MAXSHOT   = EE_ALTDIR  + 1; // camera max shots
+const int EE_MAXSHOT   = EE_SMS     + 1; // camera max shots
 const int EE_CAMREP    = EE_MAXSHOT + 2; // camera_repeat
 const int EE_CAMDEL    = EE_CAMREP  + 1; // camera_delay
 const int EE_CAMEXP    = EE_CAMDEL  + 4; // cam_exposure
@@ -265,7 +280,14 @@ const int EE_POSTMOTOR = EE_M0LEAD + 2 + (EE_MOTOR_SPACE * 2);
 const int EE_LCDOFF    = EE_POSTMOTOR + 1; // lcd off time
 const int EE_ALT1      = EE_LCDOFF    + 1; // alt input 1 mode
 const int EE_ALT2      = EE_ALT1      + 1; // alt input 2 mode
-const int EE_PERIOD    = EE_ALT2      + 1; // minimum period in mS
+const int EE_ALT3      = EE_ALT2      + 1; // alt input 3 mode
+const int EE_ALT4      = EE_ALT3      + 1; // alt input 4 mode
+const int EE_ALTDIR    = EE_ALT4      + 1; // alt input trigger direction
+const int EE_ALTBD     = EE_ALTDIR    + 1; // alt trigger before delay
+const int EE_ALTBT     = EE_ALTBD     + 2; // alt trigger before time
+const int EE_ALTAD     = EE_ALTBT     + 2; // alt trigger after delay
+const int EE_ALTAT     = EE_ALTAD     + 2; // alt trigger after time
+const int EE_PERIOD    = EE_ALTAT     + 2; // minimum period in mS
 const int EE_MPRESET   = EE_PERIOD    + 2; // selected presets
 const int EE_VOLTH     = EE_MPRESET   + 4; // voltage threshold
 const int EE_VOLWARN   = EE_VOLTH     + 4; // voltage warning flag

@@ -67,9 +67,9 @@ boolean      sensor_enVWarn = true;
  
  
 OMCamera     Camera = OMCamera(SHUTTER_PIN, FOCUS_PIN);
-    // there are 7 possible states in 
-    // our engine (0-6)
-OMState      Engine = OMState(6);
+    // there are 8 possible states in 
+    // our engine (0-7)
+OMState      Engine = OMState(7);
 
 
 

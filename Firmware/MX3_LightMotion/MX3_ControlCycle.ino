@@ -46,6 +46,7 @@ void cycleSetup() {
  Engine.setHandler(ST_RUN, cycleCheckMotor);
  Engine.setHandler(ST_EXP, camExpose);
  Engine.setHandler(ST_WAIT, camWait);
+ Engine.setHandler(ST_ALTP, cycleCheckAltPost);
 }
 
 
@@ -74,28 +75,48 @@ void cycleCamera() {
       return;
   }
   
-
+    // trigger any outputs that need to go before the exposure
+  if( alt_out_flags & ALT_OUT_ANY_B && ( millis() - camera_tm ) >= ( (camera_delay * (float) SECOND) - alt_before_delay ) && ! alt_block ) {
+      alt_block = ALT_BLOCK_B;
+      altOutStart(ALT_TRIG_B);
+      return;
+  }
+    
+    
+    // NOTE: You cannot combine External Interval and Out Before (how would we know when the external signal would be
+    // coming, and trigger the output at the right time before, eh?)
+    
+    
     // if enough time has passed, and we're ok to take an exposure
     // note: for slaves, we only get here by a master signal, so we don't check interval timing
   
-  if( alt_force_shot == true || ( millis() - camera_tm ) >= (camera_delay * SECOND)  ) {
+  if( alt_force_shot == true || ( millis() - camera_tm ) >= (camera_delay * (float) SECOND)  ) {
+    
+        // only execute cycle if the camera is not currently busy
 
+    if( ! Camera.busy() ) 
+        cycleTriggerCamera();
+    
+  }
+  
+}
+
+void cycleTriggerCamera() {
+ 
+  Engine.state(ST_BLOCK);
+  
+    // we must clear this here, elsewise out alt output may just trigger over and over
+  alt_block      = ALT_BLOCK_NONE;
+  
+  alt_force_shot = false;
+  camera_tm      = millis();  
+  
       // trigger focus, if needed, which will set off the chain of
       // callback executions that will walk us through the complete exposure cycle.
       // -- if no focus is configured, nothing will happen but trigger
       // the callback that will trigger exposing the camera immediately
-    
-    if( ! Camera.busy() ) {
-        // only execute cycle if the camera is not currently busy
-        
-      Engine.state(ST_BLOCK);
-      alt_force_shot = false;
-      camera_tm = millis();  
-      Camera.focus();
-    } 
-    
-  }
-  
+
+  Camera.focus(); 
 }
 
 /** Move Motors Callback Handler
@@ -150,6 +171,30 @@ void cycleCheckMotor() {
       Engine.state(ST_CLEAR);        
 }
 
+/** Check Alt Output Post Trigger
 
+ This callback handler handle the ST_ALTP state.
+ 
+ If one or more I/Os are configured as post-exposure outputs, this state
+ will cause a run delay for the specified output delay time, and then
+ trigger the outputs to fire.
+ 
+ @author
+ C. A. Church
+ */
 
+void cycleCheckAltPost() {
+  
+  static unsigned long alt_tm = millis();
+  
+  if( alt_out_flags & ALT_OUT_ANY_A && ! alt_block ) {
+    alt_block = ALT_BLOCK_A;
+    alt_tm = millis();
+  }
+  else if( alt_out_flags & ALT_OUT_ANY_A && ( millis() - alt_tm ) > alt_after_delay ) {
+    alt_block = ALT_BLOCK_NONE;
+    altOutStart(ALT_TRIG_A);
+  }
+  
+}
 

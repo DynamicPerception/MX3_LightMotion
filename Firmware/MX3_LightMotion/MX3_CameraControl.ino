@@ -173,8 +173,8 @@ void checkCameraRepeat() {
     else if( repdone >= camera_repeat ) {
        // we've done all of the repeat cycles
       repdone = 0;
-       // clear for moving
-      Engine.state(ST_MOVE);
+       // clear for check post-exposure alt output trigger
+      Engine.state(ST_ALTP);
       return;
     }
    
