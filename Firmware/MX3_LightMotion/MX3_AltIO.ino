@@ -38,6 +38,7 @@ unsigned int     alt_after_ms = 100;
 boolean        alt_force_shot = false;
 boolean           alt_ext_int = false;
 byte            alt_direction = FALLING;
+byte             alt_out_trig = HIGH;
 
 
  /** Alt I/O Setup 
@@ -93,7 +94,9 @@ void altHandler(byte p_which) {
     else if( alt_inputs[p_which] == ALT_EXTINT ) {
           // set camera ok to fire
         alt_force_shot = true;
-        Engine.state(ST_CLEAR);
+          // do not clear the state, as we may be in the middle of a move
+          // when a trigger is received! (or some other activity, for that matter)
+        // Engine.state(ST_CLEAR);
     }
     else if( alt_inputs[p_which] == ALT_DIR)
         motorDirFlip();
@@ -180,7 +183,7 @@ void altConnect(byte p_which, byte p_mode) {
       // it's an output mode
       
     pinMode(ALT_START_PIN + p_which, OUTPUT);
-    digitalWrite(ALT_START_PIN + p_which, LOW);
+    digitalWrite(ALT_START_PIN + p_which, ! alt_out_trig);
     
     if( p_mode == ALT_OUT_B ) {
       alt_out_flags |= ( ALT_OUT_FLAG_B << p_which );
@@ -219,7 +222,7 @@ void altOutStart(byte p_mode) {
   
   for(byte i = 0; i < 4; i++) {
        if( alt_out_flags & ( flag << i ) ) {
-          digitalWrite(ALT_START_PIN + i, HIGH); 
+          digitalWrite(ALT_START_PIN + i, alt_out_trig); 
           altStarted = true;
        }
   }
@@ -254,7 +257,7 @@ void altOutStop() {
    
   for(byte i = 0; i < 4; i++) {
        if( alt_out_flags & ( flag << i ) ) {
-          digitalWrite(ALT_START_PIN + i, LOW); 
+          digitalWrite(ALT_START_PIN + i, ! alt_out_trig); 
        }
   }
   

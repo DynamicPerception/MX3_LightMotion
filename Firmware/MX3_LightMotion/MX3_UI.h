@@ -243,12 +243,16 @@ MENU_SELECT_ITEM  ui_sel_altoutb  = { ALT_OUT_B,  {"Out B4"} };
 MENU_SELECT_ITEM  ui_sel_altouta  = { ALT_OUT_A,  {"Out Aft"} };
 
 MENU_SELECT_ITEM ui_sel_falling = { FALLING, {"Falling"} };
-MENU_SELECT_ITEM ui_sel_rising  = { RISING, {"Rising"} };
+MENU_SELECT_ITEM ui_sel_rising  = { RISING,  {"Rising"} };
+
+MENU_SELECT_ITEM ui_sel_high = { HIGH, {"High"} };
+MENU_SELECT_ITEM ui_sel_low  = { LOW,  {"Low"} };
 
 MENU_SELECT_LIST  ui_sel_list_onoff[]  = { &ui_sel_off, &ui_sel_on };
 MENU_SELECT_LIST  ui_sel_list_alt[]    = { &ui_sel_off, &ui_sel_altstart, &ui_sel_altstop, &ui_sel_alttog, &ui_sel_altext, &ui_sel_altdir, &ui_sel_altoutb, &ui_sel_altouta };
 MENU_SELECT_LIST  ui_sel_list_altOut[] = { &ui_sel_off, &ui_sel_altoutb, &ui_sel_altouta };
 MENU_SELECT_LIST  ui_sel_list_dir[]    = { &ui_sel_falling, &ui_sel_rising };
+MENU_SELECT_LIST  ui_sel_list_hilo[]    = { &ui_sel_high, &ui_sel_low };
 
   // ===== Camera Menu 
 
@@ -353,12 +357,14 @@ MENU_SELECT  ui_sl_alt2     = { &alt_inputs[1], MENU_SELECT_SIZE(ui_sel_list_alt
 MENU_SELECT  ui_sl_alt3     = { &alt_inputs[2], MENU_SELECT_SIZE(ui_sel_list_alt),    MENU_TARGET(&ui_sel_list_alt) };
 MENU_SELECT  ui_sl_alt4     = { &alt_inputs[3], MENU_SELECT_SIZE(ui_sel_list_altOut), MENU_TARGET(&ui_sel_list_altOut) };
 MENU_SELECT  ui_sl_altdir   = { &alt_direction, MENU_SELECT_SIZE(ui_sel_list_dir),    MENU_TARGET(&ui_sel_list_dir) };
+MENU_SELECT  ui_sl_althl    = { &alt_out_trig,  MENU_SELECT_SIZE(ui_sel_list_hilo),   MENU_TARGET(&ui_sel_list_hilo) };
 
 MENU_VALUE   ui_in_alt1     = { TYPE_SELECT, 0, 0, MENU_TARGET(&ui_sl_alt1),       EE_ALT1 };
 MENU_VALUE   ui_in_alt2     = { TYPE_SELECT, 0, 0, MENU_TARGET(&ui_sl_alt2),       EE_ALT2 };
 MENU_VALUE   ui_in_alt3     = { TYPE_SELECT, 0, 0, MENU_TARGET(&ui_sl_alt3),       EE_ALT3 };
 MENU_VALUE   ui_in_alt4     = { TYPE_SELECT, 0, 0, MENU_TARGET(&ui_sl_alt4),       EE_ALT4 };
 MENU_VALUE   ui_in_altdir   = { TYPE_SELECT, 0, 0, MENU_TARGET(&ui_sl_altdir),     EE_ALTDIR };
+MENU_VALUE   ui_in_althl    = { TYPE_SELECT, 0, 0, MENU_TARGET(&ui_sl_althl),      EE_ALTHL };
 MENU_VALUE   ui_in_altbd    = { TYPE_UINT,   0, 0, MENU_TARGET(&alt_before_delay), EE_ALTBD };
 MENU_VALUE   ui_in_altbt    = { TYPE_UINT,   0, 0, MENU_TARGET(&alt_before_ms),    EE_ALTBT };
 MENU_VALUE   ui_in_altad    = { TYPE_UINT,   0, 0, MENU_TARGET(&alt_after_delay),  EE_ALTAD };
@@ -372,10 +378,11 @@ MENU_ITEM    ui_it_altbd    = { {"Out B4 Time"},     ITEM_VALUE,  0, MENU_TARGET
 MENU_ITEM    ui_it_altbt    = { {"Out B4 Trig mS"},  ITEM_VALUE,  0, MENU_TARGET(&ui_in_altbt) };
 MENU_ITEM    ui_it_altad    = { {"Out Aft Time"},    ITEM_VALUE,  0, MENU_TARGET(&ui_in_altad) };
 MENU_ITEM    ui_it_altat    = { {"Out Aft Trig mS"}, ITEM_VALUE,  0, MENU_TARGET(&ui_in_altat) };
-MENU_ITEM    ui_it_altdir   = { {"Trigger Mode"},    ITEM_VALUE,  0, MENU_TARGET(&ui_in_altdir) };
+MENU_ITEM    ui_it_altdir   = { {"In Trigger"},      ITEM_VALUE,  0, MENU_TARGET(&ui_in_altdir) };
+MENU_ITEM    ui_it_althl    = { {"Out Level"},       ITEM_VALUE,  0, MENU_TARGET(&ui_in_althl) };
 MENU_ITEM    ui_it_altset   = { {"Init I/O"},        ITEM_ACTION, 0, MENU_TARGET(uiMenuAltInit) };
 
-MENU_LIST    ui_list_alt[]  = { &ui_it_altset, &ui_it_alt1, &ui_it_alt2, &ui_it_alt3, &ui_it_alt4, &ui_it_altdir, &ui_it_altbd, &ui_it_altbt, &ui_it_altad, &ui_it_altat };
+MENU_LIST    ui_list_alt[]  = { &ui_it_altset, &ui_it_alt1, &ui_it_alt2, &ui_it_alt3, &ui_it_alt4, &ui_it_altdir, &ui_it_altbd, &ui_it_altbt, &ui_it_altad, &ui_it_altat, &ui_it_althl };
 MENU_ITEM    ui_it_alt      = { {"Alt I/O"}, ITEM_MENU, MENU_SIZE(ui_list_alt), MENU_TARGET(&ui_list_alt) };
 
  // ===== Sensor Options

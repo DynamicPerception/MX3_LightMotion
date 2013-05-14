@@ -248,7 +248,7 @@ struct MotorDefinition {
 
  // stored memory layout version
  // this number MUST be changed every time the memory layout is changed
-const unsigned int MEMORY_VERSION    = 22;
+const unsigned int MEMORY_VERSION    = 23;
 
 
 /* Locations of each variable to be stored, note correct spacing
@@ -256,7 +256,6 @@ const unsigned int MEMORY_VERSION    = 22;
 
 const int EE_NONE      = 0; // do not store
 const int EE_SMS       = 1; // motion_sms
-
 const int EE_MAXSHOT   = EE_SMS     + 1; // camera max shots
 const int EE_CAMREP    = EE_MAXSHOT + 2; // camera_repeat
 const int EE_CAMDEL    = EE_CAMREP  + 1; // camera_delay
@@ -287,7 +286,8 @@ const int EE_ALTBD     = EE_ALTDIR    + 1; // alt trigger before delay
 const int EE_ALTBT     = EE_ALTBD     + 2; // alt trigger before time
 const int EE_ALTAD     = EE_ALTBT     + 2; // alt trigger after delay
 const int EE_ALTAT     = EE_ALTAD     + 2; // alt trigger after time
-const int EE_PERIOD    = EE_ALTAT     + 2; // minimum period in mS
+const int EE_ALTHL     = EE_ALTAT     + 2; // high or low output trigger
+const int EE_PERIOD    = EE_ALTHL     + 1; // minimum period in mS
 const int EE_MPRESET   = EE_PERIOD    + 2; // selected presets
 const int EE_VOLTH     = EE_MPRESET   + 4; // voltage threshold
 const int EE_VOLWARN   = EE_VOLTH     + 4; // voltage warning flag

@@ -88,6 +88,7 @@ void eepromWrite() {
   }
   
   write(EE_LCDOFF, lcdDisable);
+  
   write(EE_ALT1, alt_inputs[0]);
   write(EE_ALT2, alt_inputs[1]);
   write(EE_ALT3, alt_inputs[2]);
@@ -97,6 +98,8 @@ void eepromWrite() {
   write(EE_ALTBT, alt_before_ms);
   write(EE_ALTAD, alt_after_delay);
   write(EE_ALTAT, alt_after_ms);
+  write(EE_ALTHL, alt_out_trig);
+  
   write(EE_PERIOD, motor_pwm_minperiod);
   write(EE_MPRESET, *((byte*) motorPresetSelected), sizeof(motorPresetSelected) / sizeof(byte));
   write(EE_VOLTH, sensor_minVoltage);
@@ -133,6 +136,7 @@ void eepromRestore() {
   }
   
   read(EE_LCDOFF, lcdDisable);
+
   read(EE_ALT1, alt_inputs[0]);
   read(EE_ALT2, alt_inputs[1]);
   read(EE_ALT3, alt_inputs[2]);
@@ -142,6 +146,7 @@ void eepromRestore() {
   read(EE_ALTBT, alt_before_ms);
   read(EE_ALTAD, alt_after_delay);
   read(EE_ALTAT, alt_after_ms);
+  read(EE_ALTHL, alt_out_trig);
   
   read(EE_PERIOD, motor_pwm_minperiod);
   read(EE_MPRESET, *((byte*) motorPresetSelected), sizeof(motorPresetSelected) / sizeof(byte));
