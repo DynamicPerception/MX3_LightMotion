@@ -6,7 +6,7 @@ MX3 LightMotion
 See dynamicperception.com for more information
 
 
-(c) 2008-2012 C.A. Church / Dynamic Perception LLC
+(c) 2008-2013 C.A. Church / Dynamic Perception LLC
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -165,9 +165,9 @@ void checkCameraRepeat() {
     static byte repdone = 0;
     
       // if we don't have camera repeat function enabled,
-      // then go ahead and clear for a move
+      // then go ahead and clear for alt out post shot check
     if( camera_repeat == 0 ) {
-      Engine.state(ST_MOVE);
+      Engine.state(ST_ALTP);
       return;
     }
     else if( repdone >= camera_repeat ) {

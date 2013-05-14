@@ -6,7 +6,7 @@ MX3 LightMotion
 See dynamicperception.com for more information
 
 
-(c) 2008-2012 C.A. Church / Dynamic Perception LLC
+(c) 2008-2013 C.A. Church / Dynamic Perception LLC
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -290,11 +290,17 @@ byte uiMainScreen() {
   
   minInt = minInt / 1000.0;
   
-  if( running )
-    lcd.print(STR_RUN);
-  else
+    // display correct running string
+  if( running ) {
+    if( alt_ext_int )
+      lcd.print(STR_EXT);
+    else
+      lcd.print(STR_RUN);
+  }
+  else {
     lcd.print(STR_STOP);
-    
+  }
+  
   lcd.print(STR_SPACE);
   
   if( minInt > camera_delay )

@@ -2,7 +2,7 @@
 
    MX3 LightMotion Firmware
    
-   (c) 2008-2012 C.A. Church / Dynamic Perception LLC
+   (c) 2008-2013 C.A. Church / Dynamic Perception LLC
    
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -36,7 +36,7 @@ unsigned int  alt_after_delay = 100;
 unsigned int    alt_before_ms = 100;
 unsigned int     alt_after_ms = 100;
 boolean        alt_force_shot = false;
-byte                alt_block = 0;
+boolean           alt_ext_int = false;
 byte            alt_direction = FALLING;
 
 
@@ -48,6 +48,15 @@ void altSetup() {
   altConnect(1,  alt_inputs[1]); 
   altConnect(2,  alt_inputs[2]);
   altConnect(3,  alt_inputs[3]);
+  
+    // check if any inputs are set to ext intervalometer
+  boolean doExt = false;
+  
+  for( byte i = 0; i <= 3; i++ )
+    if( alt_inputs[i] == ALT_EXTINT )
+      doExt = true;
+      
+  alt_ext_int = doExt;
   
 }
 
@@ -170,8 +179,8 @@ void altConnect(byte p_which, byte p_mode) {
     
       // it's an output mode
       
-    digitalWrite(ALT_START_PIN + p_which, LOW);
     pinMode(ALT_START_PIN + p_which, OUTPUT);
+    digitalWrite(ALT_START_PIN + p_which, LOW);
     
     if( p_mode == ALT_OUT_B ) {
       alt_out_flags |= ( ALT_OUT_FLAG_B << p_which );
@@ -210,15 +219,23 @@ void altOutStart(byte p_mode) {
   
   for(byte i = 0; i < 4; i++) {
        if( alt_out_flags & ( flag << i ) ) {
-          digitalWrite(i, HIGH); 
+          digitalWrite(ALT_START_PIN + i, HIGH); 
           altStarted = true;
        }
   }
     
-  if( altStarted == true ) {
+  if( altStarted ) {
     MsTimer2::set(adelay, altOutStop);
     MsTimer2::start();
     Engine.state(ST_BLOCK);
+  }
+  else if( p_mode == ALT_TRIG_B ) {
+      // ok to fire shot
+    Engine.state(ST_CLEAR);
+  }
+  else {
+      // ok to move
+    Engine.state(ST_MOVE);
   }
   
 }
@@ -231,13 +248,17 @@ void altOutStart(byte p_mode) {
  
 void altOutStop() {
  
-   byte flag = alt_block == ALT_BLOCK_B ? ALT_OUT_FLAG_B : ALT_OUT_FLAG_A; 
+  MsTimer2::stop();
+  
+  byte flag = alt_block == ALT_BLOCK_B ? ALT_OUT_FLAG_B : ALT_OUT_FLAG_A; 
    
-   for(byte i = 0; i < 4; i++) {
+  for(byte i = 0; i < 4; i++) {
        if( alt_out_flags & ( flag << i ) ) {
-          digitalWrite(i, LOW); 
+          digitalWrite(ALT_START_PIN + i, LOW); 
        }
   }
+  
+  // set correct state to either clear to fire, or clear to move
   
   if( alt_block == ALT_BLOCK_B ) 
     Engine.state(ST_CLEAR);
@@ -245,3 +266,5 @@ void altOutStop() {
     Engine.state(ST_MOVE);
     
 }
+
+

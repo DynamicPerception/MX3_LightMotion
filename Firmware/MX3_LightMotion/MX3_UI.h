@@ -3,7 +3,7 @@
 
    MX3 LightMotion Firmware
    
-   (c) 2008-2012 C.A. Church / Dynamic Perception LLC
+   (c) 2008-2013 C.A. Church / Dynamic Perception LLC
    
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -84,6 +84,7 @@ const char MX3_C2STR[]   =  "Perception";
   // run and stop must be exact same length, pad with spaces
 const char STR_RUN[]     =  "On ";
 const char STR_STOP[]    =  "Off";
+const char STR_EXT[]     =  "Ext";
 const char STR_TIME[]    =  "Time: ";
 const char STR_CAM[]     =  "Cam ";
 const char STR_BULB[]    =  "B ";
@@ -363,16 +364,16 @@ MENU_VALUE   ui_in_altbt    = { TYPE_UINT,   0, 0, MENU_TARGET(&alt_before_ms), 
 MENU_VALUE   ui_in_altad    = { TYPE_UINT,   0, 0, MENU_TARGET(&alt_after_delay),  EE_ALTAD };
 MENU_VALUE   ui_in_altat    = { TYPE_UINT,   0, 0, MENU_TARGET(&alt_after_ms),     EE_ALTAT };
 
-MENU_ITEM    ui_it_alt1     = { {"I/O #1 Mode"},   ITEM_VALUE,  0, MENU_TARGET(&ui_in_alt1) };
-MENU_ITEM    ui_it_alt2     = { {"I/O #2 Mode"},   ITEM_VALUE,  0, MENU_TARGET(&ui_in_alt2) };
-MENU_ITEM    ui_it_alt3     = { {"I/O #3 Mode"},   ITEM_VALUE,  0, MENU_TARGET(&ui_in_alt3) };
-MENU_ITEM    ui_it_alt4     = { {"I/O #4 Mode"},   ITEM_VALUE,  0, MENU_TARGET(&ui_in_alt4) };
-MENU_ITEM    ui_it_altbd    = { {"Out B4 Time"},  ITEM_VALUE,  0, MENU_TARGET(&ui_in_altbd) };
-MENU_ITEM    ui_it_altbt    = { {"Out B4 Trig mS"},     ITEM_VALUE,  0, MENU_TARGET(&ui_in_altbt) };
-MENU_ITEM    ui_it_altad    = { {"Out Aft Time"}, ITEM_VALUE,  0, MENU_TARGET(&ui_in_altad) };
-MENU_ITEM    ui_it_altat    = { {"Out Aft Trig mS"},    ITEM_VALUE,  0, MENU_TARGET(&ui_in_altat) };
-MENU_ITEM    ui_it_altdir   = { {"Trigger On"},    ITEM_VALUE,  0, MENU_TARGET(&ui_in_altdir) };
-MENU_ITEM    ui_it_altset   = { {"Init I/O"},      ITEM_ACTION, 0, MENU_TARGET(uiMenuAltInit) };
+MENU_ITEM    ui_it_alt1     = { {"I/O #1 Mode"},     ITEM_VALUE,  0, MENU_TARGET(&ui_in_alt1) };
+MENU_ITEM    ui_it_alt2     = { {"I/O #2 Mode"},     ITEM_VALUE,  0, MENU_TARGET(&ui_in_alt2) };
+MENU_ITEM    ui_it_alt3     = { {"I/O #3 Mode"},     ITEM_VALUE,  0, MENU_TARGET(&ui_in_alt3) };
+MENU_ITEM    ui_it_alt4     = { {"I/O #4 Mode"},     ITEM_VALUE,  0, MENU_TARGET(&ui_in_alt4) };
+MENU_ITEM    ui_it_altbd    = { {"Out B4 Time"},     ITEM_VALUE,  0, MENU_TARGET(&ui_in_altbd) };
+MENU_ITEM    ui_it_altbt    = { {"Out B4 Trig mS"},  ITEM_VALUE,  0, MENU_TARGET(&ui_in_altbt) };
+MENU_ITEM    ui_it_altad    = { {"Out Aft Time"},    ITEM_VALUE,  0, MENU_TARGET(&ui_in_altad) };
+MENU_ITEM    ui_it_altat    = { {"Out Aft Trig mS"}, ITEM_VALUE,  0, MENU_TARGET(&ui_in_altat) };
+MENU_ITEM    ui_it_altdir   = { {"Trigger Mode"},    ITEM_VALUE,  0, MENU_TARGET(&ui_in_altdir) };
+MENU_ITEM    ui_it_altset   = { {"Init I/O"},        ITEM_ACTION, 0, MENU_TARGET(uiMenuAltInit) };
 
 MENU_LIST    ui_list_alt[]  = { &ui_it_altset, &ui_it_alt1, &ui_it_alt2, &ui_it_alt3, &ui_it_alt4, &ui_it_altdir, &ui_it_altbd, &ui_it_altbt, &ui_it_altad, &ui_it_altat };
 MENU_ITEM    ui_it_alt      = { {"Alt I/O"}, ITEM_MENU, MENU_SIZE(ui_list_alt), MENU_TARGET(&ui_list_alt) };

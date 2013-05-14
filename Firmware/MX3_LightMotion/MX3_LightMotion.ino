@@ -2,7 +2,7 @@
 
    MX3 LightMotion Firmware
    
-   (c) 2008-2012 C.A. Church / Dynamic Perception LLC
+   (c) 2008-2013 C.A. Church / Dynamic Perception LLC
    
    Additional Code by Parker Dillmann
    
@@ -60,7 +60,7 @@ unsigned long run_time      = 0;
 unsigned long camera_tm     = 0;
 float     sensor_minVoltage = 10.5;
 boolean      sensor_enVWarn = true;
-
+byte              alt_block = 0;
 
 
  // initialize core objects
@@ -137,6 +137,10 @@ void loop() {
 
 void pauseProgram() {
      // pause program
+     
+  if( alt_block )
+    altOutStop();
+    
   Camera.stop();
   running = false;
 }
@@ -150,7 +154,10 @@ void stopProgram(boolean force_clear) {
   running  = false;
   run_time = 0;
   
+  altOutStop();
+
   motorStop(false);
+   
   camClear();
   
     // Force block on state engine

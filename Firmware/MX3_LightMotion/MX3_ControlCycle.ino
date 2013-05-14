@@ -5,7 +5,7 @@ LightMotion
 See dynamicperception.com for more information
 
 
-(c) 2008-2012 C.A. Church / Dynamic Perception LLC
+(c) 2008-2013 C.A. Church / Dynamic Perception LLC
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -75,22 +75,24 @@ void cycleCamera() {
       return;
   }
   
+    // if in external interval mode, don't do anything is a force shot isn't
+    // registered
+    
+  if( alt_ext_int && ! alt_force_shot )
+    return;
+    
     // trigger any outputs that need to go before the exposure
-  if( alt_out_flags & ALT_OUT_ANY_B && ( millis() - camera_tm ) >= ( (camera_delay * (float) SECOND) - alt_before_delay ) && ! alt_block ) {
+  if( alt_out_flags & ALT_OUT_ANY_B && cycleShotOK(true) ) {
       alt_block = ALT_BLOCK_B;
       altOutStart(ALT_TRIG_B);
       return;
   }
     
     
-    // NOTE: You cannot combine External Interval and Out Before (how would we know when the external signal would be
-    // coming, and trigger the output at the right time before, eh?)
-    
-    
     // if enough time has passed, and we're ok to take an exposure
     // note: for slaves, we only get here by a master signal, so we don't check interval timing
   
-  if( alt_force_shot == true || ( millis() - camera_tm ) >= (camera_delay * (float) SECOND)  ) {
+  if( cycleShotOK(false) ) {
     
         // only execute cycle if the camera is not currently busy
 
@@ -101,6 +103,59 @@ void cycleCamera() {
   
 }
 
+/** OK To Start a Shot Sequence?
+
+ Checks whether or not a shot sequence (or pre-shot alt out trigger) is ok to execute.
+ 
+ @param p_prealt
+ Whether to check for a pre-shot alt out trigger (true) or normal shot sequence (false)
+ 
+ @return
+ True if good to go, false otherwise
+ 
+ @author
+ C. A. Church
+ */
+ 
+boolean cycleShotOK(boolean p_prealt) {
+  
+  unsigned long timeCheck =  (unsigned long) (camera_delay * (float) SECOND);
+
+    // if we're in alt i/o as external intervalometer mode...
+  if( alt_ext_int ) {
+        // don't do a pre-output clearance if alt_block is true...
+      if( p_prealt && alt_block )
+        return false;
+        
+        // determine whether or not to fire based on alt_force_shot
+      if( alt_force_shot == true )
+         return true;
+      else
+         return false;
+  }
+  
+  if( p_prealt ) {
+        // pre--output clearance check
+    if( (millis() - camera_tm) >= (timeCheck - alt_before_delay)  && ! alt_block )
+      return true;
+      
+  }
+  else {
+    
+    if( (millis() - camera_tm) >= timeCheck )
+      return true;
+  }
+  
+  return false;
+  
+}
+
+
+/** Perform the triggering of the camera cycle
+
+ @author
+ C. A. Church
+*/
 void cycleTriggerCamera() {
  
   Engine.state(ST_BLOCK);
@@ -176,7 +231,7 @@ void cycleCheckMotor() {
  This callback handler handle the ST_ALTP state.
  
  If one or more I/Os are configured as post-exposure outputs, this state
- will cause a run delay for the specified output delay time, and then
+ will cause a (non-blocking) run delay for the specified output delay time, and then
  trigger the outputs to fire.
  
  @author
