@@ -125,6 +125,7 @@ const char STR_MCURR[]   =  "Motor Current";
 const char STR_MVOLT[]   =  "Voltage Level";
 const char STR_MA[]      =  " mA";
 const char STR_V[]       =  " V";
+const char STR_AST       =  '*';
 
 
 // ====== UI Constant Data ========
@@ -138,88 +139,6 @@ const byte         UI_SCREEN_MOTOR3  = 4;
 const unsigned int UI_ERR_REFRESH_TM = 5000;
 const unsigned int UI_ERR_BLINK_TM   = 1000;
 
-
-// ====== Cursor (main screen interaction) Data =======
-
- // function pointer for cursors
-typedef void(*uiTargetFunc)(byte);
-
-
- /** Display Cursor
- 
-   For cursor activity on screens, this struct defines, and should be used
-   or one global variable, the position of the cursor on-screen, and whether
-   it is enabled
-   */
-   
-struct uiDisplayCursor {
-  byte enabled;
-  byte row;
-  byte col;
-  
-};
-
-/** Cursor Target
-
- The user may cursor around main screens for activities.  These activities are defined
- by cursor targets, which indicate the row and column of the target, and what
- activity to call (callback) when interacted with (up or down key)
- */
- 
-struct uiDisplayCursorTarget {
- byte row;
- byte col;
- uiTargetFunc func; 
-};
-
- /** Screen Cursor Targets
- 
-  For every screen, we must define what targets are available on that screen
-  */
-  
-struct uiDisplayCursors {
-  byte count;
-    /** A void pointer which should resolve to a uiDisplayCursorTarget**, and the length of that
-        list must be equivalent to count */
-  void* targets;
-};
-
-
- // cursor targets for each screen
-
- // main screen
-const uiDisplayCursorTarget  ui_ct_main1     = { 0, 0,  uiCursorToggleRun };
-const uiDisplayCursorTarget  ui_ct_main2     = { 0, 4,  uiCursorAdjustInt };
-const uiDisplayCursorTarget  ui_ct_main3     = { 0, 12, uiCursorAdjustSMS };
-
-const uiDisplayCursorTarget* ui_dctl_main[]  = { &ui_ct_main1, &ui_ct_main2, &ui_ct_main3 };
-const uiDisplayCursors       ui_dc_main      = { DCT_SIZE(ui_dctl_main), DCT_PTR(&ui_dctl_main) };
-
- // camera screen
-const uiDisplayCursorTarget  ui_ct_cam1      = { 1, 0,  uiCursorChangeCamBulb };
-const uiDisplayCursorTarget  ui_ct_cam2      = { 1, 2,  uiCursorChangeShutterTime };
-const uiDisplayCursorTarget  ui_ct_cam3      = { 1, 11, uiCursorChangeFocusTime };
-
-const uiDisplayCursorTarget* ui_dctl_cam[]   = { &ui_ct_cam1, &ui_ct_cam2, &ui_ct_cam3 };
-const uiDisplayCursors       ui_dc_cam       = { DCT_SIZE(ui_dctl_cam), DCT_PTR(&ui_dctl_cam) };
-
- // motor screens
-const uiDisplayCursorTarget  ui_ct_mot1      = { 0, 8,  uiCursorChangeMotEn };
-const uiDisplayCursorTarget  ui_ct_mot2      = { 1, 0,  uiCursorChangeMotDir };
-const uiDisplayCursorTarget  ui_ct_mot3      = { 1, 2,  uiCursorChangeMotSpd };
-const uiDisplayCursorTarget  ui_ct_mot4      = { 0, 13, uiCursorChangeMotLead };
-const uiDisplayCursorTarget  ui_ct_mot5      = { 1, 13, uiCursorChangeMotRamp };
-
-const uiDisplayCursorTarget* ui_dctl_mot[]   = { &ui_ct_mot1, &ui_ct_mot2, &ui_ct_mot3, &ui_ct_mot4, &ui_ct_mot5 };
-const uiDisplayCursors       ui_dc_mot       = { DCT_SIZE(ui_dctl_mot), DCT_PTR(&ui_dctl_mot) };
-
- // screens with no targets
-const uiDisplayCursors ui_dc_none = { 0, 0 };
-
- // all screen cursors...
- 
-    // main, camera, m1, m2, m3, set1
-const uiDisplayCursors*  ui_dc_list[] = { &ui_dc_main, &ui_dc_cam, &ui_dc_mot, &ui_dc_mot, &ui_dc_mot };
 
 
   // camera shutter speed display divisions
@@ -428,5 +347,129 @@ MENU_LIST    ui_list_top[]     = { &ui_it_camList, &ui_it_motors, &ui_it_glList 
 
                   // Root item is always created last, so we can add all other items to it
 MENU_ITEM    ui_it_root        = { {"Root"},        ITEM_MENU,   MENU_SIZE(ui_list_top),    MENU_TARGET(&ui_list_top) };
+
+
+// ======= Special Menu for Asymmetric Ramping for Motors
+
+
+MENU_VALUE   ui_in_cmot0_ru = { TYPE_UINT,   0, 0, MENU_TARGET(&motors[0].ramp_start), EE_M0RAMP  };
+MENU_VALUE   ui_in_cmot0_rd = { TYPE_UINT,   0, 0, MENU_TARGET(&motors[0].ramp_end),   EE_M0RAMPE };
+
+MENU_ITEM    ui_it_cmot0_ru = { {"Ramp In"},  ITEM_VALUE,  0, MENU_TARGET(&ui_in_cmot0_ru) };
+MENU_ITEM    ui_it_cmot0_rd = { {"Ramp Out"}, ITEM_VALUE,  0, MENU_TARGET(&ui_in_cmot0_rd) };
+
+MENU_LIST    ui_list_cmot0[] = { &ui_it_cmot0_ru, &ui_it_cmot0_rd };
+MENU_ITEM    ui_it_cmot0      = { {"Ramping"}, ITEM_MENU, MENU_SIZE(ui_list_cmot0), MENU_TARGET(&ui_list_cmot0) };
+
+MENU_VALUE   ui_in_cmot1_ru = { TYPE_UINT,   0, 0, MENU_TARGET(&motors[0].ramp_start), EE_M0RAMP  + EE_MOTOR_SPACE };
+MENU_VALUE   ui_in_cmot1_rd = { TYPE_UINT,   0, 0, MENU_TARGET(&motors[0].ramp_end),   EE_M0RAMPE + EE_MOTOR_SPACE };
+
+MENU_ITEM    ui_it_cmot1_ru = { {"Ramp In"},  ITEM_VALUE,  0, MENU_TARGET(&ui_in_cmot1_ru) };
+MENU_ITEM    ui_it_cmot1_rd = { {"Ramp Out"}, ITEM_VALUE,  0, MENU_TARGET(&ui_in_cmot1_rd) };
+
+MENU_LIST    ui_list_cmot1[] = { &ui_it_cmot1_ru, &ui_it_cmot1_rd };
+MENU_ITEM    ui_it_cmot1      = { {"Ramping"}, ITEM_MENU, MENU_SIZE(ui_list_cmot1), MENU_TARGET(&ui_list_cmot1) };
+
+MENU_VALUE   ui_in_cmot2_ru = { TYPE_UINT,   0, 0, MENU_TARGET(&motors[0].ramp_start), EE_M0RAMP  + EE_MOTOR_SPACE * 2  };
+MENU_VALUE   ui_in_cmot2_rd = { TYPE_UINT,   0, 0, MENU_TARGET(&motors[0].ramp_end),   EE_M0RAMPE + EE_MOTOR_SPACE };
+
+MENU_ITEM    ui_it_cmot2_ru = { {"Ramp In"},  ITEM_VALUE,  0, MENU_TARGET(&ui_in_cmot2_ru) };
+MENU_ITEM    ui_it_cmot2_rd = { {"Ramp Out"}, ITEM_VALUE,  0, MENU_TARGET(&ui_in_cmot2_rd) };
+
+MENU_LIST    ui_list_cmot2[] = { &ui_it_cmot2_ru, &ui_it_cmot2_rd };
+MENU_ITEM    ui_it_cmot2     = { {"Ramping"}, ITEM_MENU, MENU_SIZE(ui_list_cmot2), MENU_TARGET(&ui_list_cmot2) };
+
+// ====== Cursor (main screen interaction) Data =======
+
+ // function pointer for cursors
+typedef void(*uiTargetFunc)(byte);
+
+
+ /** Display Cursor
+ 
+   For cursor activity on screens, this struct defines, and should be used
+   or one global variable, the position of the cursor on-screen, and whether
+   it is enabled
+   */
+   
+struct uiDisplayCursor {
+  byte enabled;
+  byte row;
+  byte col;
+  
+};
+
+/** Cursor Target
+
+ The user may cursor around main screens for activities.  These activities are defined
+ by cursor targets, which indicate the row and column of the target, and what
+ activity to call (callback) when interacted with (up or down key).  The final element
+ is a pointer to a MENU_ITEM, which will cause the enter button to draw up that menu
+ when the cursor is over it.  Providing 0 as mnu will prevent a specialized menu from
+ being activated on that item.
+ */
+ 
+struct uiDisplayCursorTarget {
+ byte row;
+ byte col;
+ uiTargetFunc func;
+ MENU_ITEM* mnu;
+};
+
+ /** Screen Cursor Targets
+ 
+  For every screen, we must define what targets are available on that screen
+  */
+  
+struct uiDisplayCursors {
+  byte count;
+    /** A void pointer which should resolve to a uiDisplayCursorTarget**, and the length of that
+        list must be equivalent to count */
+  void* targets;
+};
+
+
+ // cursor targets for each screen
+
+ // main screen
+const uiDisplayCursorTarget  ui_ct_main1     = { 0, 0,  uiCursorToggleRun, 0 };
+const uiDisplayCursorTarget  ui_ct_main2     = { 0, 4,  uiCursorAdjustInt, 0 };
+const uiDisplayCursorTarget  ui_ct_main3     = { 0, 12, uiCursorAdjustSMS, 0 };
+
+const uiDisplayCursorTarget* ui_dctl_main[]  = { &ui_ct_main1, &ui_ct_main2, &ui_ct_main3 };
+const uiDisplayCursors       ui_dc_main      = { DCT_SIZE(ui_dctl_main), DCT_PTR(&ui_dctl_main) };
+
+ // camera screen
+const uiDisplayCursorTarget  ui_ct_cam1      = { 1, 0,  uiCursorChangeCamBulb,     0 };
+const uiDisplayCursorTarget  ui_ct_cam2      = { 1, 2,  uiCursorChangeShutterTime, 0 };
+const uiDisplayCursorTarget  ui_ct_cam3      = { 1, 11, uiCursorChangeFocusTime,   0 };
+
+const uiDisplayCursorTarget* ui_dctl_cam[]   = { &ui_ct_cam1, &ui_ct_cam2, &ui_ct_cam3 };
+const uiDisplayCursors       ui_dc_cam       = { DCT_SIZE(ui_dctl_cam), DCT_PTR(&ui_dctl_cam) };
+
+ // motor screens
+const uiDisplayCursorTarget  ui_ct_mot1      = { 0, 8,  uiCursorChangeMotEn,   0 };
+const uiDisplayCursorTarget  ui_ct_mot2      = { 1, 0,  uiCursorChangeMotDir,  0 };
+const uiDisplayCursorTarget  ui_ct_mot3      = { 1, 2,  uiCursorChangeMotSpd,  0 };
+const uiDisplayCursorTarget  ui_ct_mot4      = { 0, 13, uiCursorChangeMotLead, 0 };
+const uiDisplayCursorTarget  ui_ct_mot5_0    = { 1, 13, uiCursorChangeMotRamp, &ui_it_cmot0 };
+const uiDisplayCursorTarget  ui_ct_mot5_1    = { 1, 13, uiCursorChangeMotRamp, &ui_it_cmot1 };
+const uiDisplayCursorTarget  ui_ct_mot5_2    = { 1, 13, uiCursorChangeMotRamp, &ui_it_cmot2 };
+
+const uiDisplayCursorTarget* ui_dctl_mot0[]   = { &ui_ct_mot1, &ui_ct_mot2, &ui_ct_mot3, &ui_ct_mot4, &ui_ct_mot5_0 };
+const uiDisplayCursorTarget* ui_dctl_mot1[]   = { &ui_ct_mot1, &ui_ct_mot2, &ui_ct_mot3, &ui_ct_mot4, &ui_ct_mot5_1 };
+const uiDisplayCursorTarget* ui_dctl_mot2[]   = { &ui_ct_mot1, &ui_ct_mot2, &ui_ct_mot3, &ui_ct_mot4, &ui_ct_mot5_2 };
+
+const uiDisplayCursors       ui_dc_mot0       = { DCT_SIZE(ui_dctl_mot0), DCT_PTR(&ui_dctl_mot0) };
+const uiDisplayCursors       ui_dc_mot1       = { DCT_SIZE(ui_dctl_mot0), DCT_PTR(&ui_dctl_mot1) };
+const uiDisplayCursors       ui_dc_mot2       = { DCT_SIZE(ui_dctl_mot0), DCT_PTR(&ui_dctl_mot2) };
+
+ // screens with no targets
+const uiDisplayCursors ui_dc_none = { 0, 0 };
+
+ // all screen cursors...
+ 
+    // main, camera, m1, m2, m3, set1
+const uiDisplayCursors*  ui_dc_list[] = { &ui_dc_main, &ui_dc_cam, &ui_dc_mot0, &ui_dc_mot1, &ui_dc_mot2 };
 
 

@@ -83,7 +83,8 @@ void eepromWrite() {
     write(EE_M0FLAG + (EE_MOTOR_SPACE * i), *((byte*) &motors[i].flags));
     write(EE_M0RPM + (EE_MOTOR_SPACE * i), motors[i].rpm);
     write(EE_M0RATIO + (EE_MOTOR_SPACE * i), motors[i].ratio);
-    write(EE_M0RAMP + (EE_MOTOR_SPACE * i), motors[i].ramp);
+    write(EE_M0RAMP + (EE_MOTOR_SPACE * i), motors[i].ramp_start);
+    write(EE_M0RAMPE + (EE_MOTOR_SPACE * i), motors[i].ramp_end);
     write(EE_M0LEAD + (EE_MOTOR_SPACE * i), motors[i].lead);
   }
   
@@ -131,7 +132,8 @@ void eepromRestore() {
     read(EE_M0FLAG + (EE_MOTOR_SPACE * i), *((byte*) &motors[i].flags));
     read(EE_M0RPM + (EE_MOTOR_SPACE * i), motors[i].rpm);
     read(EE_M0RATIO + (EE_MOTOR_SPACE * i), motors[i].ratio);    
-    read(EE_M0RAMP + (EE_MOTOR_SPACE * i), motors[i].ramp);
+    read(EE_M0RAMP + (EE_MOTOR_SPACE * i), motors[i].ramp_start);
+    read(EE_M0RAMPE + (EE_MOTOR_SPACE * i), motors[i].ramp_end);
     read(EE_M0LEAD + (EE_MOTOR_SPACE * i), motors[i].lead);
   }
   

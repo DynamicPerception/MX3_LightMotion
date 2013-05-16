@@ -205,11 +205,13 @@ struct MotorDefinition {
   /** Distance traveled (in on pulses) */
 // unsigned long distance;
  
-  /** Ramp Shots */
- unsigned int ramp;
+  /** Ramp Shots Start */
+ unsigned int ramp_start;
+ 
+  /** Ramp Shots End */
+ unsigned int ramp_end;  
  
   /** Lead-in/Out */
-  
  unsigned int lead;
  
   /** Shot count that force ramp started at */
@@ -227,7 +229,8 @@ struct MotorDefinition {
    rpm = 8.13;
    ratio = 3.229;
 //   distance = 0;
-   ramp = 0;
+   ramp_start = 0;
+   ramp_end = 0;
    lead = 0;
    speed = 1.0;
    setSpeed = 1.0;
@@ -248,7 +251,7 @@ struct MotorDefinition {
 
  // stored memory layout version
  // this number MUST be changed every time the memory layout is changed
-const unsigned int MEMORY_VERSION    = 23;
+const unsigned int MEMORY_VERSION    = 24;
 
 
 /* Locations of each variable to be stored, note correct spacing
@@ -268,12 +271,13 @@ const int EE_CAMLOCK   = EE_CAMBULB + 1; // focus lock
 const int EE_M0FLAG    = EE_CAMBULB + 1; // flags
 const int EE_M0RPM     = EE_M0FLAG  + 1; // rpm
 const int EE_M0RATIO   = EE_M0RPM   + 4; // ratio
-const int EE_M0RAMP    = EE_M0RATIO + 4; // ramping
-const int EE_M0LEAD    = EE_M0RAMP  + 2; // lead-in/out
+const int EE_M0RAMP    = EE_M0RATIO + 4; // ramping in
+const int EE_M0RAMPE   = EE_M0RAMP  + 2; // ramping out
+const int EE_M0LEAD    = EE_M0RAMPE + 2; // lead-in/out
 
-  // note: for each motor, we move the previous defs ahead 12 bytes * motor num
+  // note: for each motor, we move the previous defs ahead 17 bytes * motor num
 
-const int EE_MOTOR_SPACE = 15;  
+const int EE_MOTOR_SPACE = 17;  
 const int EE_POSTMOTOR = EE_M0LEAD + 2 + (EE_MOTOR_SPACE * 2);
 
 const int EE_LCDOFF    = EE_POSTMOTOR + 1; // lcd off time

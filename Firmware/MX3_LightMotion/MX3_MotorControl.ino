@@ -640,13 +640,14 @@ void motorCheckRamp() {
   
       for( byte i = 0; i < MOTOR_COUNT; i++ ) {
         if(motors[i].flags & MOTOR_UEN_FLAG ) {
-          if( motors[i].ramp > 0 ) {
+          if( motors[i].ramp_start > 0 || motors[i].ramp_end > 0 ) {
             
               // do not apply ramp if still in lead-in, or in lead-out
             if( motors[i].lead > 0 && ( camera_fired < motors[i].lead || camera_fired > (camera_max_shots - motors[i].lead) ) )
               continue;
              
-            unsigned int rampEnd = motors[i].lead + motors[i].ramp;
+            unsigned int rampEnd = motors[i].lead  + motors[i].ramp_start;
+            unsigned int rampEndF = motors[i].lead + motors[i].ramp_end;
             float diff;
             
               // if we started during run time, set new ramp start point, in shots
@@ -655,7 +656,7 @@ void motorCheckRamp() {
               
             if( motors[i].flags & MOTOR_RAMP_FLAG ) {
                 // force ramp down?
-              diff = motors[i].ramp - (camera_fired - motors[i].forceRampStart);
+              diff = (float) (motors[i].ramp_end - (camera_fired - motors[i].forceRampStart)) / (float) motors[i].ramp_end;
               
               if( diff <= 0.0 ) {
                   // disable motor (user wanted the motor off when ramp completed...)
@@ -667,7 +668,7 @@ void motorCheckRamp() {
               motor_inRamp |= (1 << i);
             }
             else if( camera_fired == rampEnd ) {
-              diff = motors[i].ramp;
+              diff = 1.0;
                 // reset startshots, just in case they were set - since our lead-out/ramp-out is
                 // doesn't care about that part.
               motors[i].startShots = 0;
@@ -675,12 +676,12 @@ void motorCheckRamp() {
               motor_inRamp &= (B11111111 ^ (1 << i));
             }
             else if( camera_fired < rampEnd ) {
-              diff = camera_fired - motors[i].startShots - motors[i].lead;
+              diff = (float) (camera_fired - motors[i].startShots - motors[i].lead) / (float) motors[i].ramp_start;
                  // set motor currently ramping flag
               motor_inRamp |= (1 << i);
             }
-            else if( camera_fired > (camera_max_shots - rampEnd) ) {
-              diff = camera_max_shots - camera_fired - motors[i].lead;
+            else if( camera_fired > (camera_max_shots - rampEndF) ) {
+              diff = (float) (camera_max_shots - camera_fired - motors[i].lead)  / (float) motors[i].ramp_end;
                  // set motor currently ramping flag
               motor_inRamp |= (1 << i);
             }
@@ -688,8 +689,6 @@ void motorCheckRamp() {
               continue;
             }
             
-              // calculate new speed
-            diff = diff / (float) motors[i].ramp;
             diff = motors[i].setSpeed * diff;
 
             motorSpeed(i, diff, true);

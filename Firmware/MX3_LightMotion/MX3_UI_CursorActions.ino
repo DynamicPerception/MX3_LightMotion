@@ -209,7 +209,7 @@ void uiCursorChangeFocusTime(byte p_dir) {
 void uiCursorChangeMotEn(byte p_dir) {
   
     // if currently running, and a ramp is set, ramp out
-  if( running == true && motors[ui_curMotor].flags & MOTOR_UEN_FLAG && motors[ui_curMotor].ramp > 0) {
+  if( running == true && motors[ui_curMotor].flags & MOTOR_UEN_FLAG && motors[ui_curMotor].ramp_end > 0) {
     motorForceRamp(ui_curMotor);
   }
   else {  
@@ -229,7 +229,7 @@ void uiCursorChangeMotEn(byte p_dir) {
         // program already running when motor turned on?
       if( running ) {
         
-        if( motors[ui_curMotor].ramp > 0 ) {
+        if( motors[ui_curMotor].ramp_start > 0 ) {
           motors[ui_curMotor].startShots = camera_fired;
            // set speed to zero before starting motor!
           motorSpeed(ui_curMotor, 0, true);
@@ -277,6 +277,8 @@ void uiCursorChangeMotRamp(byte p_dir) {
   if( motor_inRamp & (1 << ui_curMotor) ) 
     return;
  
-  motors[ui_curMotor].ramp += p_dir ? 1 : -1;
+   // set both ramps the same when changed here
+  motors[ui_curMotor].ramp_start += p_dir ? 1 : -1;
+  motors[ui_curMotor].ramp_end    = motors[ui_curMotor].ramp_start;
 }
 

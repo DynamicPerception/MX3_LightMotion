@@ -242,6 +242,11 @@ void cycleCheckAltPost() {
   
   static unsigned long alt_tm = millis();
   
+    // no output after set, move on to move...
+  if( ! alt_out_flags & ALT_OUT_ANY_A )
+    Engine.state(ST_MOVE);
+    
+    
   if( alt_out_flags & ALT_OUT_ANY_A && ! alt_block ) {
     alt_block = ALT_BLOCK_A;
     alt_tm = millis();

@@ -423,15 +423,17 @@ void uiMotorScreen(byte p_motor) {
   lcd.print(STR_SPACE);
   
   byte spdPrec = (motorMaxSpeedRatio(p_motor) / 100 < 0.1) ? 3 : 2;
-  //byte spdPrec = 2;
-  float spd = motorSpeedRatio(p_motor);
-  //float spd = motors[p_motor].speed;
+  float    spd = motorSpeedRatio(p_motor);
   
   lcd.print(spd, spdPrec);
   
   lcd.setCursor(12, 1);
   lcd.print(STR_UA);
-  uiPad(3, def->ramp);
+  
+  if( def->ramp_start == def->ramp_end )
+    uiPad(3, def->ramp_start);
+  else
+    lcd.print(STR_AST);
   
   
 }
@@ -505,6 +507,14 @@ void uiScreenInput(byte p_screen, byte p_button) {
   uiDisplayCursorTarget* target = targets[uiPos - 1];
   ui_cursor.row = target->row;
   ui_cursor.col = target->col;
+  
+ 
+    // set new root menu for enter being pressed...
+  if( target->mnu != 0 )
+    Menu.setRoot(target->mnu);
+  else
+    Menu.setRoot(&ui_it_root);
+  
   
   if( action ) {
     uiTargetFunc func = target->func;
