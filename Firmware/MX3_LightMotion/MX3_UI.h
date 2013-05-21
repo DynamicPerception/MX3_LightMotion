@@ -307,9 +307,10 @@ MENU_ITEM    ui_it_alt      = { {"Alt I/O"}, ITEM_MENU, MENU_SIZE(ui_list_alt), 
  // ===== Sensor Options
 
 MENU_SELECT  ui_sl_volen     = { &sensor_enVWarn, MENU_SELECT_SIZE(ui_sel_list_onoff), MENU_TARGET(&ui_sel_list_onoff) };
- 
+
 MENU_VALUE   ui_in_volth    = { TYPE_FLOAT_10, 24.0, 7.0, MENU_TARGET(&sensor_minVoltage), EE_VOLTH };
 MENU_VALUE   ui_in_volen    = { TYPE_SELECT,   0,    0,   MENU_TARGET(&ui_sl_volen),       EE_VOLWARN };
+
 
 MENU_ITEM    ui_it_vol      = { {"Voltage Level"},  ITEM_ACTION, 0, MENU_TARGET(uiMenuVoltage) };
 MENU_ITEM    ui_it_cur      = { {"Motor Current"},  ITEM_ACTION, 0, MENU_TARGET(uiMenuCurrent) };
@@ -319,25 +320,28 @@ MENU_ITEM    ui_it_temp2    = { {"Temp Motor 3"},   ITEM_ACTION, 0, MENU_TARGET(
 MENU_ITEM    ui_it_volth    = { {"Voltage Thresh"}, ITEM_VALUE,  0, MENU_TARGET(&ui_in_volth) };
 MENU_ITEM    ui_it_volen    = { {"Voltage Warn"},   ITEM_VALUE,  0, MENU_TARGET(&ui_in_volen) };
 
-
 MENU_LIST    ui_list_sen[]  = { &ui_it_vol, &ui_it_cur, &ui_it_temp0, &ui_it_temp1, &ui_it_temp2, &ui_it_volen, &ui_it_volth };
 MENU_ITEM    ui_it_sen      = { {"Sensors"}, ITEM_MENU, MENU_SIZE(ui_list_sen), MENU_TARGET(&ui_list_sen) };
 
  // ===== Global Options
 
 MENU_SELECT  ui_sl_glLCD       = { &motion_sms, MENU_SELECT_SIZE(ui_sel_list_onoff), MENU_TARGET(&ui_sel_list_onoff) };
+MENU_SELECT  ui_sl_glHet       = { &sensor_enHeater, MENU_SELECT_SIZE(ui_sel_list_onoff), MENU_TARGET(&ui_sel_list_onoff) };
 
-MENU_VALUE   ui_in_glLCD       = { TYPE_BYTE,   0,    0,  MENU_TARGET(&lcdDisable),          EE_LCDOFF };   
+MENU_VALUE   ui_in_glLCD       = { TYPE_BYTE,   0,    0,  MENU_TARGET(&lcdDisable),          EE_LCDOFF };     
 MENU_VALUE   ui_in_glSMS       = { TYPE_SELECT, 0,    0,  MENU_TARGET(&ui_sl_glLCD),         EE_SMS };
 MENU_VALUE   ui_in_glPer       = { TYPE_UINT,   5000, 50, MENU_TARGET(&motor_pwm_minperiod), EE_PERIOD };   
+MENU_VALUE   ui_in_glHet       = { TYPE_SELECT, 0,    0,  MENU_TARGET(&ui_sl_glHet),         EE_HEATER };
 
 MENU_ITEM    ui_it_glSMS       = { {"SMS Motion"},      ITEM_VALUE,  0, MENU_TARGET(&ui_in_glSMS) };
 MENU_ITEM    ui_it_glLCD       = { {"LCD AutoOff Sec"}, ITEM_VALUE,  0, MENU_TARGET(&ui_in_glLCD) };
 MENU_ITEM    ui_it_glPer       = { {"Motor Timing"},    ITEM_VALUE,  0, MENU_TARGET(&ui_in_glPer) };
 MENU_ITEM    ui_it_glMem       = { {"Reset Memory"},    ITEM_ACTION, 0, MENU_TARGET(uiMenuResetMem) };
+MENU_ITEM    ui_it_glHet       = { {"Cold Mode"},       ITEM_VALUE,  0, MENU_TARGET(&ui_in_glHet) };
 
 
-MENU_LIST    ui_list_gl[]      = { &ui_it_glSMS, &ui_it_glLCD, &ui_it_alt, &ui_it_glPer, &ui_it_sen, &ui_it_glMem };
+
+MENU_LIST    ui_list_gl[]      = { &ui_it_glSMS, &ui_it_glLCD, &ui_it_alt, &ui_it_glPer, &ui_it_sen, &ui_it_glHet, &ui_it_glMem };
 MENU_ITEM    ui_it_glList      = { {"Settings"}, ITEM_MENU, MENU_SIZE(ui_list_gl), MENU_TARGET(&ui_list_gl) };
 
  // ===== Main Menu

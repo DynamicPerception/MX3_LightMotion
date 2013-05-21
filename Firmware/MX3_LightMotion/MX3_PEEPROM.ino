@@ -105,6 +105,7 @@ void eepromWrite() {
   write(EE_MPRESET, *((byte*) motorPresetSelected), sizeof(motorPresetSelected) / sizeof(byte));
   write(EE_VOLTH, sensor_minVoltage);
   write(EE_VOLWARN, sensor_enVWarn);
+  write(EE_HEATER, sensor_enHeater);
   
 }
 
@@ -154,6 +155,7 @@ void eepromRestore() {
   read(EE_MPRESET, *((byte*) motorPresetSelected), sizeof(motorPresetSelected) / sizeof(byte));
   read(EE_VOLTH, sensor_minVoltage);
   read(EE_VOLWARN, sensor_enVWarn);
+  read(EE_HEATER, sensor_enHeater);
 }
 
 

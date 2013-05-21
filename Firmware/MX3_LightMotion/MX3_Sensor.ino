@@ -39,11 +39,16 @@ PDillmann
 
  */
 void sensorSetup() {
-   pinMode(CUR_SENSOR, INPUT);
-   pinMode(VOL_SENSOR, INPUT);
-   pinMode(TEMP_SENSOR_0, INPUT);
-   pinMode(TEMP_SENSOR_1, INPUT);
-   pinMode(TEMP_SENSOR_2, INPUT);
+   pinMode(CUR_SENSOR,     INPUT);
+   pinMode(VOL_SENSOR,     INPUT);
+   pinMode(TEMP_SENSOR_0,  INPUT);
+   pinMode(TEMP_SENSOR_1,  INPUT);
+   pinMode(TEMP_SENSOR_2,  INPUT);
+   pinMode(LCD_HEATER_12V, OUTPUT);
+   pinMode(LCD_HEATER_24V, OUTPUT);
+   
+   digitalWrite(LCD_HEATER_12V, HIGH);
+   digitalWrite(LCD_HEATER_24V, HIGH);
 }
 
 /** Get the current for all motors (combined)
@@ -117,11 +122,10 @@ float sensorTemp(byte p_sensor) {
 void sensorPoll() {
   
     // check input voltage
- 
+   float volts = sensorVoltage();
+      
    if( sensor_enVWarn ) {
-     
-     float volts = sensorVoltage();
-     
+    
       // ignore voltage warning if running on USB only
      if(volts > 5.5 && volts < sensor_minVoltage) {
        sensor_statFlags |= SENS_VOLT_FLAG; 
@@ -153,7 +157,25 @@ void sensorPoll() {
     else {
          sensor_statFlags &= ~SENS_TEMP_FLAG;
     }
-   
+    
+   if( sensor_enHeater ) {
+  
+      //check voltage to see to use LCD_HEATER_24V or LCD_HEATER_12V. Uses p-channel mosfets, low is active.
+      //turn off heater before switching power sources.  
+      
+     if (volts > 13.5) {
+       digitalWrite(LCD_HEATER_12V, HIGH);
+       digitalWrite(LCD_HEATER_24V, LOW);
+     }
+     else {
+       digitalWrite(LCD_HEATER_24V, HIGH);
+       digitalWrite(LCD_HEATER_12V, LOW);
+     }
+   }
+   else {  //make sure heater is off 
+     digitalWrite(LCD_HEATER_24V, HIGH);
+     digitalWrite(LCD_HEATER_12V, HIGH);
+   }
 }
 
 /** Maximum Temperature Across All Temp Sensors

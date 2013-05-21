@@ -64,10 +64,9 @@ const unsigned int    MAX_CURRENT = 6000;
 const float              MAX_TEMP = 90.0;
 const unsigned int  SENS_RST_TIME = 30000;
 const unsigned int SENS_POLL_TIME = 10000;
-
-const byte SENS_CURRENT_FLAG = B00000001;
-const byte    SENS_TEMP_FLAG = B00000010;
-const byte    SENS_VOLT_FLAG = B00000100;
+const byte      SENS_CURRENT_FLAG = B00000001;
+const byte         SENS_TEMP_FLAG = B00000010;
+const byte         SENS_VOLT_FLAG = B00000100;
 
 /*
 
@@ -132,7 +131,6 @@ const byte   MOTOR_CDIR_FLAG = B00000100;
 const byte   MOTOR_RAMP_FLAG = B00000010;
 
 const byte MOTOR_COUNT = 3;
-
 
  // these are parameters for our speed fitting function
 const double MOTOR_SCA = 4.8756308185438346E+00; 
@@ -202,9 +200,6 @@ struct MotorDefinition {
     
  float ratio;
  
-  /** Distance traveled (in on pulses) */
-// unsigned long distance;
- 
   /** Ramp Shots Start */
  unsigned int ramp_start;
  
@@ -228,7 +223,6 @@ struct MotorDefinition {
    onTimePeriods = 1.0;
    rpm = 8.13;
    ratio = 3.229;
-//   distance = 0;
    ramp_start = 0;
    ramp_end = 0;
    lead = 0;
@@ -295,5 +289,6 @@ const int EE_PERIOD    = EE_ALTHL     + 1; // minimum period in mS
 const int EE_MPRESET   = EE_PERIOD    + 2; // selected presets
 const int EE_VOLTH     = EE_MPRESET   + 4; // voltage threshold
 const int EE_VOLWARN   = EE_VOLTH     + 4; // voltage warning flag
+const int EE_HEATER    = EE_VOLWARN   + 4; // heater on/off flag 
 
 
