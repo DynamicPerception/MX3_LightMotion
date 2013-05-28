@@ -466,6 +466,7 @@ void uiScreenInput(byte p_screen, byte p_button) {
         uiPos = 0;
         wasScreen = p_screen;
         ui_cursor.enabled = 0;
+        Menu.setRoot(&ui_it_root);
   }
 
 
@@ -494,6 +495,7 @@ void uiScreenInput(byte p_screen, byte p_button) {
   if( uiPos == 0 ) {
     ui_cursor.enabled = 0;
     lcd.noBlink();
+    Menu.setRoot(&ui_it_root);
     return;
   }
 
