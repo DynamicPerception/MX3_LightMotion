@@ -181,9 +181,12 @@ void altConnect(byte p_which, byte p_mode) {
   else {
     
       // it's an output mode
-      
-    pinMode(ALT_START_PIN + p_which, OUTPUT);
-    digitalWrite(ALT_START_PIN + p_which, ! alt_out_trig);
+    
+      // note that alt 3 is on a different register..
+    byte aPin = p_which <= 2 ? ALT_START_PIN + p_which : ALT_PIN_3;
+    
+    pinMode(aPin, OUTPUT);
+    digitalWrite(aPin, ! alt_out_trig);
     
     if( p_mode == ALT_OUT_B ) {
       alt_out_flags |= ( ALT_OUT_FLAG_B << p_which );
@@ -222,7 +225,13 @@ void altOutStart(byte p_mode) {
   
   for(byte i = 0; i < 4; i++) {
        if( alt_out_flags & ( flag << i ) ) {
-          digitalWrite(ALT_START_PIN + i, alt_out_trig); 
+         
+           // note that alt 3 is on a different register..
+          if( i <= 2 )
+            digitalWrite(ALT_START_PIN + i, alt_out_trig); 
+          else
+            digitalWrite(ALT_PIN_3, alt_out_trig);
+            
           altStarted = true;
        }
   }
@@ -257,7 +266,11 @@ void altOutStop() {
    
   for(byte i = 0; i < 4; i++) {
        if( alt_out_flags & ( flag << i ) ) {
-          digitalWrite(ALT_START_PIN + i, ! alt_out_trig); 
+           // note that alt 3 is on a different register..
+          if( i <= 2 )
+            digitalWrite(ALT_START_PIN + i, ! alt_out_trig); 
+          else
+            digitalWrite(ALT_PIN_3, ! alt_out_trig);
        }
   }
   

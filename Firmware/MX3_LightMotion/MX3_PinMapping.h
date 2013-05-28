@@ -46,8 +46,11 @@ const byte LCD_BKL = 22;
  // which input is our button
 const byte BUT_PIN = 40;
 
-  // first alt i/o pin (digital #)
+  // first alt i/o pin (digital #) for I/O's 0-2
 const byte ALT_START_PIN = 36;
+  // i/o #3, our higest I/o is an output only,
+  // and is spaced out from the other pins
+const byte     ALT_PIN_3 = 32;
 
   // leave motor definitions as defines!
 
