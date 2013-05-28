@@ -361,6 +361,18 @@ void uiMenuManualThree() {
 }
 
 
+/* Select Preset for Given Motor
+
+ Displays a select list, and behaves like a normal menu select,
+ to choose a specific preset for a motor and apply the changes.
+ 
+ @param p_motor
+ The motor # to set the preset for
+ 
+ @author
+ C. A. Church
+ */
+ 
 void uiMenuPreset(byte p_motor) {
  
     // disable menu key processing

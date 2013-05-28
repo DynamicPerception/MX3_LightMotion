@@ -245,7 +245,7 @@ struct MotorDefinition {
 
  // stored memory layout version
  // this number MUST be changed every time the memory layout is changed
-const unsigned int MEMORY_VERSION    = 24;
+const unsigned int MEMORY_VERSION    = 25;
 
 
 /* Locations of each variable to be stored, note correct spacing
@@ -289,6 +289,6 @@ const int EE_PERIOD    = EE_ALTHL     + 1; // minimum period in mS
 const int EE_MPRESET   = EE_PERIOD    + 2; // selected presets
 const int EE_VOLTH     = EE_MPRESET   + 4; // voltage threshold
 const int EE_VOLWARN   = EE_VOLTH     + 4; // voltage warning flag
-const int EE_HEATER    = EE_VOLWARN   + 4; // heater on/off flag 
+const int EE_HEATER    = EE_VOLWARN   + 1; // heater on/off flag 
 
 
