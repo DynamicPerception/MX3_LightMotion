@@ -78,7 +78,7 @@ const int BUT_MAP[5][2] = {
 // ====== Memory Strings Used in the UI ========
 
 const char MX3_VERSTR[]  =  "LightMotion";
-const char MX3_SUBSTR[]  =  "v. 0.06 (Hare)";
+const char MX3_SUBSTR[]  =  "v.0.07 (HareXIV)";
 const char MX3_C1STR[]   =  "(c) 2013 Dynamic";
 const char MX3_C2STR[]   =  "Perception";
   // run and stop must be exact same length, pad with spaces
@@ -302,7 +302,7 @@ MENU_ITEM    ui_it_althl    = { {"Out Level"},       ITEM_VALUE,  0, MENU_TARGET
 MENU_ITEM    ui_it_altset   = { {"Init I/O"},        ITEM_ACTION, 0, MENU_TARGET(uiMenuAltInit) };
 
 MENU_LIST    ui_list_alt[]  = { &ui_it_altset, &ui_it_alt1, &ui_it_alt2, &ui_it_alt3, &ui_it_alt4, &ui_it_altdir, &ui_it_altbd, &ui_it_altbt, &ui_it_altad, &ui_it_altat, &ui_it_althl };
-MENU_ITEM    ui_it_alt      = { {"Alt I/O"}, ITEM_MENU, MENU_SIZE(ui_list_alt), MENU_TARGET(&ui_list_alt) };
+MENU_ITEM    ui_it_alt      = { {"Aux I/O"}, ITEM_MENU, MENU_SIZE(ui_list_alt), MENU_TARGET(&ui_list_alt) };
 
  // ===== Sensor Options
 
@@ -385,14 +385,19 @@ MENU_ITEM    ui_it_cmot2     = { {"Ramping"}, ITEM_MENU, MENU_SIZE(ui_list_cmot2
 
 // ====== Cursor (main screen interaction) Data =======
 
- // function pointer for cursors
+ /** function pointer for cursors
+ 
+  Note that the byte argument will be used to inform you whether or not the cursor value was increased (1) or
+  decreased (0)
+  
+  */
 typedef void(*uiTargetFunc)(byte);
 
 
  /** Display Cursor
  
    For cursor activity on screens, this struct defines, and should be used
-   or one global variable, the position of the cursor on-screen, and whether
+   for one global variable, the position of the cursor on-screen, and whether
    it is enabled
    */
    
@@ -414,9 +419,13 @@ struct uiDisplayCursor {
  */
  
 struct uiDisplayCursorTarget {
+    /** The screen row where the cursor is placed */
  byte row;
+   /** The screen column where the cursor is placed */
  byte col;
+   /** The callback to execute */
  uiTargetFunc func;
+   /** Menu item pointer to load special menu, or 0 (null-pointer) for no menu */
  MENU_ITEM* mnu;
 };
 
@@ -426,6 +435,7 @@ struct uiDisplayCursorTarget {
   */
   
 struct uiDisplayCursors {
+    /** Count items in target list */
   byte count;
     /** A void pointer which should resolve to a uiDisplayCursorTarget**, and the length of that
         list must be equivalent to count */
@@ -473,7 +483,7 @@ const uiDisplayCursors ui_dc_none = { 0, 0 };
 
  // all screen cursors...
  
-    // main, camera, m1, m2, m3, set1
+    // main, camera, m1, m2, m3 
 const uiDisplayCursors*  ui_dc_list[] = { &ui_dc_main, &ui_dc_cam, &ui_dc_mot0, &ui_dc_mot1, &ui_dc_mot2 };
 
 

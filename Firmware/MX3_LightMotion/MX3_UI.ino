@@ -169,6 +169,18 @@ void uiCheck() {
  
    Draw handler callback for OMMenuMgr
    
+   @param p_text
+   Char pointer with text to display
+   
+   @param p_row 
+   Row to display at
+   
+   @param p_col 
+   Column to start display at
+   
+   @param len
+   Length of p_text pointer
+   
    @author
    C. A. Church
    */
@@ -466,6 +478,8 @@ void uiScreenInput(byte p_screen, byte p_button) {
         uiPos = 0;
         wasScreen = p_screen;
         ui_cursor.enabled = 0;
+          // in case a new menu root was set as a special menu
+          // for a cursor item
         Menu.setRoot(&ui_it_root);
   }
 

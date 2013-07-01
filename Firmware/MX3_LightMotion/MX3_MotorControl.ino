@@ -88,7 +88,7 @@ void motorSetup() {
   
   for(byte i = 0; i < MOTOR_COUNT; i++ ) {
     motorDir(i, 0);
-          // set to 10% speed
+          // set to 10% speed as default
     motorSpeed(i, 0.1);
   }
  
@@ -131,7 +131,7 @@ void motorSpeed(byte p_motor, float p_rel, boolean p_ramp) {
   }
   else {
       float offTime       = (1.0 - p_rel) * motor_pwm_maxperiod;
-        float onTime        = motor_pwm_maxperiod - offTime;
+      float onTime        = motor_pwm_maxperiod - offTime;
       float onTimePeriods = onTime / offTime;
       motors[p_motor].onTimePeriods = onTimePeriods;
   }
@@ -201,7 +201,8 @@ float motorSpeedRatio(byte p_motor) {
 /** Set Speed as Output Ratio for a Given Motor
 
  Sets the current speed for the motor, expressed as the output
- ratio (RPM * Ratio * Speed) for linear, and degrees (RPM * Ratio * Speed * 360).
+ ratio (RPM * Ratio * Speed) for linear, and degrees (RPM * Ratio * Speed * 360) for
+ rotary.
  
  @param p_motor
  The motor to get the speed for, 0, 1, or 2
@@ -251,6 +252,7 @@ float motorMaxSpeedRatio(byte p_motor) {
       
   return spd;
 }
+
 /** Control Motor Direction
   
   @param p_motor
@@ -278,21 +280,38 @@ float motorMaxSpeedRatio(byte p_motor) {
   
 void motorDir(byte p_motor, boolean p_dir) {
   
-    // determine which direction to go based on input and
-    // direction flip
-  //byte mask = motors[p_motor].flags & MOTOR_DIR_FLAG ? LOW : HIGH;
  
     
     // swap mask based on direction, and record what direction
     // the user asked for
   if( p_dir ) {
-    //mask = !mask;
-    motors[p_motor].flags |= MOTOR_CDIR_FLAG;
+    
+      // use direction flipping flag to see what direction the user 
+      // really intends
+        
+    if( motors[p_motor].flags & MOTOR_DIR_FLAG )
+      motors[p_motor].flags &= (B11111111 ^ MOTOR_CDIR_FLAG);
+    else
+      motors[p_motor].flags |= MOTOR_CDIR_FLAG;  
+
   }
   else {
-    motors[p_motor].flags &= (B11111111 ^ MOTOR_CDIR_FLAG);
+    
+    if( motors[p_motor].flags & MOTOR_DIR_FLAG )
+      motors[p_motor].flags |= MOTOR_CDIR_FLAG;
+    else
+      motors[p_motor].flags &= (B11111111 ^ MOTOR_CDIR_FLAG);
+        
   }
+  
+    // set flag to indicate that motor driver is low at the moment
+  
   motors[p_motor].flags &= (B11111111 ^ MOTOR_HIGH_FLAG);
+  
+    // We need to disable both enable pins for the motor driver
+    // and then on the next ISR run, it will examine the flags to 
+    // see which driving pin to use
+    
   digitalWrite(MOTOR_DIR_PINSTART + (3*p_motor), LOW);
   digitalWrite(MOTOR_DIR_PINSTART + 1 + (3*p_motor), LOW);
 }
@@ -619,11 +638,14 @@ void motorRunISR() {
    */
    
 void motorCheckLead() {
+  
      for( byte i = 0; i < MOTOR_COUNT; i++ ) {
+       
       if( motors[i].lead > 0 && ( camera_fired < motors[i].lead || camera_fired > (camera_max_shots - motors[i].lead) ) )
         motors[i].flags &= (B11111111 ^ MOTOR_ENABLE_FLAG);
       else if( motors[i].lead > 0 && ( camera_fired > motors[i].lead || camera_fired < (camera_max_shots - motors[i].lead) ) )
         motors[i].flags |= MOTOR_ENABLE_FLAG;
+        
     } 
 }
 
@@ -639,7 +661,9 @@ void motorCheckLead() {
 void motorCheckRamp() {
   
       for( byte i = 0; i < MOTOR_COUNT; i++ ) {
+        
         if(motors[i].flags & MOTOR_UEN_FLAG ) {
+          
           if( motors[i].ramp_start > 0 || motors[i].ramp_end > 0 ) {
             
               // do not apply ramp if still in lead-in, or in lead-out

@@ -50,14 +50,14 @@ void stopProgram(boolean force_clear = true);
 
   // Prep Control Variables that must be defined early
 
-boolean       motion_sms    = false;
-boolean       running       = false;
+boolean          motion_sms = false;
+boolean             running = false;
 boolean       motor_running = false;
-boolean       metric_ui     = false;
-byte          lcdDisable    = 30;
-unsigned long check_time    = 0;
-unsigned long run_time      = 0;
-unsigned long camera_tm     = 0;
+boolean           metric_ui = false;
+byte             lcdDisable = 30;
+unsigned long    check_time = 0;
+unsigned long      run_time = 0;
+unsigned long     camera_tm = 0;
 float     sensor_minVoltage = 10.5;
 boolean      sensor_enVWarn = true;
 boolean     sensor_enHeater = false;

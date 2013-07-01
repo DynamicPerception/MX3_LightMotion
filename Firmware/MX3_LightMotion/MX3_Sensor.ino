@@ -160,21 +160,21 @@ void sensorPoll() {
     
    if( sensor_enHeater ) {
   
-      //check voltage to see to use LCD_HEATER_24V or LCD_HEATER_12V. Uses p-channel mosfets, low is active.
+      //check voltage to see to use LCD_HEATER_24V or LCD_HEATER_12V. Uses npn BJTs to drive p-channel mosfets, HIGH is active.
       //turn off heater before switching power sources.  
       
      if (volts > 13.5) {
-       digitalWrite(LCD_HEATER_12V, HIGH);
-       digitalWrite(LCD_HEATER_24V, LOW);
+       digitalWrite(LCD_HEATER_12V, LOW);
+       digitalWrite(LCD_HEATER_24V, HIGH);
      }
      else {
-       digitalWrite(LCD_HEATER_24V, HIGH);
-       digitalWrite(LCD_HEATER_12V, LOW);
+       digitalWrite(LCD_HEATER_24V, LOW);
+       digitalWrite(LCD_HEATER_12V, HIGH);
      }
    }
    else {  //make sure heater is off 
-     digitalWrite(LCD_HEATER_24V, HIGH);
-     digitalWrite(LCD_HEATER_12V, HIGH);
+     digitalWrite(LCD_HEATER_24V, LOW);
+     digitalWrite(LCD_HEATER_12V, LOW);
    }
 }
 

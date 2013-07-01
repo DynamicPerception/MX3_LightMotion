@@ -99,8 +99,9 @@ void uiMenuResetMem() {
  lcd.print(STR_RES3);
  lcd.setCursor(0, 1);
  lcd.print(STR_RES4);
+ 
  while(1) 
-  ; // block all activity 
+  ; // block all activity until user power-cycles
 }
 
 /** Voltage Value
@@ -184,6 +185,13 @@ void uiMenuCurrent() {
  
 }
 
+/** Temperature Value
+
+ Pulls up data from the onboard Sensors 
+ 
+ @author
+ Parker Dillmann
+ */
 
 void uiMenuTemp(byte p_sens) {
   
@@ -268,14 +276,11 @@ void uiMenuTemp2() {
  
 void uiMenuManual(byte p_motor) {
 
- // byte   spdPrec = (motorMaxSpeedRatio(p_motor) / 100 < 0.1) ? 2 : 1;
   float        wasSpd = motorSpeedRatio(p_motor);
   boolean         run = false;
   byte       wasFlags = motors[p_motor].flags;
-  //byte      wasButton = BUTTON_NONE;
   byte       wasMotor = ui_curMotor;
   float           spd = wasSpd;
-  //unsigned long butTm = millis();
   
     // can't do manual move when running
   if( running ) {
@@ -411,7 +416,7 @@ void uiMenuPreset(byte p_motor) {
       // set new preset values
       
      if( ! thsPreset.rotary )
-       motDef->flags &= (B1111111 ^ MOTOR_ROT_FLAG);
+       motDef->flags &= ~(MOTOR_ROT_FLAG);
      else
        motDef->flags |= MOTOR_ROT_FLAG;
        
