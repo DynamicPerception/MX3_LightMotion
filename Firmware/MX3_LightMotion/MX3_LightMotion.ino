@@ -103,6 +103,8 @@ void setup() {
  
    // Setup Sensors
  sensorSetup();
+ 
+ jumpSetup();
   
 }
 

@@ -81,7 +81,7 @@ const char MX3_VERSTR[]  =  "LightMotion";
 const char MX3_SUBSTR[]  =  "v.0.07 (HareXIV)";
 const char MX3_C1STR[]   =  "(c) 2013 Dynamic";
 const char MX3_C2STR[]   =  "Perception";
-  // run and stop must be exact same length, pad with spaces
+  // run, stop, and ext must be exact same length, pad with spaces
 const char STR_RUN[]     =  "On ";
 const char STR_STOP[]    =  "Off";
 const char STR_EXT[]     =  "Ext";
@@ -98,15 +98,16 @@ const char STR_CW        =  '+';
 const char STR_CCW       =  '-';
 const char STR_BLNK[]    =  "                ";
 const char STR_FOC[]     =  "F ";
+  // en, dis, and ramp must be same length
 const char STR_EN[]      =  " On ";
 const char STR_DIS[]     =  " Off";
+const char STR_RAMP[]    =  " RMP";
 const char STR_INIT[]    =  "Input Init";
 const char STR_DONE[]    =  "Done!";
 const char STR_RES1[]    =  "Reset In   Sec";
 const char STR_RES2[]    =  "Enter to Cancel";
 const char STR_RES3[]    =  "Memory Reset";
 const char STR_RES4[]    =  "Power-Cycle MX3";
-const char STR_RAMP[]    =  " RMP";
 const char STR_SMS[]     =  "SMS ";
 const char STR_CONT[]    =  "Cont";
 const char STR_WARN1[]   =  "Unavailable";
@@ -329,19 +330,18 @@ MENU_SELECT  ui_sl_glLCD       = { &motion_sms, MENU_SELECT_SIZE(ui_sel_list_ono
 MENU_SELECT  ui_sl_glHet       = { &sensor_enHeater, MENU_SELECT_SIZE(ui_sel_list_onoff), MENU_TARGET(&ui_sel_list_onoff) };
 
 MENU_VALUE   ui_in_glLCD       = { TYPE_BYTE,   0,    0,  MENU_TARGET(&lcdDisable),          EE_LCDOFF };     
-MENU_VALUE   ui_in_glSMS       = { TYPE_SELECT, 0,    0,  MENU_TARGET(&ui_sl_glLCD),         EE_SMS };
 MENU_VALUE   ui_in_glPer       = { TYPE_UINT,   5000, 50, MENU_TARGET(&motor_pwm_minperiod), EE_PERIOD };   
 MENU_VALUE   ui_in_glHet       = { TYPE_SELECT, 0,    0,  MENU_TARGET(&ui_sl_glHet),         EE_HEATER };
 
-MENU_ITEM    ui_it_glSMS       = { {"SMS Motion"},      ITEM_VALUE,  0, MENU_TARGET(&ui_in_glSMS) };
 MENU_ITEM    ui_it_glLCD       = { {"LCD AutoOff Sec"}, ITEM_VALUE,  0, MENU_TARGET(&ui_in_glLCD) };
 MENU_ITEM    ui_it_glPer       = { {"Motor Timing"},    ITEM_VALUE,  0, MENU_TARGET(&ui_in_glPer) };
 MENU_ITEM    ui_it_glMem       = { {"Reset Memory"},    ITEM_ACTION, 0, MENU_TARGET(uiMenuResetMem) };
 MENU_ITEM    ui_it_glHet       = { {"Cold Mode"},       ITEM_VALUE,  0, MENU_TARGET(&ui_in_glHet) };
+MENU_ITEM    ui_it_glJmp       = { {"Jump!"},           ITEM_ACTION, 0, MENU_TARGET(uiJump) };
 
 
 
-MENU_LIST    ui_list_gl[]      = { &ui_it_glSMS, &ui_it_glLCD, &ui_it_alt, &ui_it_glPer, &ui_it_sen, &ui_it_glHet, &ui_it_glMem };
+MENU_LIST    ui_list_gl[]      = { &ui_it_alt, &ui_it_sen, &ui_it_glLCD, &ui_it_glPer,  &ui_it_glHet, &ui_it_glMem, &ui_it_glJmp };
 MENU_ITEM    ui_it_glList      = { {"Settings"}, ITEM_MENU, MENU_SIZE(ui_list_gl), MENU_TARGET(&ui_list_gl) };
 
  // ===== Main Menu
