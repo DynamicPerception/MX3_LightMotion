@@ -49,7 +49,6 @@ OMMenuMgr Menu(&ui_it_root);
 
 
 
-
 /** UI Setup
 
   Set up the LCD, Menu Manager, and display welcome screen
@@ -436,6 +435,11 @@ void uiMotorScreen(byte p_motor) {
   
   byte spdPrec = (motorMaxSpeedRatio(p_motor) / 100 < 0.1) ? 3 : 2;
   float    spd = motorSpeedRatio(p_motor);
+  
+    // show CM instead of inches when in metric mode and linear motion
+  if( ! (def->flags & MOTOR_ROT_FLAG) && disp_metric ) {
+    spd *= CM_CONSTANT;
+  }
   
   lcd.print(spd, spdPrec);
   

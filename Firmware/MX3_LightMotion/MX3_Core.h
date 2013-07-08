@@ -31,7 +31,10 @@
 
 
 
+  // multiplier for inches to CM
+const float CM_CONSTANT = 2.54;
 
+  // milliseconds in a second
 const unsigned int SECOND = 1000;
 
  /*  state transitions
@@ -245,7 +248,7 @@ struct MotorDefinition {
 
  // stored memory layout version
  // this number MUST be changed every time the memory layout is changed
-const unsigned int MEMORY_VERSION    = 25;
+const unsigned int MEMORY_VERSION    = 26;
 
 
 /* Locations of each variable to be stored, note correct spacing
@@ -290,5 +293,6 @@ const int EE_MPRESET   = EE_PERIOD    + 2; // selected presets
 const int EE_VOLTH     = EE_MPRESET   + 4; // voltage threshold
 const int EE_VOLWARN   = EE_VOLTH     + 4; // voltage warning flag
 const int EE_HEATER    = EE_VOLWARN   + 1; // heater on/off flag 
+const int EE_METRIC    = EE_HEATER    + 1; // metric display on/off
 
 

@@ -306,7 +306,11 @@ void uiMenuManual(byte p_motor) {
   
   while( 1 ) {
        
+      // convert to cm for metric display & linear moves
      
+    if( ! (motors[p_motor].flags & MOTOR_ROT_FLAG) && disp_metric ) 
+      spd *= CM_CONSTANT;
+  
     byte       button = Menu.checkInput();
     
     lcd.setCursor(0, 1);

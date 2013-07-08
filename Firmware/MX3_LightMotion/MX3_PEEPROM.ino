@@ -106,6 +106,7 @@ void eepromWrite() {
   write(EE_VOLTH, sensor_minVoltage);
   write(EE_VOLWARN, sensor_enVWarn);
   write(EE_HEATER, sensor_enHeater);
+  write(EE_METRIC, disp_metric);
   
 }
 
@@ -156,6 +157,8 @@ void eepromRestore() {
   read(EE_VOLTH, sensor_minVoltage);
   read(EE_VOLWARN, sensor_enVWarn);
   read(EE_HEATER, sensor_enHeater);
+  read(EE_METRIC, disp_metric);
+  
 }
 
 

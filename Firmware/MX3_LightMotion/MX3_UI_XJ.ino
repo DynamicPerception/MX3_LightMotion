@@ -90,7 +90,7 @@ void uiJump() {
        // can only jump before the stone gets to you
      if( obsPos > 3 ) {
        playPos = 0;
-       shownUp = 3;
+       shownUp = 2;
      }
    }
    

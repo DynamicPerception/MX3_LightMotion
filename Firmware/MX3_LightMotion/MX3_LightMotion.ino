@@ -62,6 +62,7 @@ float     sensor_minVoltage = 10.5;
 boolean      sensor_enVWarn = true;
 boolean     sensor_enHeater = false;
 byte              alt_block = 0;
+boolean         disp_metric = 0;
 
 
  // initialize core objects
