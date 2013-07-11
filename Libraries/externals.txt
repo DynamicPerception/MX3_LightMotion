@@ -1,7 +1,0 @@
-LICENSE.txt https://silo.dynamicperception.com/repo/Software/OMLibraries/tags/OMAVRLibraries-1.11/LICENSE.txt
-OMCamera https://silo.dynamicperception.com/repo/Software/OMLibraries/tags/OMAVRLibraries-1.11/OMCamera
-OMEEPROM https://silo.dynamicperception.com/repo/Software/OMLibraries/tags/OMAVRLibraries-1.11/OMEEPROM
-OMMenuMgr https://silo.dynamicperception.com/repo/Software/OMLibraries/tags/OMAVRLibraries-1.11/OMMenuMgr
-OMState https://silo.dynamicperception.com/repo/Software/OMLibraries/tags/OMAVRLibraries-1.11/OMState
-MsTimer2 https://silo.dynamicperception.com/repo/Software/3rdParty/tags/OMAVRLibraries-1.1/MsTimer2
-TimerOne https://silo.dynamicperception.com/repo/Software/3rdParty/tags/OMAVRLibraries-1.1/TimerOne
