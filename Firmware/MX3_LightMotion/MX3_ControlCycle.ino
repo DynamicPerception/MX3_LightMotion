@@ -88,6 +88,8 @@ void cycleCamera() {
       return;
   }
     
+   //Change the focus lock. We could check if it has changed but that would take more cycles. 
+   Camera.exposureFocus(camera_focLock);
     
     // if enough time has passed, and we're ok to take an exposure
     // note: for slaves, we only get here by a master signal, so we don't check interval timing

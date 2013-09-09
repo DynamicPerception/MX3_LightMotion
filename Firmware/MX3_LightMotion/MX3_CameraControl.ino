@@ -132,6 +132,7 @@ void camCallBack(byte code) {
   // function is called in an interrupt and can daisy-chain under certain configurations,
   // which can result in unexpected behavior
   
+  
   if( code == OM_CAM_FFIN ) {
       // focus done
     Engine.state(ST_EXP);

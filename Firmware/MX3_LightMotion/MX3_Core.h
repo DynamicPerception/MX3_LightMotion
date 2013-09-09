@@ -248,7 +248,7 @@ struct MotorDefinition {
 
  // stored memory layout version
  // this number MUST be changed every time the memory layout is changed
-const unsigned int MEMORY_VERSION    = 26;
+const unsigned int MEMORY_VERSION    = 27;
 
 
 /* Locations of each variable to be stored, note correct spacing
