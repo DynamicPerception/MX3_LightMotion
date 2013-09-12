@@ -1,12 +1,12 @@
 LightMotion Firmware for MX3 / Arduino
 =============================================
 
-Version: 0.07
+Version: 1.01
 ---------------
 
 This is the LightMotion Firmware for the Arduino/MX3 Platform.
 
-Version: 0.07
+Version: 1.01
 
 ### Required Libraries
 
