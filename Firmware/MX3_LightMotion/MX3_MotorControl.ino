@@ -89,7 +89,7 @@ void motorSetup() {
   for(byte i = 0; i < MOTOR_COUNT; i++ ) {
     motorDir(i, 0);
           // set to 10% speed as default
-    motorSpeed(i, 0.1);
+    motorSpeed(i, 0.01);
   }
  
    digitalWrite(MOTOR_INH_0, HIGH);
@@ -499,7 +499,7 @@ void motorRunISRSMS() {
           motors[i].restPeriods = 1;
           moveCnt++;
        }
-     else {
+       else {
         if( motors[i].restPeriods >= (motor_pwm_maxperiod * motors[i].speed) ) {
           moved++;
                 // going down, disable output pin

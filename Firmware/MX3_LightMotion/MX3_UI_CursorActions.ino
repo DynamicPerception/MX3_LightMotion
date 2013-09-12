@@ -85,6 +85,23 @@ void uiCursorAdjustSMS(byte p_dir) {
     
   motion_sms = !motion_sms;
   
+  if(motion_sms)
+  {
+    for(byte i = 0; i < MOTOR_COUNT; i++ ) 
+    {
+      motorDir(i, 0);
+      motorSpeed(i, 0.001);
+    }
+  }
+  else
+  {
+    for(byte i = 0; i < MOTOR_COUNT; i++ ) 
+    {
+      motorDir(i, 0);
+      motorSpeed(i, 0.01);
+    }
+  }
+  
   OMEEPROM::write(EE_SMS, motion_sms);
     
   
@@ -252,14 +269,20 @@ void uiCursorChangeMotSpd(byte p_dir) {
 
  float   curSpd = motorSpeed(ui_curMotor);
  float   mod    = 0.01;
+ 
+ if(motion_sms)
+ {
+   mod = .00025;
+   curSpd += p_dir ? mod : mod * -1.0;
+   curSpd = curSpd > .1 ? .1 : curSpd < mod ? mod : curSpd;
+ }
+ else
+ {
+   curSpd += p_dir ? mod : mod * -1.0;
+   curSpd = curSpd > 1.0 ? 1.0 : curSpd < mod ? mod : curSpd;
+ }
 
- curSpd += p_dir ? mod : mod * -1.0;
- 
-  // ceiling/floor
- curSpd = curSpd > 1.0 ? 1.0 : curSpd < mod ? mod : curSpd;
- 
- motorSpeed(ui_curMotor, curSpd);
-  
+ motorSpeed(ui_curMotor, curSpd);  
 }
 
 void uiCursorChangeMotDir(byte p_dir) {
