@@ -73,6 +73,14 @@ const byte         SENS_VOLT_FLAG = B00000100;
 
 /*
 
+  Save State Constants
+  
+*/
+
+const byte SS_COUNT = 3;
+
+/*
+
   Alt I/O Data
   
 */
@@ -248,7 +256,7 @@ struct MotorDefinition {
 
  // stored memory layout version
  // this number MUST be changed every time the memory layout is changed
-const unsigned int MEMORY_VERSION    = 27;
+const unsigned int MEMORY_VERSION    = 31;
 
 
 /* Locations of each variable to be stored, note correct spacing
@@ -294,5 +302,137 @@ const int EE_VOLTH     = EE_MPRESET   + 4; // voltage threshold
 const int EE_VOLWARN   = EE_VOLTH     + 4; // voltage warning flag
 const int EE_HEATER    = EE_VOLWARN   + 1; // heater on/off flag 
 const int EE_METRIC    = EE_HEATER    + 1; // metric display on/off
+
+//SAVE STATE 0
+
+const int EE_NONE_SS0      = 0;                   // do not store
+const int EE_SMS_SS0       = EE_METRIC      + 1;  // motion_sms
+const int EE_MAXSHOT_SS0   = EE_SMS_SS0     + 1;  // camera max shots
+const int EE_CAMREP_SS0    = EE_MAXSHOT_SS0 + 2;  // camera_repeat
+const int EE_CAMDEL_SS0    = EE_CAMREP_SS0  + 1;  // camera_delay
+const int EE_CAMEXP_SS0    = EE_CAMDEL_SS0  + 4;  // cam_exposure
+const int EE_CAMWAIT_SS0   = EE_CAMEXP_SS0  + 4;  // cam_wait
+const int EE_CAMFOC_SS0    = EE_CAMWAIT_SS0 + 4;  // cam_focus
+const int EE_CAMBULB_SS0   = EE_CAMFOC_SS0  + 4;  // bulb mode
+const int EE_CAMLOCK_SS0   = EE_CAMBULB_SS0 + 1;  // focus lock
+
+const int EE_M0FLAG_SS0    = EE_CAMBULB_SS0 + 1;  // flags
+const int EE_M0RPM_SS0     = EE_M0FLAG_SS0  + 1;  // rpm
+const int EE_M0RATIO_SS0   = EE_M0RPM_SS0   + 4;  // ratio
+const int EE_MORSPEED_SS0  = EE_M0RATIO_SS0 + 4;  // speed
+const int EE_M0RAMP_SS0    = EE_MORSPEED_SS0 + 4; // ramping in
+const int EE_M0RAMPE_SS0   = EE_M0RAMP_SS0  + 2;  // ramping out
+const int EE_M0LEAD_SS0    = EE_M0RAMPE_SS0 + 2;  // lead-in/out
+
+  // note: for each motor, we move the previous defs ahead 21 bytes * motor num
+
+const int EE_MOTOR_SPACE_SS0 = 21;  
+const int EE_POSTMOTOR_SS0 = EE_M0LEAD_SS0 + 2 + (EE_MOTOR_SPACE_SS0 * 2);
+
+const int EE_LCDOFF_SS0    = EE_POSTMOTOR_SS0 + 1; // lcd off time
+const int EE_ALT1_SS0      = EE_LCDOFF_SS0    + 1; // alt input 1 mode
+const int EE_ALT2_SS0      = EE_ALT1_SS0      + 1; // alt input 2 mode
+const int EE_ALT3_SS0      = EE_ALT2_SS0      + 1; // alt input 3 mode
+const int EE_ALT4_SS0      = EE_ALT3_SS0      + 1; // alt input 4 mode
+const int EE_ALTDIR_SS0    = EE_ALT4_SS0      + 1; // alt input trigger direction
+const int EE_ALTBD_SS0     = EE_ALTDIR_SS0    + 1; // alt trigger before delay
+const int EE_ALTBT_SS0     = EE_ALTBD_SS0     + 2; // alt trigger before time
+const int EE_ALTAD_SS0     = EE_ALTBT_SS0     + 2; // alt trigger after delay
+const int EE_ALTAT_SS0     = EE_ALTAD_SS0     + 2; // alt trigger after time
+const int EE_ALTHL_SS0     = EE_ALTAT_SS0     + 2; // high or low output trigger
+const int EE_PERIOD_SS0    = EE_ALTHL_SS0     + 1; // minimum period in mS
+const int EE_MPRESET_SS0   = EE_PERIOD_SS0    + 2; // selected presets
+const int EE_VOLTH_SS0     = EE_MPRESET_SS0   + 4; // voltage threshold
+const int EE_VOLWARN_SS0   = EE_VOLTH_SS0     + 4; // voltage warning flag
+const int EE_HEATER_SS0    = EE_VOLWARN_SS0   + 1; // heater on/off flag 
+const int EE_METRIC_SS0    = EE_HEATER_SS0    + 1; // metric display on/off
+
+//SAVE STATE 1
+
+const int EE_NONE_SS1      = 0;                   // do not store
+const int EE_SMS_SS1       = EE_METRIC_SS0  + 1;  // motion_sms
+const int EE_MAXSHOT_SS1   = EE_SMS_SS1     + 1;  // camera max shots
+const int EE_CAMREP_SS1    = EE_MAXSHOT_SS1 + 2;  // camera_repeat
+const int EE_CAMDEL_SS1    = EE_CAMREP_SS1  + 1;  // camera_delay
+const int EE_CAMEXP_SS1    = EE_CAMDEL_SS1  + 4;  // cam_exposure
+const int EE_CAMWAIT_SS1   = EE_CAMEXP_SS1  + 4;  // cam_wait
+const int EE_CAMFOC_SS1    = EE_CAMWAIT_SS1 + 4;  // cam_focus
+const int EE_CAMBULB_SS1   = EE_CAMFOC_SS1  + 4;  // bulb mode
+const int EE_CAMLOCK_SS1   = EE_CAMBULB_SS1 + 1;  // focus lock
+
+const int EE_M0FLAG_SS1    = EE_CAMBULB_SS1 + 1;  // flags
+const int EE_M0RPM_SS1     = EE_M0FLAG_SS1  + 1;  // rpm
+const int EE_M0RATIO_SS1   = EE_M0RPM_SS1   + 4;  // ratio
+const int EE_MORSPEED_SS1  = EE_M0RATIO_SS1 + 4;  // speed
+const int EE_M0RAMP_SS1    = EE_MORSPEED_SS1 + 4; // ramping in
+const int EE_M0RAMPE_SS1   = EE_M0RAMP_SS1  + 2;  // ramping out
+const int EE_M0LEAD_SS1    = EE_M0RAMPE_SS1 + 2;  // lead-in/out
+
+  // note: for each motor, we move the previous defs ahead 21 bytes * motor num
+
+const int EE_MOTOR_SPACE_SS1 = 21;  
+const int EE_POSTMOTOR_SS1 = EE_M0LEAD_SS1 + 2 + (EE_MOTOR_SPACE_SS1 * 2);
+
+const int EE_LCDOFF_SS1    = EE_POSTMOTOR_SS1 + 1; // lcd off time
+const int EE_ALT1_SS1      = EE_LCDOFF_SS1    + 1; // alt input 1 mode
+const int EE_ALT2_SS1      = EE_ALT1_SS1      + 1; // alt input 2 mode
+const int EE_ALT3_SS1      = EE_ALT2_SS1      + 1; // alt input 3 mode
+const int EE_ALT4_SS1      = EE_ALT3_SS1      + 1; // alt input 4 mode
+const int EE_ALTDIR_SS1    = EE_ALT4_SS1      + 1; // alt input trigger direction
+const int EE_ALTBD_SS1     = EE_ALTDIR_SS1    + 1; // alt trigger before delay
+const int EE_ALTBT_SS1     = EE_ALTBD_SS1     + 2; // alt trigger before time
+const int EE_ALTAD_SS1     = EE_ALTBT_SS1     + 2; // alt trigger after delay
+const int EE_ALTAT_SS1     = EE_ALTAD_SS1     + 2; // alt trigger after time
+const int EE_ALTHL_SS1     = EE_ALTAT_SS1     + 2; // high or low output trigger
+const int EE_PERIOD_SS1    = EE_ALTHL_SS1     + 1; // minimum period in mS
+const int EE_MPRESET_SS1   = EE_PERIOD_SS1    + 2; // selected presets
+const int EE_VOLTH_SS1     = EE_MPRESET_SS1   + 4; // voltage threshold
+const int EE_VOLWARN_SS1   = EE_VOLTH_SS1     + 4; // voltage warning flag
+const int EE_HEATER_SS1    = EE_VOLWARN_SS1   + 1; // heater on/off flag 
+const int EE_METRIC_SS1    = EE_HEATER_SS1    + 1; // metric display on/off
+
+//SAVE STATE 2
+
+const int EE_NONE_SS2      = 0;                   // do not store
+const int EE_SMS_SS2       = EE_METRIC_SS1  + 1;  // motion_sms
+const int EE_MAXSHOT_SS2   = EE_SMS_SS2     + 1;  // camera max shots
+const int EE_CAMREP_SS2    = EE_MAXSHOT_SS2 + 2;  // camera_repeat
+const int EE_CAMDEL_SS2    = EE_CAMREP_SS2  + 1;  // camera_delay
+const int EE_CAMEXP_SS2    = EE_CAMDEL_SS2  + 4;  // cam_exposure
+const int EE_CAMWAIT_SS2   = EE_CAMEXP_SS2  + 4;  // cam_wait
+const int EE_CAMFOC_SS2    = EE_CAMWAIT_SS2 + 4;  // cam_focus
+const int EE_CAMBULB_SS2   = EE_CAMFOC_SS2  + 4;  // bulb mode
+const int EE_CAMLOCK_SS2   = EE_CAMBULB_SS2 + 1;  // focus lock
+
+const int EE_M0FLAG_SS2    = EE_CAMBULB_SS2 + 1;  // flags
+const int EE_M0RPM_SS2     = EE_M0FLAG_SS2  + 1;  // rpm
+const int EE_M0RATIO_SS2   = EE_M0RPM_SS2   + 4;  // ratio
+const int EE_MORSPEED_SS2  = EE_M0RATIO_SS2 + 4;  // speed
+const int EE_M0RAMP_SS2    = EE_MORSPEED_SS2 + 4; // ramping in
+const int EE_M0RAMPE_SS2   = EE_M0RAMP_SS2  + 2;  // ramping out
+const int EE_M0LEAD_SS2    = EE_M0RAMPE_SS2 + 2;  // lead-in/out
+
+  // note: for each motor, we move the previous defs ahead 21 bytes * motor num
+
+const int EE_MOTOR_SPACE_SS2 = 21;  
+const int EE_POSTMOTOR_SS2 = EE_M0LEAD_SS2 + 2 + (EE_MOTOR_SPACE_SS2 * 2);
+
+const int EE_LCDOFF_SS2    = EE_POSTMOTOR_SS2 + 1; // lcd off time
+const int EE_ALT1_SS2      = EE_LCDOFF_SS2    + 1; // alt input 1 mode
+const int EE_ALT2_SS2      = EE_ALT1_SS2      + 1; // alt input 2 mode
+const int EE_ALT3_SS2      = EE_ALT2_SS2      + 1; // alt input 3 mode
+const int EE_ALT4_SS2      = EE_ALT3_SS2      + 1; // alt input 4 mode
+const int EE_ALTDIR_SS2    = EE_ALT4_SS2      + 1; // alt input trigger direction
+const int EE_ALTBD_SS2     = EE_ALTDIR_SS2    + 1; // alt trigger before delay
+const int EE_ALTBT_SS2     = EE_ALTBD_SS2     + 2; // alt trigger before time
+const int EE_ALTAD_SS2     = EE_ALTBT_SS2     + 2; // alt trigger after delay
+const int EE_ALTAT_SS2     = EE_ALTAD_SS2     + 2; // alt trigger after time
+const int EE_ALTHL_SS2     = EE_ALTAT_SS2     + 2; // high or low output trigger
+const int EE_PERIOD_SS2    = EE_ALTHL_SS2     + 1; // minimum period in mS
+const int EE_MPRESET_SS2   = EE_PERIOD_SS2    + 2; // selected presets
+const int EE_VOLTH_SS2     = EE_MPRESET_SS2   + 4; // voltage threshold
+const int EE_VOLWARN_SS2   = EE_VOLTH_SS2     + 4; // voltage warning flag
+const int EE_HEATER_SS2    = EE_VOLWARN_SS2   + 1; // heater on/off flag 
+const int EE_METRIC_SS2    = EE_HEATER_SS2    + 1; // metric display on/off
 
 
