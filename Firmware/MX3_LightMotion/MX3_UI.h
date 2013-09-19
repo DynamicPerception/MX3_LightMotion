@@ -77,7 +77,7 @@ const int BUT_MAP[5][2] = {
 // ====== Memory Strings Used in the UI ========
 
 const char MX3_VERSTR[]  =  "LightMotion";
-const char MX3_SUBSTR[]  =  "v.1.01 (HareXVI)";
+const char MX3_SUBSTR[]  =  "v.1.02 (ParrotI)";
 const char MX3_C1STR[]   =  "(c) 2013 Dynamic";
 const char MX3_C2STR[]   =  "Perception";
   // run, stop, and ext must be exact same length, pad with spaces
@@ -107,6 +107,14 @@ const char STR_RES1[]    =  "Reset In   Sec";
 const char STR_RES2[]    =  "Enter to Cancel";
 const char STR_RES3[]    =  "Memory Reset";
 const char STR_RES4[]    =  "Power-Cycle MX3";
+const char STR_SAV1[]    =  "Save Memory";
+const char STR_SAV2[]    =  "Slot: ";
+const char STR_SAV3[]    =  "Memory Saved!";
+const char STR_SAV4[]    =  "Press Enter";
+const char STR_LOD1[]    =  "Load From Memory";
+const char STR_LOD2[]    =  "Slot: ";
+const char STR_LOD3[]    =  "Memory Loaded";
+const char STR_LOD4[]    =  "Press Enter";
 const char STR_SMS[]     =  "SMS ";
 const char STR_CONT[]    =  "Cont";
 const char STR_WARN1[]   =  "Unavailable";
@@ -337,13 +345,15 @@ MENU_VALUE   ui_in_glMet       = { TYPE_SELECT, 0,    0,  MENU_TARGET(&ui_sl_glM
 MENU_ITEM    ui_it_glMet       = { {"Metric Display"},  ITEM_VALUE,  0, MENU_TARGET(&ui_in_glMet) };
 MENU_ITEM    ui_it_glLCD       = { {"LCD AutoOff Sec"}, ITEM_VALUE,  0, MENU_TARGET(&ui_in_glLCD) };
 MENU_ITEM    ui_it_glPer       = { {"Motor Timing"},    ITEM_VALUE,  0, MENU_TARGET(&ui_in_glPer) };
+MENU_ITEM    ui_it_glSav       = { {"Save Memory"},     ITEM_ACTION, 0, MENU_TARGET(uiMenuSaveMem) };
+MENU_ITEM    ui_it_glLod       = { {"Load Memory"},     ITEM_ACTION, 0, MENU_TARGET(uiMenuLoadMem) };
 MENU_ITEM    ui_it_glMem       = { {"Reset Memory"},    ITEM_ACTION, 0, MENU_TARGET(uiMenuResetMem) };
 MENU_ITEM    ui_it_glHet       = { {"Cold Mode"},       ITEM_VALUE,  0, MENU_TARGET(&ui_in_glHet) };
 MENU_ITEM    ui_it_glJmp       = { {"Jump!"},           ITEM_ACTION, 0, MENU_TARGET(uiJump) };
 
 
 
-MENU_LIST    ui_list_gl[]      = { &ui_it_alt, &ui_it_sen, &ui_it_glMet, &ui_it_glLCD, &ui_it_glPer,  &ui_it_glHet, &ui_it_glMem, &ui_it_glJmp };
+MENU_LIST    ui_list_gl[]      = { &ui_it_alt, &ui_it_sen, &ui_it_glMet, &ui_it_glLCD, &ui_it_glPer,  &ui_it_glHet, &ui_it_glSav, &ui_it_glLod, &ui_it_glMem, &ui_it_glJmp };
 MENU_ITEM    ui_it_glList      = { {"Settings"}, ITEM_MENU, MENU_SIZE(ui_list_gl), MENU_TARGET(&ui_list_gl) };
 
  // ===== Main Menu

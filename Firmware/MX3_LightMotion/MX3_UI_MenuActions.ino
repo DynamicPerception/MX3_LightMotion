@@ -104,6 +104,232 @@ void uiMenuResetMem() {
   ; // block all activity until user power-cycles
 }
 
+/** Save State Menu Action
+
+ Save State for EEPROM
+ 
+ @author
+ Parker Dillmann
+ */
+ 
+void uiMenuSaveMem() {
+  
+ int save_state = 0;
+ int menu_check = 1;
+ 
+ lcd.clear();
+
+ lcd.print(STR_SAV1);
+ lcd.setCursor(0, 1);
+ lcd.print(STR_SAV2);
+ 
+ lcd.print(save_state+1);
+ 
+ Menu.enable(false);
+ 
+ while( menu_check ) 
+ {
+   byte button = Menu.checkInput();
+   
+   if( button == BUTTON_BACK ) 
+   {
+     Menu.enable(true);
+     return;
+   }
+   else if (button == BUTTON_INCREASE) 
+   {
+     save_state++;
+     if(save_state == SS_COUNT)
+     {
+       save_state = 0;
+     } 
+     
+     lcd.setCursor(6, 1);
+     lcd.print(save_state+1);
+   }
+   else if (button == BUTTON_DECREASE) 
+   {
+     save_state--;
+     if(save_state < 0)
+     {
+       save_state = SS_COUNT - 1;
+     }  
+     
+     lcd.setCursor(6, 1);
+     lcd.print(save_state+1);
+   }
+   else if (button == BUTTON_SELECT)
+   {
+     switch (save_state)
+     {
+       case 0:
+       
+         eepromWrite_SS0();
+         menu_check = 0;
+       
+         break;
+         
+       case 1:
+       
+         eepromWrite_SS1();
+         menu_check = 0;
+       
+         break;
+         
+       case 2:
+       
+         eepromWrite_SS2();
+         menu_check = 0;
+       
+         break;
+         
+       default:
+       
+         lcd.clear();
+         lcd.print("Something Broke!");
+         lcd.setCursor(0,1);
+         lcd.print("Contact Admin");
+         while(1);
+     } 
+   }
+   else
+   {
+     
+   }
+ }
+ 
+ lcd.clear();
+ 
+ lcd.print(STR_SAV3);
+ lcd.setCursor(0, 1);
+ lcd.print(STR_SAV4);
+ 
+ while( 1 ) 
+ {
+   byte button1 = Menu.checkInput();
+   
+   if( button1 == BUTTON_SELECT ) 
+   {
+     Menu.enable(true);
+     return;
+   }
+ }
+ 
+}
+
+/** Load State Menu Action
+
+ Load State for EEPROM
+ 
+ @author
+ Parker Dillmann
+ */
+ 
+void uiMenuLoadMem() {
+  
+ int save_state = 0;
+ int menu_check = 1;
+ 
+ lcd.clear();
+
+ lcd.print(STR_LOD1);
+ lcd.setCursor(0, 1);
+ lcd.print(STR_LOD2);
+ 
+ lcd.print(save_state+1);
+ 
+ Menu.enable(false);
+ 
+ while( menu_check ) 
+ {
+   byte button = Menu.checkInput();
+   
+   if( button == BUTTON_BACK ) 
+   {
+     Menu.enable(true);
+     return;
+   }
+   else if (button == BUTTON_INCREASE) 
+   {
+     save_state++;
+     if(save_state == SS_COUNT)
+     {
+       save_state = 0;
+     } 
+     
+     lcd.setCursor(6, 1);
+     lcd.print(save_state+1);
+   }
+   else if (button == BUTTON_DECREASE) 
+   {
+     save_state--;
+     if(save_state < 0)
+     {
+       save_state = SS_COUNT - 1;
+     }  
+     
+     lcd.setCursor(6, 1);
+     lcd.print(save_state+1);
+   }
+   else if (button == BUTTON_SELECT)
+   {
+     switch (save_state)
+     {
+       case 0:
+       
+         eepromRestore_SS0();
+         menu_check = 0;
+       
+         break;
+         
+       case 1:
+       
+         eepromRestore_SS1();
+         menu_check = 0;
+       
+         break;
+         
+       case 2:
+       
+         eepromRestore_SS2();
+         menu_check = 0;
+       
+         break;
+         
+       default:
+       
+         lcd.clear();
+         lcd.print("Something Broke!");
+         lcd.setCursor(0,1);
+         lcd.print("Contact Admin");
+         while(1);
+     } 
+   }
+   else
+   {
+     
+   }
+ }
+ 
+ lcd.clear();
+ 
+ lcd.print(STR_LOD3);
+ lcd.setCursor(0, 1);
+ lcd.print(STR_LOD4);
+ 
+ while( 1 ) 
+ {
+   byte button1 = Menu.checkInput();
+   
+   if( button1 == BUTTON_SELECT ) 
+   {
+     Menu.enable(true);
+     return;
+   }
+ }
+ 
+}
+
 /** Voltage Value
 
  Pulls up data from the onboard Sensors 
