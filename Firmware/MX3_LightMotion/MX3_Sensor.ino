@@ -44,11 +44,6 @@ void sensorSetup() {
    pinMode(TEMP_SENSOR_0,  INPUT);
    pinMode(TEMP_SENSOR_1,  INPUT);
    pinMode(TEMP_SENSOR_2,  INPUT);
-   pinMode(LCD_HEATER_12V, OUTPUT);
-   pinMode(LCD_HEATER_24V, OUTPUT);
-   
-   digitalWrite(LCD_HEATER_12V, HIGH);
-   digitalWrite(LCD_HEATER_24V, HIGH);
 }
 
 /** Get the current for all motors (combined)
@@ -157,25 +152,6 @@ void sensorPoll() {
     else {
          sensor_statFlags &= ~SENS_TEMP_FLAG;
     }
-    
-   if( sensor_enHeater ) {
-  
-      //check voltage to see to use LCD_HEATER_24V or LCD_HEATER_12V. Uses npn BJTs to drive p-channel mosfets, HIGH is active.
-      //turn off heater before switching power sources.  
-      
-     if (volts > 13.5) {
-       digitalWrite(LCD_HEATER_12V, LOW);
-       digitalWrite(LCD_HEATER_24V, HIGH);
-     }
-     else {
-       digitalWrite(LCD_HEATER_24V, LOW);
-       digitalWrite(LCD_HEATER_12V, HIGH);
-     }
-   }
-   else {  //make sure heater is off 
-     digitalWrite(LCD_HEATER_24V, LOW);
-     digitalWrite(LCD_HEATER_12V, LOW);
-   }
 }
 
 /** Maximum Temperature Across All Temp Sensors

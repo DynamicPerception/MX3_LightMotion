@@ -75,8 +75,4 @@ const byte TEMP_SENSOR_0 = 45;
 const byte TEMP_SENSOR_1 = 44;
 const byte TEMP_SENSOR_2 = 43;
 
-// digital pins for Cold Weather Mod (CWM)
-
-const byte LCD_HEATER_12V = 29;
-const byte LCD_HEATER_24V = 30;
 
