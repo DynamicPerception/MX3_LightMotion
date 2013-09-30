@@ -107,13 +107,22 @@ void uiCheck() {
  
   // check for disabling the LCD backlight
   
+ lcd.noCursor();
+  
  if( button == BUTTON_NONE ) {
-   if(lcdOn == true && (lcdDisable > 0 && millis() - lastButTm > (lcdDisable * SECOND) ) ) {
+   if((lcdDisable > 0 && millis() - lastButTm > (lcdDisable * SECOND) ) ) {
      uiLCDBackLight(false);
      lcdOn = false;
+     if( sensor_enHeater )
+     {
+        uiClear(); 
+        lcd.noDisplay();
+        return;
+     }
    }
  }
  else {
+   lcd.display();
    lastButTm = millis();
    if( lcdOn == false ) {
      uiLCDBackLight(true);

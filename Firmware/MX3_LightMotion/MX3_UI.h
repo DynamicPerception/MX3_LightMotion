@@ -77,7 +77,7 @@ const int BUT_MAP[5][2] = {
 // ====== Memory Strings Used in the UI ========
 
 const char MX3_VERSTR[]  =  "LightMotion";
-const char MX3_SUBSTR[]  =  "v.1.02 (ParrotI)";
+const char MX3_SUBSTR[]  =  "v.1.03 ParrotII";
 const char MX3_C1STR[]   =  "(c) 2013 Dynamic";
 const char MX3_C2STR[]   =  "Perception";
   // run, stop, and ext must be exact same length, pad with spaces
