@@ -67,6 +67,9 @@ void cycleSetup() {
  */
    
 void cycleCamera() {
+  
+    //update the variables of the camera
+  camSetup();
 
     // stop program if max shots exceeded    
   if( camera_max_shots > 0  && camera_fired >= camera_max_shots ) {

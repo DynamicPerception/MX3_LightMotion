@@ -68,6 +68,7 @@ void uiMenuSetup() {
   Menu.setExitHandler(uiClear);
   Menu.setAnalogButtonPin(BUT_PIN, BUT_MAP, BUT_THRESH);
   Menu.enable(true); 
+  VFDBrightness(VFDBright);
   
   lcd.print(MX3_VERSTR);
   lcd.setCursor(0, 1);
@@ -96,7 +97,7 @@ void uiMenuSetup() {
    */
   
 void uiCheck() {
-  
+   
  static unsigned long lastButTm = 0;
  static boolean           lcdOn = true;
  static byte            wasSens = sensor_statFlags;
@@ -272,12 +273,15 @@ void uiBaseScreen(byte p_button) {
       // display, or update the screen?
   if( ui_refresh || screen != lastScreen || millis() - lastUpdTm > UI_REFRESH_TM ) {
     
-   lcd.clear();
+   lcd.noBlink();    //turns the blinking cursor off while refreshing the screen
+   lcd.home();
+
    ui_refresh = false;
    lastScreen = screen;
    lastUpdTm = millis();
 
       // first page of display
+    
     if( screen == UI_SCREEN_MAIN )
       uiMainScreen();
     else if( screen == UI_SCREEN_CAMERA )
@@ -287,9 +291,10 @@ void uiBaseScreen(byte p_button) {
       
   }
  
-   // if cursor input is enabled, re-seek cursor to correct position
+   // if cursor input is enabled, re-seek cursor to correct position, enables blinking
   if( ui_cursor.enabled )
     lcd.setCursor(ui_cursor.col, ui_cursor.row);
+    lcd.blink();
     
 }
 
@@ -300,10 +305,10 @@ byte uiMainScreen() {
   float minInt = 0.0;
   
     // minimum interval calculation
-  if( camera_bulb )
+  //if( camera_bulb )
     minInt += camera_exposure;
-  else
-    minInt += CAM_MIN_TRIG;
+  //else
+  //  minInt += CAM_MIN_TRIG;
     
   minInt += camera_wait;
   minInt += camera_focus;
@@ -324,9 +329,13 @@ byte uiMainScreen() {
   lcd.print(STR_SPACE);
   
   if( minInt > camera_delay )
+  {
     lcd.print(minInt, 1);
-  else
+    camera_delay = minInt;
+  }
+  else 
     lcd.print(camera_delay, 1);
+  
   
   lcd.print(STR_SEC);
   
@@ -350,6 +359,9 @@ byte uiMainScreen() {
   uiPad(2, mins);
   lcd.print(STR_QUOTE);
   uiPad(2, secs);
+  
+
+  lcd.setCursor(17,0);   //moves cursor off screen, prevents a blinking cursor from showing up at the end
   
 
   return UI_SCREEN_MAIN;
@@ -384,6 +396,9 @@ void uiCamScreen() {
     lcd.print(STR_ECAM);
     s_time = camera_wait;
   }
+ 
+ lcd.print("      ");    //Clears old time
+ lcd.setCursor(2, 1); 
     
  uiDisplayCamTime(s_time);
     
@@ -391,7 +406,14 @@ void uiCamScreen() {
  
  lcd.print(STR_FOC);
  
+ lcd.print("      ");    //Clears old time
+ lcd.setCursor(11, 1);
+ 
  uiDisplayCamTime(camera_focus);
+ 
+ lcd.setCursor(17,0);   //moves cursor off screen, prevents a blinking cursor from showing up at the end
+ 
+
   
 }
 
@@ -464,6 +486,8 @@ void uiMotorScreen(byte p_motor) {
     uiPad(3, def->ramp_start);
   else
     lcd.print(STR_AST);
+    
+  //lcd.setCursor(17,0);   //moves cursor off screen, prevents a blinking cursor from showing up at the end
   
   
 }
@@ -533,8 +557,8 @@ void uiScreenInput(byte p_screen, byte p_button) {
 
 
     // set cursor enabled, blink, and note position of cursor
-  ui_cursor.enabled = 1; 
-  lcd.blink();
+  ui_cursor.enabled = 1;
+  //lcd.blink();
 
   uiDisplayCursorTarget** targets = reinterpret_cast<uiDisplayCursorTarget**>(thsCursor->targets);
   
@@ -570,9 +594,10 @@ void uiScreenInput(byte p_screen, byte p_button) {
 
 void uiDisplayCamTime(unsigned long p_time) {
  
- if( p_time == 0 )
+  if( p_time == 0 ){
     lcd.print(0, DEC);
- else if( p_time >= 300 ) {
+    lcd.print("     ");
+  }else if( p_time >= 300 ) {
     unsigned int s = p_time / SECOND;
     unsigned int p = (p_time - (s * SECOND)) / 100;
     

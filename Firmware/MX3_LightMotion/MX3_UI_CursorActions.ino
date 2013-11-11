@@ -52,6 +52,8 @@ void uiCursorToggleRun(byte p_dir) {
     stopProgram();
   else
     startProgram();
+    
+  eepromWrite();
    
 }
 
@@ -189,11 +191,11 @@ void uiCursorChangeCamBulb(byte p_dir) {
   
   camera_bulb = !camera_bulb;
   
+  OMEEPROM::write(EE_CAMBULB, camera_bulb);
+  
   if( running )
     camSetup(); // reinitialize cam
     
-  OMEEPROM::write(EE_CAMBULB, camera_bulb);
-  
 }
 
 
@@ -284,6 +286,7 @@ void uiCursorChangeMotSpd(byte p_dir) {
  }
 
  motorSpeed(ui_curMotor, curSpd);  
+ OMEEPROM::write(EE_MORSPEED + (EE_MOTOR_SPACE * ui_curMotor), motors[ui_curMotor].speed);
 }
 
 void uiCursorChangeMotDir(byte p_dir) {

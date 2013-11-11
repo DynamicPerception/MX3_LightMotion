@@ -55,6 +55,7 @@ boolean             running = false;
 boolean       motor_running = false;
 boolean           metric_ui = false;
 byte             lcdDisable = 30;
+byte               VFDBright = 3;        // 0 = 25%, 1 = 50%, 2 = 75%, 3 = 100%
 unsigned long    check_time = 0;
 unsigned long      run_time = 0;
 unsigned long     camera_tm = 0;

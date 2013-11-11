@@ -91,9 +91,11 @@ void eepromWrite() {
     write(EE_M0RAMP + (EE_MOTOR_SPACE * i), motors[i].ramp_start);
     write(EE_M0RAMPE + (EE_MOTOR_SPACE * i), motors[i].ramp_end);
     write(EE_M0LEAD + (EE_MOTOR_SPACE * i), motors[i].lead);
+    write(EE_MORSPEED + (EE_MOTOR_SPACE * i), motors[i].speed);
   }
   
   write(EE_LCDOFF, lcdDisable);
+  write(EE_VFDBRI, VFDBright);
   
   write(EE_ALT1, alt_inputs[0]);
   write(EE_ALT2, alt_inputs[1]);
@@ -131,8 +133,7 @@ void eepromRestore() {
   read(EE_CAMWAIT, camera_wait);
   read(EE_CAMFOC, camera_focus);
   read(EE_CAMBULB, camera_bulb);
-  read(EE_CAMLOCK, camera_focLock);
-
+  read(EE_CAMLOCK, camera_focLock);  
   
       // read data about each motor  
   for(byte i = 0; i < MOTOR_COUNT; i++) {
@@ -142,10 +143,12 @@ void eepromRestore() {
     read(EE_M0RAMP + (EE_MOTOR_SPACE * i), motors[i].ramp_start);
     read(EE_M0RAMPE + (EE_MOTOR_SPACE * i), motors[i].ramp_end);
     read(EE_M0LEAD + (EE_MOTOR_SPACE * i), motors[i].lead);
+    read(EE_MORSPEED + (EE_MOTOR_SPACE * i), motors[i].speed);
   }
   
   read(EE_LCDOFF, lcdDisable);
-
+  read(EE_VFDBRI, VFDBright);
+  
   read(EE_ALT1, alt_inputs[0]);
   read(EE_ALT2, alt_inputs[1]);
   read(EE_ALT3, alt_inputs[2]);

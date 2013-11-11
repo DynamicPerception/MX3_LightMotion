@@ -60,7 +60,7 @@ void camSetup() {
     Camera.waitTime(camera_wait);
   }
   else {
-    Camera.exposeTime(CAM_MIN_TRIG);
+    Camera.exposeTime(camera_exposure); //CAM_MIN_TRIG);
     Camera.waitTime(camera_wait);
   }
   

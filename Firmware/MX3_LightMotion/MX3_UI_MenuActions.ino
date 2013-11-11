@@ -39,6 +39,7 @@
 */
 
 void uiMenuAltInit() {
+ lcd.noBlink();
  
  altSetup();
 
@@ -63,6 +64,7 @@ void uiMenuAltInit() {
  */
  
 void uiMenuResetMem() {
+ lcd.noBlink();
  
  lcd.clear();
 
@@ -86,10 +88,11 @@ void uiMenuResetMem() {
      
      if( diff >= 9100 )
        break;
-     
+     //lcd.noBlink();
      unsigned int dispTime = (9100 - diff) / SECOND;
      lcd.setCursor(9, 0);
      lcd.print(dispTime, DEC);
+     //lcd.setCursor(17,0);       //moves cursor off screen, prevents a blinking cursor from showing up at the end
    }
  }
  
@@ -99,6 +102,7 @@ void uiMenuResetMem() {
  lcd.print(STR_RES3);
  lcd.setCursor(0, 1);
  lcd.print(STR_RES4);
+ //lcd.setCursor(17,0);   //moves cursor off screen, prevents a blinking cursor from showing up at the end
  
  while(1) 
   ; // block all activity until user power-cycles
@@ -113,6 +117,7 @@ void uiMenuResetMem() {
  */
  
 void uiMenuSaveMem() {
+ lcd.noBlink();
   
  int save_state = 0;
  int menu_check = 1;
@@ -226,6 +231,7 @@ void uiMenuSaveMem() {
  */
  
 void uiMenuLoadMem() {
+ lcd.noBlink();
   
  int save_state = 0;
  int menu_check = 1;
@@ -330,6 +336,96 @@ void uiMenuLoadMem() {
  
 }
 
+
+/** Change VFD Brightness Menu
+
+ Changes the brightness level of the VFD screen
+ 
+ @author
+ Kevin Melotti
+ */
+ 
+void uiVFDBrightness() {
+ lcd.noBlink();
+  
+ byte brightness_state = VFDBright;
+ int menu_check = 1;
+ 
+ lcd.clear();
+
+ lcd.print(STR_BRI1);
+ lcd.setCursor(0, 1);
+ lcd.print(STR_BRI2);
+ 
+ lcd.print((brightness_state+1)*25);
+ 
+ Menu.enable(false);
+ 
+ while( menu_check ) 
+ {
+   byte button = Menu.checkInput();
+   
+   if( button == BUTTON_BACK ) 
+   {
+     VFDBrightness(VFDBright);
+     Menu.enable(true);
+     return;
+   }
+   else if (button == BUTTON_INCREASE) 
+   {
+     brightness_state++;
+     if(brightness_state == VFD_COUNT)
+     {
+       brightness_state = 0;
+     } 
+     
+     lcd.setCursor(3, 1);
+     lcd.print("   ");
+     lcd.setCursor(3, 1);
+     lcd.print((brightness_state+1)*25);
+   }
+   else if (button == BUTTON_DECREASE) 
+   {
+     brightness_state--;
+     if(brightness_state > VFD_COUNT)
+     {
+       brightness_state = VFD_COUNT - 1;
+     }  
+  
+     lcd.setCursor(3, 1);
+     lcd.print("   ");
+     lcd.setCursor(3, 1);
+     lcd.print((brightness_state+1)*25);
+   }
+   else if (button == BUTTON_SELECT)
+   {
+     VFDBright = brightness_state;
+     menu_check = 0;
+   }
+   VFDBrightness(brightness_state);
+ }
+ 
+ OMEEPROM::write(EE_VFDBRI, VFDBright);
+ 
+ lcd.clear();
+ 
+ lcd.print(STR_BRI3);
+ lcd.setCursor(0, 1);
+ lcd.print(STR_BRI4);
+ 
+ while( 1 ) 
+ {
+   byte button1 = Menu.checkInput();
+   
+   if( button1 == BUTTON_SELECT ) 
+   {
+     Menu.enable(true);
+     return;
+   }
+ }
+ 
+}
+
 /** Voltage Value
 
  Pulls up data from the onboard Sensors 
@@ -339,6 +435,7 @@ void uiMenuLoadMem() {
  */
  
 void uiMenuVoltage() {
+ lcd.noBlink();
  int  update_voltage = 0;
  
  lcd.clear();
@@ -380,6 +477,8 @@ void uiMenuVoltage() {
  */
  
 void uiMenuCurrent() {
+ lcd.noBlink();
+ 
  int  update_current = 0;
  
  lcd.clear();
@@ -420,6 +519,8 @@ void uiMenuCurrent() {
  */
 
 void uiMenuTemp(byte p_sens) {
+ 
+ lcd.noBlink();
   
  int  update_temp = 0;
  
@@ -501,7 +602,8 @@ void uiMenuTemp2() {
  */
  
 void uiMenuManual(byte p_motor) {
-
+  
+  lcd.noBlink();
   float        wasSpd = motorSpeedRatio(p_motor);
   boolean         run = false;
   byte       wasFlags = motors[p_motor].flags;
@@ -510,6 +612,7 @@ void uiMenuManual(byte p_motor) {
   
     // can't do manual move when running
   if( running ) {
+    lcd.home();
     lcd.print(STR_WARN1);
     lcd.setCursor(0, 1);
     lcd.print(STR_WARN2);    
@@ -609,6 +712,7 @@ void uiMenuManualThree() {
  */
  
 void uiMenuPreset(byte p_motor) {
+ lcd.noBlink();
  
     // disable menu key processing
  Menu.enable(false);

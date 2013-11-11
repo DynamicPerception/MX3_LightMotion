@@ -40,15 +40,22 @@ boolean           alt_ext_int = false;
 byte            alt_direction = FALLING;
 byte             alt_out_trig = HIGH;
 
+//Pins for the I/O
+const byte           AuxARing = 0;
+const byte            AuxATip = 1;
+const byte            AuxBTip = 2;
+const byte           AuxBRing = 3;
+
+
 
  /** Alt I/O Setup 
  */
  
 void altSetup() {
-  altConnect(0,  alt_inputs[0]);
-  altConnect(1,  alt_inputs[1]); 
-  altConnect(2,  alt_inputs[2]);
-  altConnect(3,  alt_inputs[3]);
+  altConnect(AuxATip ,  alt_inputs[AuxATip]);
+  altConnect(AuxARing,  alt_inputs[AuxARing]); 
+  altConnect(AuxBTip ,  alt_inputs[AuxBTip]);
+  altConnect(AuxBRing,  alt_inputs[AuxBRing]);
   
     // check if any inputs are set to ext intervalometer
   boolean doExt = false;
@@ -107,23 +114,23 @@ void altHandler(byte p_which) {
 /** Handler for ISR One */
       
 void altISROne() {
-  altHandler(0);
+  altHandler(AuxATip);
 }
 
 /** Handler for ISR Two */
 void altISRTwo() {
-  altHandler(1);
+  altHandler(AuxARing);
 }
 
 /** Handler for ISR One */
       
 void altISRThree() {
-  altHandler(2);
+  altHandler(AuxBTip);
 }
 
 /** Handler for ISR Two */
 void altISRFour() {
-  altHandler(3);
+  altHandler(AuxBRing);
 }
 
 /** Connect (or Disconnect) an Alt I/O Line
@@ -163,16 +170,16 @@ void altConnect(byte p_which, byte p_mode) {
   
       // regarding 6 and 7 below - don't ask me.. ask who ever did that wierd order in WInterrupts.c
     switch( p_which ) {
-      case 0: 
-        attachInterrupt(0, altISROne, alt_direction);
+      case AuxARing: 
+        attachInterrupt(0, altISRTwo, alt_direction);
         break;
-      case 1:
-        attachInterrupt(1, altISRTwo, alt_direction);
+      case AuxATip:
+        attachInterrupt(1, altISROne, alt_direction);
         break;
-      case 2: 
+      case AuxBTip: 
         attachInterrupt(6, altISRThree, alt_direction);
         break;
-      case 3:
+      case AuxBRing:
         attachInterrupt(7, altISRFour, alt_direction);
         break;
     }

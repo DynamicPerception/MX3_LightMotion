@@ -81,6 +81,19 @@ const byte SS_COUNT = 3;
 
 /*
 
+  VFD Brigthness State Constants
+  
+*/
+
+const byte VFD_COUNT      = 4;
+const byte Brightness_25  = 0x2B;
+const byte Brightness_50  = 0x2A;
+const byte Brightness_75  = 0x29;
+const byte Brightness_100 = 0x28;
+
+
+/*
+
   Alt I/O Data
   
 */
@@ -119,8 +132,15 @@ const byte    ALT_BLOCK_A = ALT_TRIG_A;
  
  */
  
-const int   CAM_MIN_TRIG  = 250;
-const float CAM_MIN_BULB  = 0.25;
+const int            CAM_MIN_TRIG = 250;
+const float          CAM_MIN_BULB = 0.25;
+
+const unsigned long   CAMWAIT_MAX = 65535;
+const unsigned long   CAMWAIT_MIN = 0;
+const unsigned long    CAMFOC_MAX = 65535;
+const unsigned long    CAMFOC_MIN = 0;
+const unsigned long    CAMEXP_MAX = 65535;
+const unsigned long    CAMEXP_MIN = 0;
 
 /*
 
@@ -237,8 +257,8 @@ struct MotorDefinition {
    ramp_start = 0;
    ramp_end = 0;
    lead = 0;
-   speed = 1.0;
-   setSpeed = 1.0;
+   speed = 0.01;
+   setSpeed = 0.01;
    forceRampStart = 0;
    startShots = 0;
  }
@@ -256,7 +276,7 @@ struct MotorDefinition {
 
  // stored memory layout version
  // this number MUST be changed every time the memory layout is changed
-const unsigned int MEMORY_VERSION    = 31;
+const unsigned int MEMORY_VERSION    = 34;
 
 
 /* Locations of each variable to be stored, note correct spacing
@@ -264,29 +284,31 @@ const unsigned int MEMORY_VERSION    = 31;
 
 const int EE_NONE      = 0; // do not store
 const int EE_SMS       = 1; // motion_sms
-const int EE_MAXSHOT   = EE_SMS     + 1; // camera max shots
-const int EE_CAMREP    = EE_MAXSHOT + 2; // camera_repeat
-const int EE_CAMDEL    = EE_CAMREP  + 1; // camera_delay
-const int EE_CAMEXP    = EE_CAMDEL  + 4; // cam_exposure
-const int EE_CAMWAIT   = EE_CAMEXP  + 4; // cam_wait
-const int EE_CAMFOC    = EE_CAMWAIT + 4; // cam_focus
-const int EE_CAMBULB   = EE_CAMFOC  + 4; // bulb mode
-const int EE_CAMLOCK   = EE_CAMBULB + 1; // focus lock
+const int EE_MAXSHOT   = EE_SMS     + 1; // camera max shots      2
+const int EE_CAMREP    = EE_MAXSHOT + 2; // camera_repeat         4 
+const int EE_CAMDEL    = EE_CAMREP  + 1; // camera_delay          5
+const int EE_CAMEXP    = EE_CAMDEL  + 4; // cam_exposure          9
+const int EE_CAMWAIT   = EE_CAMEXP  + 4; // cam_wait              13
+const int EE_CAMFOC    = EE_CAMWAIT + 4; // cam_focus             17 
+const int EE_CAMBULB   = EE_CAMFOC  + 4; // bulb mode             21 
+const int EE_CAMLOCK   = EE_CAMBULB + 1; // focus lock            22
 
-const int EE_M0FLAG    = EE_CAMBULB + 1; // flags
-const int EE_M0RPM     = EE_M0FLAG  + 1; // rpm
-const int EE_M0RATIO   = EE_M0RPM   + 4; // ratio
-const int EE_M0RAMP    = EE_M0RATIO + 4; // ramping in
-const int EE_M0RAMPE   = EE_M0RAMP  + 2; // ramping out
-const int EE_M0LEAD    = EE_M0RAMPE + 2; // lead-in/out
+const int EE_M0FLAG    = EE_CAMLOCK  + 1; // flags
+const int EE_M0RPM     = EE_M0FLAG   + 1; // rpm
+const int EE_M0RATIO   = EE_M0RPM    + 4; // ratio
+const int EE_MORSPEED  = EE_M0RATIO  + 4; // speed
+const int EE_M0RAMP    = EE_MORSPEED + 4; // ramping in
+const int EE_M0RAMPE   = EE_M0RAMP   + 2; // ramping out
+const int EE_M0LEAD    = EE_M0RAMPE  + 2; // lead-in/out
 
-  // note: for each motor, we move the previous defs ahead 17 bytes * motor num
+  // note: for each motor, we move the previous defs ahead 21 bytes * motor num
 
-const int EE_MOTOR_SPACE = 17;  
+const int EE_MOTOR_SPACE = 21; //21;  
 const int EE_POSTMOTOR = EE_M0LEAD + 2 + (EE_MOTOR_SPACE * 2);
 
 const int EE_LCDOFF    = EE_POSTMOTOR + 1; // lcd off time
-const int EE_ALT1      = EE_LCDOFF    + 1; // alt input 1 mode
+const int EE_VFDBRI    = EE_LCDOFF    + 1; // VFD brightness
+const int EE_ALT1      = EE_VFDBRI    + 1; // alt input 1 mode
 const int EE_ALT2      = EE_ALT1      + 1; // alt input 2 mode
 const int EE_ALT3      = EE_ALT2      + 1; // alt input 3 mode
 const int EE_ALT4      = EE_ALT3      + 1; // alt input 4 mode
@@ -316,7 +338,7 @@ const int EE_CAMFOC_SS0    = EE_CAMWAIT_SS0 + 4;  // cam_focus
 const int EE_CAMBULB_SS0   = EE_CAMFOC_SS0  + 4;  // bulb mode
 const int EE_CAMLOCK_SS0   = EE_CAMBULB_SS0 + 1;  // focus lock
 
-const int EE_M0FLAG_SS0    = EE_CAMBULB_SS0 + 1;  // flags
+const int EE_M0FLAG_SS0    = EE_CAMLOCK_SS0 + 1;  // flags
 const int EE_M0RPM_SS0     = EE_M0FLAG_SS0  + 1;  // rpm
 const int EE_M0RATIO_SS0   = EE_M0RPM_SS0   + 4;  // ratio
 const int EE_MORSPEED_SS0  = EE_M0RATIO_SS0 + 4;  // speed
@@ -360,7 +382,7 @@ const int EE_CAMFOC_SS1    = EE_CAMWAIT_SS1 + 4;  // cam_focus
 const int EE_CAMBULB_SS1   = EE_CAMFOC_SS1  + 4;  // bulb mode
 const int EE_CAMLOCK_SS1   = EE_CAMBULB_SS1 + 1;  // focus lock
 
-const int EE_M0FLAG_SS1    = EE_CAMBULB_SS1 + 1;  // flags
+const int EE_M0FLAG_SS1    = EE_CAMLOCK_SS1 + 1;  // flags
 const int EE_M0RPM_SS1     = EE_M0FLAG_SS1  + 1;  // rpm
 const int EE_M0RATIO_SS1   = EE_M0RPM_SS1   + 4;  // ratio
 const int EE_MORSPEED_SS1  = EE_M0RATIO_SS1 + 4;  // speed
@@ -404,7 +426,7 @@ const int EE_CAMFOC_SS2    = EE_CAMWAIT_SS2 + 4;  // cam_focus
 const int EE_CAMBULB_SS2   = EE_CAMFOC_SS2  + 4;  // bulb mode
 const int EE_CAMLOCK_SS2   = EE_CAMBULB_SS2 + 1;  // focus lock
 
-const int EE_M0FLAG_SS2    = EE_CAMBULB_SS2 + 1;  // flags
+const int EE_M0FLAG_SS2    = EE_CAMLOCK_SS2 + 1;  // flags
 const int EE_M0RPM_SS2     = EE_M0FLAG_SS2  + 1;  // rpm
 const int EE_M0RATIO_SS2   = EE_M0RPM_SS2   + 4;  // ratio
 const int EE_MORSPEED_SS2  = EE_M0RATIO_SS2 + 4;  // speed

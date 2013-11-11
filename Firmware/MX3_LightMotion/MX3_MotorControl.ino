@@ -89,7 +89,7 @@ void motorSetup() {
   for(byte i = 0; i < MOTOR_COUNT; i++ ) {
     motorDir(i, 0);
           // set to 10% speed as default
-    motorSpeed(i, 0.01);
+    motorSpeed(i, motors[i].speed);
   }
  
    digitalWrite(MOTOR_INH_0, HIGH);
@@ -280,7 +280,9 @@ float motorMaxSpeedRatio(byte p_motor) {
   
 void motorDir(byte p_motor, boolean p_dir) {
   
- 
+  byte pin =   p_motor == 0 ? MOTOR_INH_0 : p_motor == 1 ?  MOTOR_INH_1 : MOTOR_INH_2;
+  digitalWrite(pin, LOW);    //Stops the motor during direction change 
+  delay(20);
     
     // swap mask based on direction, and record what direction
     // the user asked for
@@ -313,7 +315,8 @@ void motorDir(byte p_motor, boolean p_dir) {
     // see which driving pin to use
     
   digitalWrite(MOTOR_DIR_PINSTART + (3*p_motor), LOW);
-  digitalWrite(MOTOR_DIR_PINSTART + 1 + (3*p_motor), LOW);
+  digitalWrite(MOTOR_DIR_PINSTART + 1 + (3*p_motor), LOW);  
+  digitalWrite(pin, HIGH);
 }
 
 /** Flip All Motor Directions
@@ -326,8 +329,10 @@ void motorDir(byte p_motor, boolean p_dir) {
  
 void motorDirFlip() {
     // foreach motor, invert its direction
+    
   for(int i = 0; i < MOTOR_COUNT; i++)
     motorDirFlip(i);
+    
 }
 
 /** Flip Motor Direction
