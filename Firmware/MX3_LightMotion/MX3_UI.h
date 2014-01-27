@@ -1,3 +1,5 @@
+
+
 /* 
 
    MX3 LightMotion Firmware
@@ -77,8 +79,8 @@ const int BUT_MAP[5][2] = {
 // ====== Memory Strings Used in the UI ========
 
 const char MX3_VERSTR[]  =  "LightMotion";
-const char MX3_SUBSTR[]  =  "v.1.05 Badger   ";
-const char MX3_C1STR[]   =  "(c) 2013 Dynamic";
+const char MX3_SUBSTR[]  =  "v.1.06 Raptor  ";
+const char MX3_C1STR[]   =  "(c) 2014 Dynamic";
 const char MX3_C2STR[]   =  "Perception";
   // run, stop, and ext must be exact same length, pad with spaces
 const char STR_RUN[]     =  "On ";
@@ -90,7 +92,7 @@ const char STR_BULB[]    =  "B ";
 const char STR_ECAM[]    =  "C ";
 const char STR_BUSY[]    =  "Busy";
 const char STR_IDLE[]    =  "Idle";
-const char STR_MOTOR[]   =  "Motor ";
+const char STR_MOTOR[]   =  "Axis ";
 const char STR_LEFT      =  'L';
 const char STR_RIGHT     =  'R';
 const char STR_CW        =  '+';
@@ -215,6 +217,26 @@ MENU_ITEM    ui_it_camList     = { {"Camera"}, ITEM_MENU, MENU_SIZE(ui_list_cam)
 
 
   // ======= Motor Menus
+  
+
+// ===== Manual Move Menu
+
+MENU_SELECT_ITEM  ui_sel_holdMove = { MM_HOLD,  {"Hold"} };
+MENU_SELECT_ITEM  ui_sel_selectStop  = { MM_SELECT,   {"Start/Stop"} };
+MENU_SELECT_LIST  ui_sel_list_mm[]  = { &ui_sel_holdMove, &ui_sel_selectStop };
+
+MENU_SELECT  ui_sl_mmSetting    = { &mmSetting, MENU_SELECT_SIZE(ui_sel_list_mm),    MENU_TARGET(&ui_sel_list_mm) };
+MENU_VALUE   ui_in_mmSetting    = { TYPE_SELECT, 0, 0, MENU_TARGET(&ui_sl_mmSetting),   EE_MMSETTING };
+
+
+MENU_ITEM    ui_it_mm0_man      = { {"Axis 1"},  ITEM_ACTION, 0, MENU_TARGET(uiMenuManualOne) };
+MENU_ITEM    ui_it_mm1_man      = { {"Axis 2"},  ITEM_ACTION, 0, MENU_TARGET(uiMenuManualTwo) };
+MENU_ITEM    ui_it_mm2_man      = { {"Axis 3"},  ITEM_ACTION, 0, MENU_TARGET(uiMenuManualThree) };
+MENU_ITEM    ui_it_mmSetting    = { {"Movement Type"}, ITEM_VALUE,  0, MENU_TARGET(&ui_in_mmSetting) };
+
+MENU_LIST    ui_list_mm[]      = { &ui_it_mmSetting, &ui_it_mm0_man, &ui_it_mm1_man, &ui_it_mm2_man };
+MENU_ITEM    ui_it_mm      = { {"Manual Move"}, ITEM_MENU, MENU_SIZE(ui_list_mm), MENU_TARGET(&ui_list_mm) };  
+  
 
   // motor 1 inputs
   
@@ -233,7 +255,7 @@ MENU_ITEM    ui_it_m0_flip     = { {"Invert Dir"},   ITEM_VALUE,  0, MENU_TARGET
 MENU_ITEM    ui_it_m0_rpm      = { {"RPM"},          ITEM_VALUE,  0, MENU_TARGET(&ui_in_m0_rpm) };
 MENU_ITEM    ui_it_m0_ratio    = { {"Ratio"},        ITEM_VALUE,  0, MENU_TARGET(&ui_in_m0_ratio) };
 
-MENU_LIST    ui_list_m0[]      = { &ui_it_m0_pres, &ui_it_m0_man, &ui_it_m0_rot, &ui_it_m0_flip, &ui_it_m0_rpm, &ui_it_m0_ratio };
+MENU_LIST    ui_list_m0[]      = { &ui_it_m0_man, &ui_it_m0_pres, &ui_it_m0_rot, &ui_it_m0_flip, &ui_it_m0_rpm, &ui_it_m0_ratio, &ui_it_mmSetting };
 MENU_ITEM    ui_it_m0List      = { {"Axis 1"}, ITEM_MENU, MENU_SIZE(ui_list_m0), MENU_TARGET(&ui_list_m0) };
 
   // motor 2 inputs
@@ -253,7 +275,7 @@ MENU_ITEM    ui_it_m1_flip     = { {"Invert Dir"},   ITEM_VALUE,  0, MENU_TARGET
 MENU_ITEM    ui_it_m1_rpm      = { {"RPM"},          ITEM_VALUE,  0, MENU_TARGET(&ui_in_m1_rpm) };
 MENU_ITEM    ui_it_m1_ratio    = { {"Ratio"},        ITEM_VALUE,  0, MENU_TARGET(&ui_in_m1_ratio) };
 
-MENU_LIST    ui_list_m1[]      = { &ui_it_m1_pres, &ui_it_m1_man, &ui_it_m1_rot, &ui_it_m1_flip, &ui_it_m1_rpm, &ui_it_m1_ratio };
+MENU_LIST    ui_list_m1[]      = { &ui_it_m1_man, &ui_it_m1_pres, &ui_it_m1_rot, &ui_it_m1_flip, &ui_it_m1_rpm, &ui_it_m1_ratio, &ui_it_mmSetting };
 MENU_ITEM    ui_it_m1List      = { {"Axis 2"}, ITEM_MENU, MENU_SIZE(ui_list_m1), MENU_TARGET(&ui_list_m1) };
 
   // motor 3 inputs
@@ -273,7 +295,7 @@ MENU_ITEM    ui_it_m2_flip     = { {"Invert Dir"},   ITEM_VALUE,  0, MENU_TARGET
 MENU_ITEM    ui_it_m2_rpm      = { {"RPM"},          ITEM_VALUE,  0, MENU_TARGET(&ui_in_m2_rpm) };
 MENU_ITEM    ui_it_m2_ratio    = { {"Ratio"},        ITEM_VALUE,  0, MENU_TARGET(&ui_in_m2_ratio) };
 
-MENU_LIST    ui_list_m2[]      = { &ui_it_m2_pres, &ui_it_m2_man, &ui_it_m2_rot, &ui_it_m2_flip, &ui_it_m2_rpm, &ui_it_m2_ratio };
+MENU_LIST    ui_list_m2[]      = { &ui_it_m2_man, &ui_it_m2_pres, &ui_it_m2_rot, &ui_it_m2_flip, &ui_it_m2_rpm, &ui_it_m2_ratio, &ui_it_mmSetting };
 MENU_ITEM    ui_it_m2List      = { {"Axis 3"}, ITEM_MENU, MENU_SIZE(ui_list_m2), MENU_TARGET(&ui_list_m2) };
 
 
@@ -312,9 +334,9 @@ MENU_ITEM    ui_it_altad    = { {"Out Aft Time"},    ITEM_VALUE,  0, MENU_TARGET
 MENU_ITEM    ui_it_altat    = { {"Out Aft Trig mS"}, ITEM_VALUE,  0, MENU_TARGET(&ui_in_altat) };
 MENU_ITEM    ui_it_altdir   = { {"In Trigger"},      ITEM_VALUE,  0, MENU_TARGET(&ui_in_altdir) };
 MENU_ITEM    ui_it_althl    = { {"Out Level"},       ITEM_VALUE,  0, MENU_TARGET(&ui_in_althl) };
-MENU_ITEM    ui_it_altset   = { {"Init I/O"},        ITEM_ACTION, 0, MENU_TARGET(uiMenuAltInit) };
+//MENU_ITEM    ui_it_altset   = { {"Init I/O"},        ITEM_ACTION, 0, MENU_TARGET(uiMenuAltInit) };
 
-MENU_LIST    ui_list_alt[]  = { &ui_it_altset, &ui_it_alt1, &ui_it_alt2, &ui_it_alt3, &ui_it_alt4, &ui_it_altdir, &ui_it_altbd, &ui_it_altbt, &ui_it_altad, &ui_it_altat, &ui_it_althl };
+MENU_LIST    ui_list_alt[]  = { &ui_it_alt1, &ui_it_alt2, &ui_it_alt3, &ui_it_alt4, &ui_it_altdir, &ui_it_altbd, &ui_it_altbt, &ui_it_altad, &ui_it_altat, &ui_it_althl };
 MENU_ITEM    ui_it_alt      = { {"Aux I/O"}, ITEM_MENU, MENU_SIZE(ui_list_alt), MENU_TARGET(&ui_list_alt) };
 
  // ===== Sensor Options
@@ -364,10 +386,14 @@ MENU_ITEM    ui_it_glJmp       = { {"Jump!"},           ITEM_ACTION, 0, MENU_TAR
 MENU_LIST    ui_list_gl[]      = { &ui_it_alt, &ui_it_sen, &ui_it_glMet, &ui_it_glLCD, &ui_it_glPer,  &ui_it_glHet, &ui_it_glVFD, &ui_it_glSav, &ui_it_glLod, &ui_it_glMem, &ui_it_glJmp };
 MENU_ITEM    ui_it_glList      = { {"Settings"}, ITEM_MENU, MENU_SIZE(ui_list_gl), MENU_TARGET(&ui_list_gl) };
 
+
+
+
+
  // ===== Main Menu
  
  // Create top-level menu
-MENU_LIST    ui_list_top[]     = { &ui_it_camList, &ui_it_motors, &ui_it_glList };
+MENU_LIST    ui_list_top[]     = { &ui_it_mm, &ui_it_camList, &ui_it_motors, &ui_it_glList };
 
                   // Root item is always created last, so we can add all other items to it
 MENU_ITEM    ui_it_root        = { {"Root"},        ITEM_MENU,   MENU_SIZE(ui_list_top),    MENU_TARGET(&ui_list_top) };
@@ -482,7 +508,7 @@ const uiDisplayCursorTarget* ui_dctl_cam[]   = { &ui_ct_cam1, &ui_ct_cam2, &ui_c
 const uiDisplayCursors       ui_dc_cam       = { DCT_SIZE(ui_dctl_cam), DCT_PTR(&ui_dctl_cam) };
 
  // motor screens
-const uiDisplayCursorTarget  ui_ct_mot1      = { 0, 8,  uiCursorChangeMotEn,   0 };
+const uiDisplayCursorTarget  ui_ct_mot1      = { 0, 7,  uiCursorChangeMotEn,   0 };
 const uiDisplayCursorTarget  ui_ct_mot2      = { 1, 0,  uiCursorChangeMotDir,  0 };
 const uiDisplayCursorTarget  ui_ct_mot3      = { 1, 2,  uiCursorChangeMotSpd,  0 };
 const uiDisplayCursorTarget  ui_ct_mot4      = { 0, 13, uiCursorChangeMotLead, 0 };

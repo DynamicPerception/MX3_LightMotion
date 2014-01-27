@@ -125,6 +125,7 @@ void eepromRestore() {
   using namespace OMEEPROM;
   
   read(EE_SMS, motion_sms);
+  read(EE_MMSETTING, mmSetting);  
   read(EE_ALTDIR, alt_direction);
   read(EE_MAXSHOT, camera_max_shots);
   read(EE_CAMREP, camera_repeat);

@@ -1,12 +1,12 @@
 LightMotion Firmware for MX3 / Arduino
 =============================================
 
-Version: 1.05
+Version: 1.06
 ---------------
 
 This is the LightMotion Firmware for the Arduino/MX3 Platform.
 
-Version: 1.05
+Version: 1.06
 
 ### Required Libraries
 
@@ -50,7 +50,7 @@ More information can be found at http://www.dynamicperception.com/
 
 ### Copyright and License
 
-(c) 2008-2013 C.A. Church / Dynamic Perception LLC
+(c) 2008-2014 Dynamic Perception LLC
 
 The LightMotion firmware is distributed under a GPLv3 License. See LICENSE.txt for licensing information.
 

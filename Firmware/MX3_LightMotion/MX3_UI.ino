@@ -61,6 +61,9 @@ void uiMenuSetup() {
 
   lcd.begin(LCD_COLS, LCD_ROWS);
   
+ 
+  
+  
   pinMode(LCD_BKL, OUTPUT);
   uiLCDBackLight(true);
   
@@ -103,8 +106,10 @@ void uiCheck() {
  static byte            wasSens = sensor_statFlags;
  static unsigned long lastSenTm = 0;
  static boolean       clearSens = false;
+
  
  byte                    button = Menu.checkInput();
+
  
   // check for disabling the LCD backlight
   
@@ -292,10 +297,10 @@ void uiBaseScreen(byte p_button) {
   }
  
    // if cursor input is enabled, re-seek cursor to correct position, enables blinking
-  if( ui_cursor.enabled )
+  if( ui_cursor.enabled ){
     lcd.setCursor(ui_cursor.col, ui_cursor.row);
     lcd.blink();
-    
+  }
 }
 
 /** Main Display Screen */
@@ -312,6 +317,33 @@ byte uiMainScreen() {
     
   minInt += camera_wait;
   minInt += camera_focus;
+  
+  if(alt_out_flags & ALT_OUT_ANY_B){ //checks to see if any aux i/o are on befroe the camera shoots
+   minInt += alt_before_ms;
+   minInt += alt_before_delay;
+  }
+  
+  if(alt_out_flags & ALT_OUT_ANY_A) { //checks to see if any aux i/o are on after the camera shoots
+   minInt += alt_after_ms;
+   minInt += alt_after_delay;
+  }
+  
+  if (motion_sms)
+  {
+    byte motorEnabled = 0;
+    byte longestMotor = 0;
+    for ( byte i = 0; i < MOTOR_COUNT; i++ )
+    {
+      if (motors[i].flags & MOTOR_UEN_FLAG) {
+        if (motors[i].speed > motors[longestMotor].speed) {    //determine the longest running enabled motor
+          longestMotor = i;
+        }
+        motorEnabled = 1;
+      }
+    }
+      
+    minInt += motorEnabled * motor_pwm_maxperiod * motors[longestMotor].speed * motor_pwm_minperiod / 1000.;  //adds time required by longest running motor
+  }
   
   minInt = minInt / 1000.0;
   
@@ -455,7 +487,6 @@ void uiMotorScreen(byte p_motor) {
        lcd.print(STR_CCW); 
   }
   else {
-      
     if( def->flags & MOTOR_CDIR_FLAG )
        lcd.print(STR_RIGHT);
     else
@@ -486,10 +517,7 @@ void uiMotorScreen(byte p_motor) {
     uiPad(3, def->ramp_start);
   else
     lcd.print(STR_AST);
-    
-  //lcd.setCursor(17,0);   //moves cursor off screen, prevents a blinking cursor from showing up at the end
-  
-  
+      
 }
 
 
@@ -514,6 +542,7 @@ void uiScreenInput(byte p_screen, byte p_button) {
   static byte uiPos     = 0;
 
   byte action = 0;
+  
 
     // reset cursor if screen has changed
   if( p_screen != wasScreen ) {
@@ -522,7 +551,19 @@ void uiScreenInput(byte p_screen, byte p_button) {
         ui_cursor.enabled = 0;
           // in case a new menu root was set as a special menu
           // for a cursor item
-        Menu.setRoot(&ui_it_root);
+          //check what screen it's on to determine the root menu from that screen
+        if (p_screen == UI_SCREEN_MOTOR1){
+          Menu.setRoot(&ui_it_m0List);
+        }
+        else if (p_screen == UI_SCREEN_MOTOR2){
+          Menu.setRoot(&ui_it_m1List);
+        }
+        else if (p_screen == UI_SCREEN_MOTOR3) {
+          Menu.setRoot(&ui_it_m2List);
+        }
+        else {
+          Menu.setRoot(&ui_it_root);
+        }
   }
 
 
@@ -551,7 +592,18 @@ void uiScreenInput(byte p_screen, byte p_button) {
   if( uiPos == 0 ) {
     ui_cursor.enabled = 0;
     lcd.noBlink();
-    Menu.setRoot(&ui_it_root);
+    if (p_screen == UI_SCREEN_MOTOR1){
+      Menu.setRoot(&ui_it_m0List);
+    }
+    else if (p_screen == UI_SCREEN_MOTOR2){
+      Menu.setRoot(&ui_it_m1List);
+    }
+    else if (p_screen == UI_SCREEN_MOTOR3) {
+      Menu.setRoot(&ui_it_m2List);
+    }
+    else {
+      Menu.setRoot(&ui_it_root);
+    }
     return;
   }
 
@@ -570,8 +622,20 @@ void uiScreenInput(byte p_screen, byte p_button) {
     // set new root menu for enter being pressed...
   if( target->mnu != 0 )
     Menu.setRoot(target->mnu);
-  else
-    Menu.setRoot(&ui_it_root);
+  else {
+    if (p_screen == UI_SCREEN_MOTOR1){
+      Menu.setRoot(&ui_it_m0List);
+    }
+    else if (p_screen == UI_SCREEN_MOTOR2){
+      Menu.setRoot(&ui_it_m1List);
+    }
+    else if (p_screen == UI_SCREEN_MOTOR3) {
+      Menu.setRoot(&ui_it_m2List);
+    }
+    else {
+      Menu.setRoot(&ui_it_root);
+    }
+  }
   
   
   if( action ) {

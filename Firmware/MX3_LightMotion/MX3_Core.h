@@ -57,6 +57,17 @@ const byte   ST_EXP = 4;
 const byte  ST_WAIT = 5;
 const byte  ST_ALTP = 6;
 
+
+/*
+
+  Manual Move Settings
+  
+*/
+
+const byte   MM_HOLD = 0;
+const byte MM_SELECT = 1;
+
+
 /*
 
   Sensor Data Constants
@@ -215,6 +226,9 @@ struct MotorDefinition {
    /** Volatile, used by motor_run_isr for overflow */
  volatile unsigned long restPeriods;
  
+ /** needed to change the speed of the motor for SMS mode */ 
+ int smsOnPeriods;
+ 
   /** Time Periods (on periods for every off period) */
  float onTimePeriods;
  
@@ -261,6 +275,7 @@ struct MotorDefinition {
    setSpeed = 0.01;
    forceRampStart = 0;
    startShots = 0;
+   smsOnPeriods = 0;
  }
  
 };
@@ -276,7 +291,7 @@ struct MotorDefinition {
 
  // stored memory layout version
  // this number MUST be changed every time the memory layout is changed
-const unsigned int MEMORY_VERSION    = 34;
+const unsigned int MEMORY_VERSION    = 36;
 
 
 /* Locations of each variable to be stored, note correct spacing
@@ -284,14 +299,15 @@ const unsigned int MEMORY_VERSION    = 34;
 
 const int EE_NONE      = 0; // do not store
 const int EE_SMS       = 1; // motion_sms
-const int EE_MAXSHOT   = EE_SMS     + 1; // camera max shots      2
-const int EE_CAMREP    = EE_MAXSHOT + 2; // camera_repeat         4 
-const int EE_CAMDEL    = EE_CAMREP  + 1; // camera_delay          5
-const int EE_CAMEXP    = EE_CAMDEL  + 4; // cam_exposure          9
-const int EE_CAMWAIT   = EE_CAMEXP  + 4; // cam_wait              13
-const int EE_CAMFOC    = EE_CAMWAIT + 4; // cam_focus             17 
-const int EE_CAMBULB   = EE_CAMFOC  + 4; // bulb mode             21 
-const int EE_CAMLOCK   = EE_CAMBULB + 1; // focus lock            22
+const int EE_MMSETTING = EE_SMS       + 1; // manual move settings  
+const int EE_MAXSHOT   = EE_MMSETTING + 1; // camera max shots      2
+const int EE_CAMREP    = EE_MAXSHOT   + 2; // camera_repeat         4 
+const int EE_CAMDEL    = EE_CAMREP    + 1; // camera_delay          5
+const int EE_CAMEXP    = EE_CAMDEL    + 4; // cam_exposure          9
+const int EE_CAMWAIT   = EE_CAMEXP    + 4; // cam_wait              13
+const int EE_CAMFOC    = EE_CAMWAIT   + 4; // cam_focus             17 
+const int EE_CAMBULB   = EE_CAMFOC    + 4; // bulb mode             21 
+const int EE_CAMLOCK   = EE_CAMBULB   + 1; // focus lock            22
 
 const int EE_M0FLAG    = EE_CAMLOCK  + 1; // flags
 const int EE_M0RPM     = EE_M0FLAG   + 1; // rpm

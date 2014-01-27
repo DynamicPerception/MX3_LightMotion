@@ -57,6 +57,7 @@ void uiCursorToggleRun(byte p_dir) {
    
 }
 
+
 /** Adjust Interval Time
 */
 void uiCursorAdjustInt(byte p_dir) {
@@ -226,13 +227,18 @@ void uiCursorChangeFocusTime(byte p_dir) {
  
  
 void uiCursorChangeMotEn(byte p_dir) {
-  
     // if currently running, and a ramp, ramp out
   if( (running == true) && (motors[ui_curMotor].flags & MOTOR_UEN_FLAG) && (motors[ui_curMotor].ramp_end > 0) && ((motor_inRamp & (B00000001 << ui_curMotor)) == false) ) {
     
     motorForceRamp(ui_curMotor);
   }
-  else {  
+  else {
+  
+    if (motion_sms)
+    {
+     while (motor_running == true) //wait until motor stops moving before changing direction
+     Engine.checkCycle();
+    } 
       // not currently running and enabled and with ramp... =)
     if( motors[ui_curMotor].flags & MOTOR_UEN_FLAG ) {
         // motor is currently enabled
@@ -291,6 +297,7 @@ void uiCursorChangeMotSpd(byte p_dir) {
 
 void uiCursorChangeMotDir(byte p_dir) {
  motorDirFlip(ui_curMotor);
+ OMEEPROM::write(EE_M0FLAG + (EE_MOTOR_SPACE * ui_curMotor), motors[ui_curMotor].flags);
 }
 
 

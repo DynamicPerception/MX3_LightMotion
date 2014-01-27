@@ -36,7 +36,7 @@
    
    @author
    C. A. Church
-*/
+
 
 void uiMenuAltInit() {
  lcd.noBlink();
@@ -51,7 +51,7 @@ void uiMenuAltInit() {
  
  delay(2000); 
 }
-
+*/
 
 /** Reset Menu Action
 
@@ -595,20 +595,24 @@ void uiMenuTemp2() {
 
 /** Manual Move Screen
 
- Perform a manual move of a motor
+ Perform a manual move of a motor, gives the user limit speed resolution
+ and requires them to hold the button down to move the motor. To go "right"
+ the user must press the right button and to go "left" the user must hit
+ the left button.
  
  @author
- C. A. Church
+ Kevin Melotti
  */
  
 void uiMenuManual(byte p_motor) {
   
   lcd.noBlink();
-  float        wasSpd = motorSpeedRatio(p_motor);
+  float        wasSpd = motorSpeed(p_motor);
   boolean         run = false;
   byte       wasFlags = motors[p_motor].flags;
   byte       wasMotor = ui_curMotor;
-  float           spd = wasSpd;
+  float           spd = 1.00;
+  
   
     // can't do manual move when running
   if( running ) {
@@ -620,70 +624,139 @@ void uiMenuManual(byte p_motor) {
     return;
   }
   
-    // disable menu processing so we can watch
-    // user input
-  Menu.enable(false);
-
-  lcd.clear();
-  lcd.print(STR_RES2);
- 
-   // user-enable motor (necessary if the user had it disabled)
-  motors[p_motor].flags |= MOTOR_UEN_FLAG;
-  
-  // need to do this for the use of uiCursorChangeMotSpd below
-  ui_curMotor = p_motor;
-  
-  while( 1 ) {
-       
-      // convert to cm for metric display & linear moves
-     
-    if( ! (motors[p_motor].flags & MOTOR_ROT_FLAG) && disp_metric ) 
-      spd *= CM_CONSTANT;
-  
-    byte       button = Menu.checkInput();
+  //Check to see if the user wants to move the motor by holding the button down or not
+  if (mmSetting == MM_HOLD){
     
-    lcd.setCursor(0, 1);
-    lcd.print(spd, 2); 
+      // disable menu processing so we can watch
+      // user input
+    Menu.enable(false);
+  
+    lcd.clear();
+    lcd.print(STR_RES2);
+   
+     // user-enable motor (necessary if the user had it disabled)
+    motors[p_motor].flags |= MOTOR_UEN_FLAG;
     
-    if( button == BUTTON_FORWARD || button == BUTTON_BACK ) {
-        // if not already running, run it
-      if( ! run ) {
-        byte dir = (button == BUTTON_FORWARD) ? 1 : 0;
+    // need to do this for the use of uiCursorChangeMotSpd below
+    ui_curMotor = p_motor;
+    
+    while( 1 ) {
+         
+  
+      int buttonValue = analogRead(BUT_PIN); 
+    
+      byte button = Menu.checkInput();
+      
+      lcd.setCursor(0, 1);
+      lcd.print(spd*100, 0); 
+      lcd.print("% ");
+      
+      //Moves the motor based on which button is being pressed        
+      if (button == BUTTON_FORWARD || button == BUTTON_BACK){
+        
+        byte dir = (button == BUTTON_BACK) ? 0 : 1;
         motorDir(p_motor, dir);
+        motorSpeed(p_motor, spd);
         motorRun(false, p_motor);
         run = true;
-      }
-      else {
-          // already running, stop the motor
+        
+        //Sets the lower and upper boundaries for the analog button depending on which button is pressed
+        int lowerBound = ((button == BUTTON_BACK) ? BUTREV_VAL : BUTFWD_VAL) - BUT_THRESH;
+        int upperBound = ((button == BUTTON_BACK) ? BUTREV_VAL : BUTFWD_VAL) + BUT_THRESH;
+        
+        //Keeps the motor running while the button is held down      
+        while( lowerBound <= buttonValue && buttonValue <= upperBound) {    
+          buttonValue = analogRead(BUT_PIN);
+        } 
+        
+        //stops the motors after the button is released
         motorStop();
         run = false;
-      }
-    } // end if( button == BUTTON_FORWARD...
-    else {
-        // not forward or back
+        
+      }// end if( button == BUTTON_FORWARD...
       
+      //Adjust the speed of the motor
       if( button == BUTTON_INCREASE || button == BUTTON_DECREASE ) {
-        byte dir = (button == BUTTON_INCREASE) ? 1 : 0;
-          // use existing cursor code to change speed
-        uiCursorChangeMotSpd(dir);
-          // display new speed
-        spd = motorSpeedRatio(p_motor);
-        lcd.setCursor(0, 1);
-        lcd.print(STR_BLNK);
+        float dir = (button == BUTTON_INCREASE) ? 0.25 : -0.25;
+        spd += dir;
+        if (spd >= 1.00)
+          spd = 1.00;
+        else if (spd <= 0.25)
+          spd = 0.25;
       }
-      else if( button == BUTTON_SELECT ) {
-          // enter exits, recover state and exit action
+      
+      // enter exits, recover state and exit action
+      if( button == BUTTON_SELECT ) {
         ui_curMotor = wasMotor;
         motorStop();
         motors[p_motor].flags = wasFlags;
-        motorSpeedRatio(p_motor, wasSpd);
+        motorSpeed(p_motor, wasSpd);
         Menu.enable(true);
-        return;
-      }
-    }
-    
-  } // end while
+        return;      
+      }    
       
+    } // end while
+  } else { 
+  
+    Menu.enable(false);
+  
+    lcd.clear();
+    lcd.print(STR_RES2);
+   
+     // user-enable motor (necessary if the user had it disabled)
+    motors[p_motor].flags |= MOTOR_UEN_FLAG;
+    
+    // need to do this for the use of uiCursorChangeMotSpd below
+    ui_curMotor = p_motor;
+    
+    while( 1 ) {
+         
+ 
+      byte       button = Menu.checkInput();
+      
+      lcd.setCursor(0, 1);
+      lcd.print(spd*100, 0); 
+      lcd.print("% "); 
+      
+      if( button == BUTTON_FORWARD || button == BUTTON_BACK ) {
+          // if not already running, run it
+        if( ! run ) {
+          byte dir = (button == BUTTON_FORWARD) ? 1 : 0;
+          motorDir(p_motor, dir);
+          motorSpeed(p_motor, spd);
+          motorRun(false, p_motor);
+          run = true;
+        }
+        else {
+            // already running, stop the motor
+          motorStop();
+          run = false;
+        }
+      } // end if( button == BUTTON_FORWARD...
+      else {
+          // not forward or back
+        
+        if( button == BUTTON_INCREASE || button == BUTTON_DECREASE ) {
+          float dir = (button == BUTTON_INCREASE) ? 0.25 : -0.25;
+          spd += dir;
+          if (spd >= 1.00)
+            spd = 1.00;
+          else if (spd <= 0.25)
+            spd = 0.25;
+          motorSpeed(p_motor, spd);
+        }
+        else if( button == BUTTON_SELECT ) {
+            // enter exits, recover state and exit action
+          ui_curMotor = wasMotor;
+          motorStop();
+          motors[p_motor].flags = wasFlags;
+          motorSpeed(p_motor, wasSpd);
+          Menu.enable(true);
+          return;
+        }
+      }
+    }  
+  }
 }
 
 void uiMenuManualOne() {
