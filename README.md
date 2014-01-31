@@ -12,7 +12,7 @@ Version: 1.06
 
 You must install the following libraries to compile the MotionEngine:
 
- * [OMLibraries v1.13](https://github.com/DynamicPerception/OMLibraries/tree/v1.13) 
+ * [OMLibraries](https://github.com/DynamicPerception/OMLibraries) 
  * [MsTimer2](http://www.pjrc.com/teensy/td_libs_MsTimer2.html)
  * [TimerOne](http://code.google.com/p/arduino-timerone/downloads/list)
 
