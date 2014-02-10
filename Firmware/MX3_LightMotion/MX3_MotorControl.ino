@@ -50,8 +50,6 @@ unsigned int motor_pwm_minperiod  = 600;
   // maximum number of periods per minute
 float motor_pwm_maxperiod  = ( 60000000.0 / (float) motor_pwm_minperiod );
 
-unsigned int motor_inRamp = 0;
-
 boolean motor_flushSMS = false;
 
 //Manaual move setting - 0 for hold to move, 1 for select to stop
@@ -448,7 +446,7 @@ void motorStopThis(byte p_motor) {
         // get rid of forced ramp
      motors[p_motor].forceRampStart = 0; 
          // clear ramp flag
-     motor_inRamp &= ~(1 << p_motor);
+     motors[p_motor].inRamp = 0;
 }
 
 /** Start Motor Driving Interrupt Service 
@@ -494,12 +492,9 @@ void motorStartISR(boolean p_once) {
 
 void motorRunISRSMS() {
   
-  static byte moveCnt;
-  static byte moved;
-  
-  
-
-  
+  static byte moveCnt = 0;
+  static byte moved   = 0;
+   
     // we've got to be careful when stopping during a move
   if( motor_flushSMS ) {
     moveCnt = 0;
@@ -525,17 +520,14 @@ void motorRunISRSMS() {
          if( motors[i].restPeriods >= (motor_pwm_maxperiod * motors[i].speed)) {
            //motor is moving and the rest periods are greater or equal to the distance (in terms of rest periods)
            moved++;
-                // going down, disable output pin
+           // going down, disable output pin
            MOTOR_DRV_PREG  &= (~(B00000001 << (i*3 + ((motors[i].flags & MOTOR_CDIR_FLAG) >> 2))));  
            motors[i].flags &= (~MOTOR_HIGH_FLAG);
-           motorStopThis(i);
-         }
-         else {
+         } else {
            if (motors[i].smsOnPeriods < smsOnPeriodRatio){
              MOTOR_DRV_PREG  |= (B00000001 << (i*3 + ((motors[i].flags & MOTOR_CDIR_FLAG) >> 2))); 
              motors[i].smsOnPeriods++;
-           }             
-           else {
+           } else {
              MOTOR_DRV_PREG  &= (~(B00000001 << (i*3 + ((motors[i].flags & MOTOR_CDIR_FLAG) >> 2))));
              motors[i].smsOnPeriods = 0;
            }
@@ -695,6 +687,7 @@ void motorCheckRamp() {
   
       for( byte i = 0; i < MOTOR_COUNT; i++ ) {
         
+        //check to see if motor is user enabled
         if(motors[i].flags & MOTOR_UEN_FLAG ) {
           
           if( motors[i].ramp_start > 0 || motors[i].ramp_end > 0 ) {
@@ -718,11 +711,12 @@ void motorCheckRamp() {
               if( diff <= 0.0 ) {
                   // disable motor (user wanted the motor off when ramp completed...)
                   motors[i].flags &= (B11111111 ^ (MOTOR_RAMP_FLAG | MOTOR_UEN_FLAG));
+                  motors[i].inRamp = 0;
                   motorSpeed(i, motors[i].setSpeed);
                   continue;
               }
                 // set motor currently ramping flag
-              motor_inRamp |= (1 << i);
+              motors[i].inRamp = 1;
             }
             else if( camera_fired == rampEnd ) {
               diff = 1.0;
@@ -730,17 +724,17 @@ void motorCheckRamp() {
                 // doesn't care about that part.
               motors[i].startShots = 0;
                 // disable motor currently ramping flag
-              motor_inRamp &= (B11111111 ^ (1 << i));
+              motors[i].inRamp = 0;
             }
             else if( camera_fired < rampEnd ) {
               diff = (float) (camera_fired - motors[i].startShots - motors[i].lead) / (float) motors[i].ramp_start;
                  // set motor currently ramping flag
-              motor_inRamp |= (1 << i);
+              motors[i].inRamp = 1;
             }
             else if( camera_fired > (camera_max_shots - rampEndF) ) {
               diff = (float) (camera_max_shots - camera_fired - motors[i].lead)  / (float) motors[i].ramp_end;
                  // set motor currently ramping flag
-              motor_inRamp |= (1 << i);
+              motors[i].inRamp = 1;
             }
             else {
               continue;
@@ -769,4 +763,6 @@ void motorForceRamp(byte p_motor) {
   motors[p_motor].flags |= MOTOR_RAMP_FLAG;
   motors[p_motor].forceRampStart = camera_fired;
 }
+
+
 

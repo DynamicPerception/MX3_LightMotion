@@ -228,17 +228,18 @@ void uiCursorChangeFocusTime(byte p_dir) {
  
 void uiCursorChangeMotEn(byte p_dir) {
     // if currently running, and a ramp, ramp out
-  if( (running == true) && (motors[ui_curMotor].flags & MOTOR_UEN_FLAG) && (motors[ui_curMotor].ramp_end > 0) && ((motor_inRamp & (B00000001 << ui_curMotor)) == false) ) {
+  if( (running == true) && (motors[ui_curMotor].flags & MOTOR_UEN_FLAG) && (motors[ui_curMotor].ramp_end > 0) && ((motors[ui_curMotor].inRamp) == false) ) {
     
     motorForceRamp(ui_curMotor);
   }
   else {
-  
-    if (motion_sms)
-    {
-     while (motor_running == true) //wait until motor stops moving before changing direction
-     Engine.checkCycle();
-    } 
+
+//  
+//    if (motion_sms)
+//    {
+//     while (motor_running == true) //wait until motor stops moving before changing direction
+//     Engine.checkCycle();
+//    } 
       // not currently running and enabled and with ramp... =)
     if( motors[ui_curMotor].flags & MOTOR_UEN_FLAG ) {
         // motor is currently enabled
@@ -308,7 +309,7 @@ void uiCursorChangeMotLead(byte p_dir) {
 void uiCursorChangeMotRamp(byte p_dir) {
   
     // don't allow ramp change during ramp execution, that would be bad.
-  if( motor_inRamp & (1 << ui_curMotor) ) 
+  if( motors[ui_curMotor].inRamp ) 
     return;
  
    // set both ramps the same when changed here

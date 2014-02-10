@@ -229,6 +229,9 @@ struct MotorDefinition {
  /** needed to change the speed of the motor for SMS mode */ 
  int smsOnPeriods;
  
+ /** falg to determine if the motor is currently ramping */
+ bool inRamp;
+ 
   /** Time Periods (on periods for every off period) */
  float onTimePeriods;
  
@@ -276,6 +279,7 @@ struct MotorDefinition {
    forceRampStart = 0;
    startShots = 0;
    smsOnPeriods = 0;
+   inRamp = 0;
  }
  
 };

@@ -23,7 +23,6 @@
 */
 
 
-
 #include <TimerOne.h>
 #include <Arduino.h>
 #include <MsTimer2.h>
@@ -80,10 +79,17 @@ OMState      Engine = OMState(7);
  // initialize LCD object
 LiquidCrystal lcd(LCD_RS, LCD_EN, LCD_D4, LCD_D5, LCD_D6, LCD_D7);
 
+//byte nodeAddr 	= 2;
+
+// OMMoCoMaster myBus = OMMoCoMaster(Serial);
+
 
 
 
 void setup() {
+  
+  
+  Serial.begin(OM_SER_BPS);
 
     // manage restoring EEPROM memory
  eepromCheck();
