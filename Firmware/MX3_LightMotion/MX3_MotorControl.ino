@@ -438,9 +438,9 @@ void motorStop(boolean p_once) {
  
 void motorStopThis(byte p_motor) {
          // disable motor, set high flag to low, and disable force ramp flag
-     motors[p_motor].flags &= (B11111111 ^ ( MOTOR_ENABLE_FLAG | MOTOR_HIGH_FLAG | MOTOR_RAMP_FLAG ) );
+     motors[p_motor].flags &= (~( MOTOR_ENABLE_FLAG | MOTOR_HIGH_FLAG | MOTOR_RAMP_FLAG ) );
         // change output pin state
-     MOTOR_DRV_PREG  &= (B11111111 ^ (B00000011 << (p_motor*3)));
+     MOTOR_DRV_PREG  &= (~(B00000011 << (p_motor*3)));
         // if speed != setspeed, set new speed back!
      motorSpeed(p_motor, motors[p_motor].setSpeed);
         // get rid of forced ramp
@@ -492,8 +492,8 @@ void motorStartISR(boolean p_once) {
 
 void motorRunISRSMS() {
   
-  static byte moveCnt = 0;
-  static byte moved   = 0;
+  static byte moveCnt;
+  static byte moved;
    
     // we've got to be careful when stopping during a move
   if( motor_flushSMS ) {
@@ -521,8 +521,8 @@ void motorRunISRSMS() {
            //motor is moving and the rest periods are greater or equal to the distance (in terms of rest periods)
            moved++;
            // going down, disable output pin
+           motors[i].flags &= (~( MOTOR_ENABLE_FLAG | MOTOR_HIGH_FLAG ) );
            MOTOR_DRV_PREG  &= (~(B00000001 << (i*3 + ((motors[i].flags & MOTOR_CDIR_FLAG) >> 2))));  
-           motors[i].flags &= (~MOTOR_HIGH_FLAG);
          } else {
            if (motors[i].smsOnPeriods < smsOnPeriodRatio){
              MOTOR_DRV_PREG  |= (B00000001 << (i*3 + ((motors[i].flags & MOTOR_CDIR_FLAG) >> 2))); 

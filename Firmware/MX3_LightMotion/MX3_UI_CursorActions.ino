@@ -227,6 +227,12 @@ void uiCursorChangeFocusTime(byte p_dir) {
  
  
 void uiCursorChangeMotEn(byte p_dir) {
+  if (motion_sms)
+  {
+   while (motor_running == true) //wait until motor stops moving before changing direction
+   Engine.checkCycle();
+  } 
+  
     // if currently running, and a ramp, ramp out
   if( (running == true) && (motors[ui_curMotor].flags & MOTOR_UEN_FLAG) && (motors[ui_curMotor].ramp_end > 0) && ((motors[ui_curMotor].inRamp) == false) ) {
     
@@ -234,13 +240,8 @@ void uiCursorChangeMotEn(byte p_dir) {
   }
   else {
 
-//  
-//    if (motion_sms)
-//    {
-//     while (motor_running == true) //wait until motor stops moving before changing direction
-//     Engine.checkCycle();
-//    } 
-      // not currently running and enabled and with ramp... =)
+  
+    // not currently running and enabled and with ramp... =)
     if( motors[ui_curMotor].flags & MOTOR_UEN_FLAG ) {
         // motor is currently enabled
         
@@ -304,6 +305,8 @@ void uiCursorChangeMotDir(byte p_dir) {
 
 void uiCursorChangeMotLead(byte p_dir) {
   motors[ui_curMotor].lead += p_dir ? 1 : -1;
+  if (motors[ui_curMotor].lead >= 655)
+    motors[ui_curMotor].lead = 0;
 }
 
 void uiCursorChangeMotRamp(byte p_dir) {
@@ -314,6 +317,8 @@ void uiCursorChangeMotRamp(byte p_dir) {
  
    // set both ramps the same when changed here
   motors[ui_curMotor].ramp_start += p_dir ? 1 : -1;
+  if (motors[ui_curMotor].ramp_start >= 655)
+    motors[ui_curMotor].ramp_start = 0;
   motors[ui_curMotor].ramp_end    = motors[ui_curMotor].ramp_start;
 }
 
