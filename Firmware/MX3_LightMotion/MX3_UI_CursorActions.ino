@@ -239,15 +239,11 @@ void uiCursorChangeMotEn(byte p_dir) {
     motorForceRamp(ui_curMotor);
   }
   else {
-
-  
-    // not currently running and enabled and with ramp... =)
     if( motors[ui_curMotor].flags & MOTOR_UEN_FLAG ) {
         // motor is currently enabled
         
-          // if already running, make sure motor is properly stopped
-      if( running) 
-        motorStopThis(ui_curMotor);
+       // make sure motor is properly stopped
+      motorStopThis(ui_curMotor);
         
         // disable motor
       motors[ui_curMotor].flags &= (B11111111 ^ MOTOR_UEN_FLAG);
