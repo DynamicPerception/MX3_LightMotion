@@ -44,6 +44,12 @@ boolean        ui_refresh = false;
 byte          ui_curMotor = 0;
 
 
+// time variables
+  unsigned int hours = 0;
+  unsigned int mins = 0;
+  unsigned int secs = 0;
+  unsigned long temp_time = 0;
+
  // initialize menu manager
 OMMenuMgr Menu(&ui_it_root);
 
@@ -353,8 +359,9 @@ byte uiMainScreen() {
       lcd.print(STR_EXT);
     else
       lcd.print(STR_RUN);
-  }
-  else {
+  } else if (camera_flag){
+      lcd.print(STR_TIM); 
+  } else {
     lcd.print(STR_STOP);
   }
   
@@ -381,10 +388,19 @@ byte uiMainScreen() {
   
   lcd.setCursor(0, 1);
   
-  unsigned int hours = run_time / 3600000L;
-  unsigned int mins  = ( run_time - (hours * 3600000) ) / 60000L;
-  unsigned int secs  = ( run_time - (hours * 3600000) - (mins * 60000L) ) / SECOND;
   
+  if (camera_flag)
+  {
+    temp_time = camera_timer * 60 - (delay_time - start_time)/1000;
+    hours = ( temp_time ) / 3600;
+    mins  = ( temp_time - (hours * 3600) ) / 60;
+    secs  = ( temp_time - (hours * 3600) - (mins * 60) ) ;
+    
+  } else {
+    hours = run_time / 3600000L;
+    mins  = ( run_time - (hours * 3600000) ) / 60000L;
+    secs  = ( run_time - (hours * 3600000) - (mins * 60000L) ) / SECOND;
+  }
   lcd.print(STR_TIME);
   uiPad(2, hours);
   lcd.print(STR_SQUOTE);
@@ -509,6 +525,7 @@ void uiMotorScreen(byte p_motor) {
   }
   
   lcd.print(spd, spdPrec);
+  lcd.print(" ");
   
   lcd.setCursor(12, 1);
   lcd.print(STR_UA);

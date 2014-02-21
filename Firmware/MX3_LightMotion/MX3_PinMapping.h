@@ -56,6 +56,7 @@ const byte     ALT_PIN_3 = 32;
 
   // motor driving pin register and first pin mask
 #define  MOTOR_DRV_PREG PORTA
+#define MOTOR_DRV_PREG2 PORTB
 #define MOTOR_DRV_FMASK PORTA0
 
   // first motor direction pin

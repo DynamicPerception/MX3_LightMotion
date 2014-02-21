@@ -48,10 +48,17 @@
  */
 
 void uiCursorToggleRun(byte p_dir) {
-  if( running )
+  if( running ){
     stopProgram();
-  else
+  } else if(camera_timer > 0 && !camera_flag) {
+    start_time = millis();
+    delay_time = start_time;
+    camera_flag = true;
+  } else if (camera_flag){
+    camera_flag = false;
+  } else {
     startProgram();
+  }
     
   eepromWrite();
    
@@ -275,7 +282,7 @@ void uiCursorChangeMotEn(byte p_dir) {
 void uiCursorChangeMotSpd(byte p_dir) {
 
  float   curSpd = motorSpeed(ui_curMotor);
- float   mod    = 0.01;
+ float   mod    = .00025;
  
  if(motion_sms)
  {
@@ -285,8 +292,8 @@ void uiCursorChangeMotSpd(byte p_dir) {
  }
  else
  {
-   curSpd += p_dir ? mod : mod * -1.0;
-   curSpd = curSpd > 1.0 ? 1.0 : curSpd < mod ? mod : curSpd;
+   curSpd += p_dir ? motorIncrement : motorIncrement * -1.0;
+   curSpd = curSpd > 1.0 ? 1.0 : curSpd < motorIncrement ? motorIncrement : curSpd;
  }
 
  motorSpeed(ui_curMotor, curSpd);  

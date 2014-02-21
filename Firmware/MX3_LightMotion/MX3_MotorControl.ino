@@ -50,10 +50,15 @@ unsigned int motor_pwm_minperiod  = 600;
   // maximum number of periods per minute
 float motor_pwm_maxperiod  = ( 60000000.0 / (float) motor_pwm_minperiod );
 
+int motor_dir_delay = 500;
+
 boolean motor_flushSMS = false;
 
 //Manaual move setting - 0 for hold to move, 1 for select to stop
 byte mmSetting = 0;
+
+//increment for the motor speed in continous mode 
+float motorIncrement = 0.01;
 
 //SMS on period ration - determines the speed of the motor in SMS mode, periodsOn/periodsOff
 float smsOnPeriodRatio = 4;
@@ -264,68 +269,42 @@ float motorMaxSpeedRatio(byte p_motor) {
   @param p_dir
   Direction (true or false)
   
-  We use an efficient method here, that relies upon the motor dir pins 
-  to be in sequence, e.g.:
-  
-  M1A = 7
-  M1B = 8
-  M2A = 9
-  M2B = 10
-  ...
-  
-  In this fashion, we are able to quickly and with little effort
-  switch the directions by not having to determine what pins to
-  use through a series of if's.
-  
   @author
   C. A. Church
   */
   
 void motorDir(byte p_motor, boolean p_dir) {
-  if (motion_sms)
-  {
-     while (motor_running == true) //wait until motor stops moving before changing direction
-     Engine.checkCycle();
-  }
   
-  byte pin =   p_motor == 0 ? MOTOR_INH_0 : p_motor == 1 ?  MOTOR_INH_1 : MOTOR_INH_2;
-  digitalWrite(pin, LOW);    //Stops the motor during direction change 
-  delay(20);
+  //Turns off the motor diver so that it won't trip the battery when switching directions
+  if (p_motor == 0)
+    MOTOR_DRV_PREG &= ~(B00000001 << 2);
+  else if (p_motor == 1)
+    MOTOR_DRV_PREG &= ~(B00000001 << 5);
+  else 
+    MOTOR_DRV_PREG2 &= ~(B00000001);             
+  
+  //turns off driver
+  MOTOR_DRV_PREG  &= ~(B00000011 << (p_motor*3));
     
-    // swap mask based on direction, and record what direction
-    // the user asked for
-  if( p_dir ) {
-    
-      // use direction flipping flag to see what direction the user 
-      // really intends
+  //Set direction  
+  if (p_dir)
+    motors[p_motor].flags |= (MOTOR_CDIR_FLAG); 
+  else
+    motors[p_motor].flags &= ~(MOTOR_CDIR_FLAG);  
         
-    if( motors[p_motor].flags & MOTOR_DIR_FLAG )
-      motors[p_motor].flags &= (B11111111 ^ MOTOR_CDIR_FLAG);
-    else
-      motors[p_motor].flags |= MOTOR_CDIR_FLAG;  
-
-  }
-  else {
-    
-    if( motors[p_motor].flags & MOTOR_DIR_FLAG )
-      motors[p_motor].flags |= MOTOR_CDIR_FLAG;
-    else
-      motors[p_motor].flags &= (B11111111 ^ MOTOR_CDIR_FLAG);
-        
-  }
+  //delays motor to prevent battery tripping
+  delay(motor_dir_delay); 
   
-    // set flag to indicate that motor driver is low at the moment
+  //Turns the motor driver back on
+  if (p_motor == 0)
+    MOTOR_DRV_PREG |= (B00000001 << 2);
+  else if (p_motor == 1)
+    MOTOR_DRV_PREG |= (B00000001 << 5);
+  else 
+    MOTOR_DRV_PREG2 |= (B00000001); 
   
-  motors[p_motor].flags &= (B11111111 ^ MOTOR_HIGH_FLAG);
-  
-    // We need to disable both enable pins for the motor driver
-    // and then on the next ISR run, it will examine the flags to 
-    // see which driving pin to use
-    
-  digitalWrite(MOTOR_DIR_PINSTART + (3*p_motor), LOW);
-  digitalWrite(MOTOR_DIR_PINSTART + 1 + (3*p_motor), LOW);  
-  digitalWrite(pin, HIGH);
 }
+
 
 /** Flip All Motor Directions
 
@@ -339,7 +318,10 @@ void motorDirFlip() {
     // foreach motor, invert its direction
     
   for(int i = 0; i < MOTOR_COUNT; i++)
+  {
     motorDirFlip(i);
+    delay(20);
+  }
     
 }
 
@@ -355,7 +337,48 @@ void motorDirFlip() {
  */
  
 void motorDirFlip(byte p_motor) {
-  motorDir(p_motor, ! (boolean) (motors[p_motor].flags & MOTOR_CDIR_FLAG) );
+  
+  bool flag_on = false;
+  
+  if(motors[p_motor].flags & MOTOR_ENABLE_FLAG){
+    flag_on = true;
+    motors[p_motor].flags &= ~MOTOR_ENABLE_FLAG;
+  }
+  
+  
+  //Turns off the motor diver so that it won't trip the battery when switching directions
+  if (p_motor == 0)
+    MOTOR_DRV_PREG &= ~(B00000001 << 2);
+  else if (p_motor == 1)
+    MOTOR_DRV_PREG &= ~(B00000001 << 5);
+  else 
+    MOTOR_DRV_PREG2 &= ~(B00000001);             
+  
+  MOTOR_DRV_PREG  &= ~(B00000011 << (p_motor*3));
+
+  //Set direction 
+  motors[p_motor].flags ^= (MOTOR_CDIR_FLAG); 
+    
+  //delays motor to prevent battery tripping
+  //delay(3000); 
+  delayMicroseconds(65534);
+  delayMicroseconds(65534);
+
+
+  
+  //Turns the motor driver back on
+  if (p_motor == 0)
+    MOTOR_DRV_PREG |= (B00000001 << 2);
+  else if (p_motor == 1)
+    MOTOR_DRV_PREG |= (B00000001 << 5);
+  else 
+    MOTOR_DRV_PREG2 |= (B00000001);  
+    
+  if(flag_on){
+    motors[p_motor].flags |= MOTOR_ENABLE_FLAG;
+  }
+  
+  
 }
 
 /** Start All Motors Running
@@ -496,23 +519,27 @@ void motorRunISRSMS() {
   static byte moved;
    
     // we've got to be careful when stopping during a move
-  if( motor_flushSMS ) {
-    moveCnt = 0;
-    moved   = 0;  
-    motor_flushSMS = false;
+  if( motor_flushSMS ) {   //1
+    moveCnt = 0;      //2
+    moved   = 0;       //2
+    motor_flushSMS = false;  //2
   }
   
-  for( byte i = 0; i < MOTOR_COUNT; i++ ) {
-    if( motors[i].flags & MOTOR_ENABLE_FLAG && motors[i].flags & MOTOR_UEN_FLAG ) {
+  for( byte i = 0; i < MOTOR_COUNT; i++ ) {  //5
+    if( motors[i].flags & MOTOR_ENABLE_FLAG && motors[i].flags & MOTOR_UEN_FLAG ) {   //6
        // motor is enabled
-       if( ! (motors[i].flags & MOTOR_HIGH_FLAG) && motors[i].speed > 0.0) {
+       if( !(motors[i].flags & MOTOR_HIGH_FLAG) && motors[i].speed > 0.0) {      //8
          // motor is not currently moving
-         MOTOR_DRV_PREG  |= (B00000001 << (i*3 + ((motors[i].flags & MOTOR_CDIR_FLAG) >> 2))); 
+         if( motors[i].flags & MOTOR_DIR_FLAG ){
+           MOTOR_DRV_PREG  |= (B00000001 << (i*3 + (!((motors[i].flags & MOTOR_CDIR_FLAG) >> 2))));
+         } else {
+           MOTOR_DRV_PREG  |= (B00000001 << (i*3 + (((motors[i].flags & MOTOR_CDIR_FLAG) >> 2)))); 
+         }
          //pin register - sets the appropriate pin to drive the motor for each motor
          motors[i].flags |= MOTOR_HIGH_FLAG; 
          //sets flag to high to indicate moving
          motors[i].restPeriods = 1;
-         motors[i].smsOnPeriods++;
+         motors[i].smsOnPeriods = 1;
          moveCnt++;
          //add to movement count
        }
@@ -522,18 +549,35 @@ void motorRunISRSMS() {
            moved++;
            // going down, disable output pin
            motors[i].flags &= (~( MOTOR_ENABLE_FLAG | MOTOR_HIGH_FLAG ) );
-           MOTOR_DRV_PREG  &= (~(B00000001 << (i*3 + ((motors[i].flags & MOTOR_CDIR_FLAG) >> 2))));  
-         } else {
-           if (motors[i].smsOnPeriods < smsOnPeriodRatio){
-             MOTOR_DRV_PREG  |= (B00000001 << (i*3 + ((motors[i].flags & MOTOR_CDIR_FLAG) >> 2))); 
+           MOTOR_DRV_PREG  &= ~(B00000011 << (i*3));
+            // MOTOR_DRV_PREG  &= ~(B00000001 << (i*3 + (((motors[i].flags & MOTOR_CDIR_FLAG) >> 2)))); 
+           
+
+           
+         } else {  
+           //check to see if the motor is on an off period
+           if (motors[i].smsOnPeriods < smsOnPeriodRatio){             
+             //sees if the invert dir flag is on
+             if( motors[i].flags & MOTOR_DIR_FLAG ){
+               MOTOR_DRV_PREG  |= (B00000001 << (i*3 + (!((motors[i].flags & MOTOR_CDIR_FLAG) >> 2))));
+                                                         //!((motors[i].flags & MOTOR_CDIR_FLAG) >> 2)
+             } else {
+               MOTOR_DRV_PREG  |= (B00000001 << (i*3 + (((motors[i].flags & MOTOR_CDIR_FLAG) >> 2))));
+             } 
              motors[i].smsOnPeriods++;
-           } else {
-             MOTOR_DRV_PREG  &= (~(B00000001 << (i*3 + ((motors[i].flags & MOTOR_CDIR_FLAG) >> 2))));
+           } 
+           
+           else {             
+             //sees if the invert dir flag is on
+             MOTOR_DRV_PREG  &= ~(B00000011 << (i*3));
              motors[i].smsOnPeriods = 0;
            }
            motors[i].restPeriods++;       
          }
        }
+    }
+    else {
+     MOTOR_DRV_PREG  &= ~(B00000011 << (i*3));
     }
   }
   
@@ -602,7 +646,11 @@ void motorRunISR() {
        
        if( goHigh ) {
                // going up, enable output pin
-          MOTOR_DRV_PREG  |= (B00000001 << (i*3 + ((motors[i].flags & MOTOR_CDIR_FLAG) >> 2)));
+          if( motors[i].flags & MOTOR_DIR_FLAG ){
+            MOTOR_DRV_PREG  |= (B00000001 << (i*3 + (!((motors[i].flags & MOTOR_CDIR_FLAG) >> 2))));            
+          } else { 
+            MOTOR_DRV_PREG  |= (B00000001 << (i*3 + (((motors[i].flags & MOTOR_CDIR_FLAG) >> 2))));            
+          }
           motors[i].flags |= MOTOR_HIGH_FLAG;                  
        }
 
@@ -635,18 +683,31 @@ void motorRunISR() {
          if( goLow ) {
            
            // going down, disable output pin
-            MOTOR_DRV_PREG  &= (B11111111 ^ (B00000001 << (i*3 + ((motors[i].flags & MOTOR_CDIR_FLAG) >> 2))));
-            motors[i].flags &= (B11111111 ^ MOTOR_HIGH_FLAG);
+            MOTOR_DRV_PREG  &= ~(B00000011 << (i*3));
+            motors[i].flags &= ~(MOTOR_HIGH_FLAG);
               // accumulate off-period error for one period
             motors[i].restPeriods = 0;
             motors[i].onError += motors[i].onTimePeriods - (unsigned long) motors[i].onTimePeriods;
          }
          else {
            motors[i].restPeriods++;
+           if( motors[i].flags & MOTOR_DIR_FLAG ){
+             MOTOR_DRV_PREG  |= (B00000001 << (i*3 + (!((motors[i].flags & MOTOR_CDIR_FLAG) >> 2))));
+             MOTOR_DRV_PREG  &= ~(B00000001 << (i*3 + (((motors[i].flags & MOTOR_CDIR_FLAG) >> 2))));
+             
+           } else { 
+             MOTOR_DRV_PREG  |= (B00000001 << (i*3 + (((motors[i].flags & MOTOR_CDIR_FLAG) >> 2))));
+             MOTOR_DRV_PREG  &= ~(B00000001 << (i*3 + (!((motors[i].flags & MOTOR_CDIR_FLAG) >> 2))));
+           }
+           
          }
              
      } //end else (motor currently high)
+     
    } // end if motor enabled
+   else {
+     MOTOR_DRV_PREG  &= ~(B00000011 << (i*3));
+   }
      
  } // end for...
  

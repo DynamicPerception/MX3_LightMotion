@@ -82,6 +82,8 @@ void eepromWrite() {
   write(EE_CAMFOC, camera_focus);
   write(EE_CAMBULB, camera_bulb);
   write(EE_CAMLOCK, camera_focLock);
+  write(EE_CAMTIMER, camera_timer);
+  
   
     // write data about each motor  
   for(byte i = 0; i < MOTOR_COUNT; i++) {
@@ -114,6 +116,7 @@ void eepromWrite() {
   write(EE_VOLWARN, sensor_enVWarn);
   write(EE_HEATER, sensor_enHeater);
   write(EE_METRIC, disp_metric);
+  write(EE_INCREMENT, motorIncrement);
   
 }
 
@@ -135,6 +138,7 @@ void eepromRestore() {
   read(EE_CAMFOC, camera_focus);
   read(EE_CAMBULB, camera_bulb);
   read(EE_CAMLOCK, camera_focLock);  
+  read(EE_CAMTIMER, camera_timer);  
   
       // read data about each motor  
   for(byte i = 0; i < MOTOR_COUNT; i++) {
@@ -167,6 +171,7 @@ void eepromRestore() {
   read(EE_VOLWARN, sensor_enVWarn);
   read(EE_HEATER, sensor_enHeater);
   read(EE_METRIC, disp_metric);
+  read(EE_INCREMENT, motorIncrement);
   
 }
 
@@ -188,6 +193,8 @@ void eepromWrite_SS0() {
   write(EE_CAMFOC_SS0, camera_focus);
   write(EE_CAMBULB_SS0, camera_bulb);
   write(EE_CAMLOCK_SS0, camera_focLock);
+  write(EE_CAMTIMER_SS0, camera_timer);
+  
   
     // write data about each motor  
   for(byte i = 0; i < MOTOR_COUNT; i++) {
@@ -219,6 +226,7 @@ void eepromWrite_SS0() {
   write(EE_VOLWARN_SS0, sensor_enVWarn);
   write(EE_HEATER_SS0, sensor_enHeater);
   write(EE_METRIC_SS0, disp_metric);
+  write(EE_INCREMENT_SS0, motorIncrement);
   
 }
 
@@ -240,6 +248,7 @@ void eepromWrite_SS1() {
   write(EE_CAMFOC_SS1, camera_focus);
   write(EE_CAMBULB_SS1, camera_bulb);
   write(EE_CAMLOCK_SS1, camera_focLock);
+  write(EE_CAMTIMER_SS1, camera_timer);
   
     // write data about each motor  
   for(byte i = 0; i < MOTOR_COUNT; i++) {
@@ -271,6 +280,7 @@ void eepromWrite_SS1() {
   write(EE_VOLWARN_SS1, sensor_enVWarn);
   write(EE_HEATER_SS1, sensor_enHeater);
   write(EE_METRIC_SS1, disp_metric);
+  write(EE_INCREMENT_SS1, motorIncrement);
   
 }
 
@@ -292,6 +302,7 @@ void eepromWrite_SS2() {
   write(EE_CAMFOC_SS2, camera_focus);
   write(EE_CAMBULB_SS2, camera_bulb);
   write(EE_CAMLOCK_SS2, camera_focLock);
+  write(EE_CAMTIMER_SS2, camera_timer);
   
     // write data about each motor  
   for(byte i = 0; i < MOTOR_COUNT; i++) {
@@ -323,6 +334,7 @@ void eepromWrite_SS2() {
   write(EE_VOLWARN_SS2, sensor_enVWarn);
   write(EE_HEATER_SS2, sensor_enHeater);
   write(EE_METRIC_SS2, disp_metric);
+  write(EE_INCREMENT_SS2, motorIncrement);
   
 }
 
@@ -342,6 +354,7 @@ void eepromRestore_SS0() {
   read(EE_CAMFOC_SS0, camera_focus);
   read(EE_CAMBULB_SS0, camera_bulb);
   read(EE_CAMLOCK_SS0, camera_focLock);
+  read(EE_CAMTIMER_SS0, camera_timer);
 
   
       // read data about each motor  
@@ -374,6 +387,7 @@ void eepromRestore_SS0() {
   read(EE_VOLWARN_SS0, sensor_enVWarn);
   read(EE_HEATER_SS0, sensor_enHeater);
   read(EE_METRIC_SS0, disp_metric);
+  read(EE_INCREMENT_SS0, motorIncrement);
   
 }
 
@@ -393,6 +407,7 @@ void eepromRestore_SS1() {
   read(EE_CAMFOC_SS1, camera_focus);
   read(EE_CAMBULB_SS1, camera_bulb);
   read(EE_CAMLOCK_SS1, camera_focLock);
+  read(EE_CAMTIMER_SS1, camera_timer);
 
   
       // read data about each motor  
@@ -425,6 +440,7 @@ void eepromRestore_SS1() {
   read(EE_VOLWARN_SS1, sensor_enVWarn);
   read(EE_HEATER_SS1, sensor_enHeater);
   read(EE_METRIC_SS1, disp_metric);
+  read(EE_INCREMENT_SS1, motorIncrement);
   
 }
 
@@ -444,6 +460,7 @@ void eepromRestore_SS2() {
   read(EE_CAMFOC_SS2, camera_focus);
   read(EE_CAMBULB_SS2, camera_bulb);
   read(EE_CAMLOCK_SS2, camera_focLock);
+  read(EE_CAMTIMER_SS2, camera_timer);
 
   
       // read data about each motor  
@@ -476,6 +493,7 @@ void eepromRestore_SS2() {
   read(EE_VOLWARN_SS2, sensor_enVWarn);
   read(EE_HEATER_SS2, sensor_enHeater);
   read(EE_METRIC_SS2, disp_metric);
+  read(EE_INCREMENT_SS2, motorIncrement);
   
 }
 

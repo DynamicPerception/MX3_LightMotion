@@ -110,7 +110,7 @@ const byte Brightness_100 = 0x28;
 */
 
   // debounce threshold time
-const byte ALT_TRIG_THRESH  = 50;
+const int ALT_TRIG_THRESH  = 750;
 
   // what alt i/o modes do we support?
 
@@ -295,7 +295,7 @@ struct MotorDefinition {
 
  // stored memory layout version
  // this number MUST be changed every time the memory layout is changed
-const unsigned int MEMORY_VERSION    = 36;
+const unsigned int MEMORY_VERSION    = 38;
 
 
 /* Locations of each variable to be stored, note correct spacing
@@ -312,14 +312,15 @@ const int EE_CAMWAIT   = EE_CAMEXP    + 4; // cam_wait              13
 const int EE_CAMFOC    = EE_CAMWAIT   + 4; // cam_focus             17 
 const int EE_CAMBULB   = EE_CAMFOC    + 4; // bulb mode             21 
 const int EE_CAMLOCK   = EE_CAMBULB   + 1; // focus lock            22
+const int EE_CAMTIMER  = EE_CAMLOCK   + 1; // focus lock            24
 
-const int EE_M0FLAG    = EE_CAMLOCK  + 1; // flags
-const int EE_M0RPM     = EE_M0FLAG   + 1; // rpm
-const int EE_M0RATIO   = EE_M0RPM    + 4; // ratio
-const int EE_MORSPEED  = EE_M0RATIO  + 4; // speed
-const int EE_M0RAMP    = EE_MORSPEED + 4; // ramping in
-const int EE_M0RAMPE   = EE_M0RAMP   + 2; // ramping out
-const int EE_M0LEAD    = EE_M0RAMPE  + 2; // lead-in/out
+const int EE_M0FLAG    = EE_CAMTIMER + 4; // flags          1
+const int EE_M0RPM     = EE_M0FLAG   + 1; // rpm            4
+const int EE_M0RATIO   = EE_M0RPM    + 4; // ratio          4
+const int EE_MORSPEED  = EE_M0RATIO  + 4; // speed          4
+const int EE_M0RAMP    = EE_MORSPEED + 4; // ramping in     2 
+const int EE_M0RAMPE   = EE_M0RAMP   + 2; // ramping out    2
+const int EE_M0LEAD    = EE_M0RAMPE  + 2; // lead-in/out    2
 
   // note: for each motor, we move the previous defs ahead 21 bytes * motor num
 
@@ -344,21 +345,23 @@ const int EE_VOLTH     = EE_MPRESET   + 4; // voltage threshold
 const int EE_VOLWARN   = EE_VOLTH     + 4; // voltage warning flag
 const int EE_HEATER    = EE_VOLWARN   + 1; // heater on/off flag 
 const int EE_METRIC    = EE_HEATER    + 1; // metric display on/off
+const int EE_INCREMENT = EE_METRIC    + 1; // motor speed increment
 
 //SAVE STATE 0
 
 const int EE_NONE_SS0      = 0;                   // do not store
-const int EE_SMS_SS0       = EE_METRIC      + 1;  // motion_sms
-const int EE_MAXSHOT_SS0   = EE_SMS_SS0     + 1;  // camera max shots
-const int EE_CAMREP_SS0    = EE_MAXSHOT_SS0 + 2;  // camera_repeat
-const int EE_CAMDEL_SS0    = EE_CAMREP_SS0  + 1;  // camera_delay
-const int EE_CAMEXP_SS0    = EE_CAMDEL_SS0  + 4;  // cam_exposure
-const int EE_CAMWAIT_SS0   = EE_CAMEXP_SS0  + 4;  // cam_wait
-const int EE_CAMFOC_SS0    = EE_CAMWAIT_SS0 + 4;  // cam_focus
-const int EE_CAMBULB_SS0   = EE_CAMFOC_SS0  + 4;  // bulb mode
-const int EE_CAMLOCK_SS0   = EE_CAMBULB_SS0 + 1;  // focus lock
+const int EE_SMS_SS0       = EE_INCREMENT     + 4;  // motion_sms
+const int EE_MAXSHOT_SS0   = EE_SMS_SS0       + 1;  // camera max shots
+const int EE_CAMREP_SS0    = EE_MAXSHOT_SS0   + 2;  // camera_repeat
+const int EE_CAMDEL_SS0    = EE_CAMREP_SS0    + 1;  // camera_delay
+const int EE_CAMEXP_SS0    = EE_CAMDEL_SS0    + 4;  // cam_exposure
+const int EE_CAMWAIT_SS0   = EE_CAMEXP_SS0    + 4;  // cam_wait
+const int EE_CAMFOC_SS0    = EE_CAMWAIT_SS0   + 4;  // cam_focus
+const int EE_CAMBULB_SS0   = EE_CAMFOC_SS0    + 4;  // bulb mode
+const int EE_CAMLOCK_SS0   = EE_CAMBULB_SS0   + 1;  // focus lock
+const int EE_CAMTIMER_SS0  = EE_CAMLOCK_SS0   + 1; // focus lock                    
 
-const int EE_M0FLAG_SS0    = EE_CAMLOCK_SS0 + 1;  // flags
+const int EE_M0FLAG_SS0    = EE_CAMTIMER_SS0  + 4;  // flags
 const int EE_M0RPM_SS0     = EE_M0FLAG_SS0  + 1;  // rpm
 const int EE_M0RATIO_SS0   = EE_M0RPM_SS0   + 4;  // ratio
 const int EE_MORSPEED_SS0  = EE_M0RATIO_SS0 + 4;  // speed
@@ -388,21 +391,23 @@ const int EE_VOLTH_SS0     = EE_MPRESET_SS0   + 4; // voltage threshold
 const int EE_VOLWARN_SS0   = EE_VOLTH_SS0     + 4; // voltage warning flag
 const int EE_HEATER_SS0    = EE_VOLWARN_SS0   + 1; // heater on/off flag 
 const int EE_METRIC_SS0    = EE_HEATER_SS0    + 1; // metric display on/off
+const int EE_INCREMENT_SS0 = EE_METRIC_SS0    + 1; // motor speed increment
 
 //SAVE STATE 1
 
 const int EE_NONE_SS1      = 0;                   // do not store
-const int EE_SMS_SS1       = EE_METRIC_SS0  + 1;  // motion_sms
-const int EE_MAXSHOT_SS1   = EE_SMS_SS1     + 1;  // camera max shots
-const int EE_CAMREP_SS1    = EE_MAXSHOT_SS1 + 2;  // camera_repeat
-const int EE_CAMDEL_SS1    = EE_CAMREP_SS1  + 1;  // camera_delay
-const int EE_CAMEXP_SS1    = EE_CAMDEL_SS1  + 4;  // cam_exposure
-const int EE_CAMWAIT_SS1   = EE_CAMEXP_SS1  + 4;  // cam_wait
-const int EE_CAMFOC_SS1    = EE_CAMWAIT_SS1 + 4;  // cam_focus
-const int EE_CAMBULB_SS1   = EE_CAMFOC_SS1  + 4;  // bulb mode
-const int EE_CAMLOCK_SS1   = EE_CAMBULB_SS1 + 1;  // focus lock
+const int EE_SMS_SS1       = EE_INCREMENT_SS0 + 4;  // motion_sms
+const int EE_MAXSHOT_SS1   = EE_SMS_SS1       + 1;  // camera max shots
+const int EE_CAMREP_SS1    = EE_MAXSHOT_SS1   + 2;  // camera_repeat
+const int EE_CAMDEL_SS1    = EE_CAMREP_SS1    + 1;  // camera_delay
+const int EE_CAMEXP_SS1    = EE_CAMDEL_SS1    + 4;  // cam_exposure
+const int EE_CAMWAIT_SS1   = EE_CAMEXP_SS1    + 4;  // cam_wait
+const int EE_CAMFOC_SS1    = EE_CAMWAIT_SS1   + 4;  // cam_focus
+const int EE_CAMBULB_SS1   = EE_CAMFOC_SS1    + 4;  // bulb mode
+const int EE_CAMLOCK_SS1   = EE_CAMBULB_SS1   + 1;  // focus lock
+const int EE_CAMTIMER_SS1  = EE_CAMLOCK_SS1   + 1; // focus lock            
 
-const int EE_M0FLAG_SS1    = EE_CAMLOCK_SS1 + 1;  // flags
+const int EE_M0FLAG_SS1    = EE_CAMTIMER_SS1 + 4;  // flags
 const int EE_M0RPM_SS1     = EE_M0FLAG_SS1  + 1;  // rpm
 const int EE_M0RATIO_SS1   = EE_M0RPM_SS1   + 4;  // ratio
 const int EE_MORSPEED_SS1  = EE_M0RATIO_SS1 + 4;  // speed
@@ -432,21 +437,24 @@ const int EE_VOLTH_SS1     = EE_MPRESET_SS1   + 4; // voltage threshold
 const int EE_VOLWARN_SS1   = EE_VOLTH_SS1     + 4; // voltage warning flag
 const int EE_HEATER_SS1    = EE_VOLWARN_SS1   + 1; // heater on/off flag 
 const int EE_METRIC_SS1    = EE_HEATER_SS1    + 1; // metric display on/off
+const int EE_INCREMENT_SS1 = EE_METRIC_SS1    + 1; // motor speed increment
 
 //SAVE STATE 2
 
 const int EE_NONE_SS2      = 0;                   // do not store
-const int EE_SMS_SS2       = EE_METRIC_SS1  + 1;  // motion_sms
-const int EE_MAXSHOT_SS2   = EE_SMS_SS2     + 1;  // camera max shots
-const int EE_CAMREP_SS2    = EE_MAXSHOT_SS2 + 2;  // camera_repeat
-const int EE_CAMDEL_SS2    = EE_CAMREP_SS2  + 1;  // camera_delay
-const int EE_CAMEXP_SS2    = EE_CAMDEL_SS2  + 4;  // cam_exposure
-const int EE_CAMWAIT_SS2   = EE_CAMEXP_SS2  + 4;  // cam_wait
-const int EE_CAMFOC_SS2    = EE_CAMWAIT_SS2 + 4;  // cam_focus
-const int EE_CAMBULB_SS2   = EE_CAMFOC_SS2  + 4;  // bulb mode
-const int EE_CAMLOCK_SS2   = EE_CAMBULB_SS2 + 1;  // focus lock
+const int EE_SMS_SS2       = EE_INCREMENT_SS1 + 4;  // motion_sms
+const int EE_MAXSHOT_SS2   = EE_SMS_SS2       + 1;  // camera max shots
+const int EE_CAMREP_SS2    = EE_MAXSHOT_SS2   + 2;  // camera_repeat
+const int EE_CAMDEL_SS2    = EE_CAMREP_SS2    + 1;  // camera_delay
+const int EE_CAMEXP_SS2    = EE_CAMDEL_SS2    + 4;  // cam_exposure
+const int EE_CAMWAIT_SS2   = EE_CAMEXP_SS2    + 4;  // cam_wait
+const int EE_CAMFOC_SS2    = EE_CAMWAIT_SS2   + 4;  // cam_focus
+const int EE_CAMBULB_SS2   = EE_CAMFOC_SS2    + 4;  // bulb mode
+const int EE_CAMLOCK_SS2   = EE_CAMBULB_SS2   + 1;  // focus lock
+const int EE_CAMTIMER_SS2  = EE_CAMLOCK_SS2   + 1; // focus lock            
 
-const int EE_M0FLAG_SS2    = EE_CAMLOCK_SS2 + 1;  // flags
+
+const int EE_M0FLAG_SS2    = EE_CAMTIMER_SS2 + 4;  // flags
 const int EE_M0RPM_SS2     = EE_M0FLAG_SS2  + 1;  // rpm
 const int EE_M0RATIO_SS2   = EE_M0RPM_SS2   + 4;  // ratio
 const int EE_MORSPEED_SS2  = EE_M0RATIO_SS2 + 4;  // speed
@@ -476,5 +484,6 @@ const int EE_VOLTH_SS2     = EE_MPRESET_SS2   + 4; // voltage threshold
 const int EE_VOLWARN_SS2   = EE_VOLTH_SS2     + 4; // voltage warning flag
 const int EE_HEATER_SS2    = EE_VOLWARN_SS2   + 1; // heater on/off flag 
 const int EE_METRIC_SS2    = EE_HEATER_SS2    + 1; // metric display on/off
+const int EE_INCREMENT_SS2 = EE_METRIC_SS2    + 1; // motor speed increment
 
 

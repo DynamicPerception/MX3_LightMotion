@@ -79,12 +79,13 @@ const int BUT_MAP[5][2] = {
 // ====== Memory Strings Used in the UI ========
 
 const char MX3_VERSTR[]  =  "LightMotion";
-const char MX3_SUBSTR[]  =  "v.1.06 Raptor  ";
+const char MX3_SUBSTR[]  =  "v.1.08 Lemur    ";
 const char MX3_C1STR[]   =  "(c) 2014 Dynamic";
 const char MX3_C2STR[]   =  "Perception";
   // run, stop, and ext must be exact same length, pad with spaces
 const char STR_RUN[]     =  "On ";
 const char STR_STOP[]    =  "Off";
+const char STR_TIM[]     =  "TIM";
 const char STR_EXT[]     =  "Ext";
 const char STR_TIME[]    =  "Time: ";
 const char STR_CAM[]     =  "Cam ";
@@ -201,6 +202,7 @@ MENU_VALUE   ui_in_camExposure = { TYPE_ULONG,   CAMEXP_MAX,  CAMEXP_MIN, MENU_T
 MENU_VALUE   ui_in_camFocus    = { TYPE_ULONG,   CAMFOC_MAX,  CAMFOC_MIN, MENU_TARGET(&camera_focus),     EE_CAMFOC };
 MENU_VALUE   ui_in_camWait     = { TYPE_ULONG,  CAMWAIT_MAX, CAMWAIT_MIN, MENU_TARGET(&camera_wait),      EE_CAMWAIT };
 MENU_VALUE   ui_in_camDelay    = { TYPE_FLOAT_10,         0,           0, MENU_TARGET(&camera_delay),     EE_CAMDEL };
+MENU_VALUE   ui_in_timeDelay    = { TYPE_INT,          65535,           0, MENU_TARGET(&camera_timer),     EE_CAMTIMER };
 
 MENU_ITEM    ui_it_camMaxShot  = { {"Max Shots"},      ITEM_VALUE, 0, MENU_TARGET(&ui_in_camMaxShots) };
 MENU_ITEM    ui_it_camRepeat   = { {"Repeat Shots"},   ITEM_VALUE, 0, MENU_TARGET(&ui_in_camRepeat) };
@@ -210,8 +212,9 @@ MENU_ITEM    ui_it_camFocus    = { {"Focus       mS"}, ITEM_VALUE, 0, MENU_TARGE
 MENU_ITEM    ui_it_camWait     = { {"Exp Delay   mS"}, ITEM_VALUE, 0, MENU_TARGET(&ui_in_camWait) };
 MENU_ITEM    ui_it_camDelay    = { {"Interval   Sec"}, ITEM_VALUE, 0, MENU_TARGET(&ui_in_camDelay) };
 MENU_ITEM    ui_it_camLock     = { {"Focus Lock"},     ITEM_VALUE, 0, MENU_TARGET(&ui_in_camLock) };
+MENU_ITEM    ui_it_timeDelay   = { {"Start Timer min"}, ITEM_VALUE, 0, MENU_TARGET(&ui_in_timeDelay) };
 
-MENU_LIST    ui_list_cam[]     = { &ui_it_camDelay, &ui_it_camMaxShot, &ui_it_camBulb, &ui_it_camExposure, &ui_it_camWait, &ui_it_camFocus, &ui_it_camRepeat, &ui_it_camLock };
+MENU_LIST    ui_list_cam[]     = { &ui_it_camDelay, &ui_it_camMaxShot, &ui_it_camBulb, &ui_it_camExposure, &ui_it_camWait, &ui_it_camFocus, &ui_it_camRepeat, &ui_it_camLock, &ui_it_timeDelay };
 
 MENU_ITEM    ui_it_camList     = { {"Camera"}, ITEM_MENU, MENU_SIZE(ui_list_cam), MENU_TARGET(&ui_list_cam) };
 
@@ -306,8 +309,8 @@ MENU_ITEM    ui_it_motors      = { {"Motors"}, ITEM_MENU, MENU_SIZE(ui_list_moto
 
  // ===== Alt Input Options
  
-MENU_SELECT  ui_sl_alt1     = { &alt_inputs[1], MENU_SELECT_SIZE(ui_sel_list_alt),    MENU_TARGET(&ui_sel_list_alt) };
-MENU_SELECT  ui_sl_alt2     = { &alt_inputs[0], MENU_SELECT_SIZE(ui_sel_list_alt),    MENU_TARGET(&ui_sel_list_alt) };
+MENU_SELECT  ui_sl_alt1     = { &alt_inputs[0], MENU_SELECT_SIZE(ui_sel_list_alt),    MENU_TARGET(&ui_sel_list_alt) };
+MENU_SELECT  ui_sl_alt2     = { &alt_inputs[1], MENU_SELECT_SIZE(ui_sel_list_alt),    MENU_TARGET(&ui_sel_list_alt) };
 MENU_SELECT  ui_sl_alt3     = { &alt_inputs[2], MENU_SELECT_SIZE(ui_sel_list_alt),    MENU_TARGET(&ui_sel_list_alt) };
 MENU_SELECT  ui_sl_alt4     = { &alt_inputs[3], MENU_SELECT_SIZE(ui_sel_list_altOut), MENU_TARGET(&ui_sel_list_altOut) };
 MENU_SELECT  ui_sl_altdir   = { &alt_direction, MENU_SELECT_SIZE(ui_sel_list_dir),    MENU_TARGET(&ui_sel_list_dir) };
@@ -360,17 +363,18 @@ MENU_ITEM    ui_it_sen      = { {"Sensors"}, ITEM_MENU, MENU_SIZE(ui_list_sen), 
 
  // ===== Global Options
 
-MENU_SELECT  ui_sl_glLCD       = { &motion_sms,      MENU_SELECT_SIZE(ui_sel_list_onoff), MENU_TARGET(&ui_sel_list_onoff) };
 MENU_SELECT  ui_sl_glHet       = { &sensor_enHeater, MENU_SELECT_SIZE(ui_sel_list_onoff), MENU_TARGET(&ui_sel_list_onoff) };
 MENU_SELECT  ui_sl_glMet       = { &disp_metric,     MENU_SELECT_SIZE(ui_sel_list_onoff), MENU_TARGET(&ui_sel_list_onoff) };
 
-MENU_VALUE   ui_in_glLCD       = { TYPE_BYTE,   0,    0,  MENU_TARGET(&lcdDisable),          EE_LCDOFF };     
-MENU_VALUE   ui_in_glPer       = { TYPE_UINT,   5000, 50, MENU_TARGET(&motor_pwm_minperiod), EE_PERIOD };   
+MENU_VALUE   ui_in_glLCD       = { TYPE_BYTE,   0,    0,  MENU_TARGET(&lcdDisable),          EE_LCDOFF };  
+MENU_VALUE   ui_in_glInc       = { TYPE_FLOAT_1000, 1, 0,  MENU_TARGET(&motorIncrement), EE_INCREMENT };
+MENU_VALUE   ui_in_glPer       = { TYPE_UINT,  5000, 50,  MENU_TARGET(&motor_pwm_minperiod), EE_PERIOD };   
 MENU_VALUE   ui_in_glHet       = { TYPE_SELECT, 0,    0,  MENU_TARGET(&ui_sl_glHet),         EE_HEATER };
 MENU_VALUE   ui_in_glMet       = { TYPE_SELECT, 0,    0,  MENU_TARGET(&ui_sl_glMet),         EE_METRIC };
 
 MENU_ITEM    ui_it_glMet       = { {"Metric Display"},  ITEM_VALUE,  0, MENU_TARGET(&ui_in_glMet) };
 MENU_ITEM    ui_it_glLCD       = { {"LCD AutoOff Sec"}, ITEM_VALUE,  0, MENU_TARGET(&ui_in_glLCD) };
+MENU_ITEM    ui_it_glInc       = { {"Step Ratio"}, ITEM_VALUE,  0, MENU_TARGET(&ui_in_glInc) };
 MENU_ITEM    ui_it_glPer       = { {"Motor Timing"},    ITEM_VALUE,  0, MENU_TARGET(&ui_in_glPer) };
 MENU_ITEM    ui_it_glVFD       = { {"VFD Brightness"},  ITEM_ACTION, 0, MENU_TARGET(uiVFDBrightness) };
 MENU_ITEM    ui_it_glSav       = { {"Save Memory"},     ITEM_ACTION, 0, MENU_TARGET(uiMenuSaveMem) };
@@ -383,7 +387,7 @@ MENU_ITEM    ui_it_glJmp       = { {"Jump!"},           ITEM_ACTION, 0, MENU_TAR
 
 
 
-MENU_LIST    ui_list_gl[]      = { &ui_it_alt, &ui_it_sen, &ui_it_glMet, &ui_it_glLCD, &ui_it_glPer,  &ui_it_glHet, &ui_it_glVFD, &ui_it_glSav, &ui_it_glLod, &ui_it_glMem, &ui_it_glJmp };
+MENU_LIST    ui_list_gl[]      = { &ui_it_alt, &ui_it_sen, &ui_it_glMet, &ui_it_glLCD, &ui_it_glInc, &ui_it_glPer,  &ui_it_glHet, &ui_it_glVFD, &ui_it_glSav, &ui_it_glLod, &ui_it_glMem, &ui_it_glJmp };
 MENU_ITEM    ui_it_glList      = { {"Settings"}, ITEM_MENU, MENU_SIZE(ui_list_gl), MENU_TARGET(&ui_list_gl) };
 
 

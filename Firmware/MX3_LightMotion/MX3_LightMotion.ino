@@ -65,6 +65,13 @@ byte              alt_block = 0;
 boolean         disp_metric = 0;
 
 
+//variables for timer
+unsigned long       start_time = 0;
+unsigned long     camera_timer = 0;
+unsigned long      delay_time  = 0;
+bool               camera_flag = false;
+
+
 
  // initialize core objects
  
@@ -83,11 +90,28 @@ LiquidCrystal lcd(LCD_RS, LCD_EN, LCD_D4, LCD_D5, LCD_D6, LCD_D7);
 
 // OMMoCoMaster myBus = OMMoCoMaster(Serial);
 
+//unsigned long time;
+
+
 
 
 
 void setup() {
   
+  
+//  USBSerial.begin(57600);
+//  
+//  lcd.print("Waiting...");
+//  
+//   while( ! USBSerial ) {
+//     delay(10); // do nothing
+//    }
+//    
+//    delay(20);
+
+    
+
+
   
  // Serial.begin(OM_SER_BPS);
 
@@ -114,10 +138,39 @@ void setup() {
  sensorSetup();
  
  jumpSetup();
+ 
+
+
+//   
+//    USBSerial.write("Connected");
+//    time = millis();
+
   
 }
 
 void loop() {
+  
+//  if (millis() - time >= 1000){
+//    USBSerial.print(sizeof(alt_inputs), DEC);
+//    USBSerial.print(" ");
+//    for (int i = 0; i < sizeof(alt_inputs); i++)
+//    {
+//      USBSerial.print(alt_inputs[i]);
+//    }
+//    USBSerial.print(" ");
+//        for (int i = 0; i < sizeof(alt_inputs); i++)
+//    {
+//      USBSerial.print(alt_inputs_old[i]);
+//    }
+//    USBSerial.print(" ");
+//    USBSerial.print(altArraysCompare());
+//
+//    USBSerial.println();
+//
+//    //USBSerial.println();
+//    time = millis();
+//  }
+
   
   static unsigned long  sensor_tm = 0;
    
@@ -125,6 +178,14 @@ void loop() {
    if( millis() - sensor_tm > SENS_POLL_TIME ) {
      sensorPoll();
      sensor_tm = millis();
+   }
+   
+   if (camera_flag) {
+     delay_time = millis();
+     if((delay_time-start_time)/1000 >= (camera_timer*60)){
+       startProgram();
+       camera_flag = false;
+     }       
    }
 
        // handle UI interaction/updates
@@ -146,7 +207,6 @@ void loop() {
      Engine.checkCycle();
 
    }
-   
  
 }
 

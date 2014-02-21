@@ -58,15 +58,19 @@ const byte            AuxBTip = 2;
 const byte           AuxBRing = 3;
 
 
+//timer for the I/O interrupt
+unsigned long trigLast = millis();
+
+
 
  /** Alt I/O Setup 
  */
  
 void altSetup() {
-  altConnect(AuxATip ,  alt_inputs[AuxATip]);
-  altConnect(AuxARing,  alt_inputs[AuxARing]); 
-  altConnect(AuxBTip ,  alt_inputs[AuxBTip]);
-  altConnect(AuxBRing,  alt_inputs[AuxBRing]);
+  altConnect(AuxATip ,  alt_inputs[0]);
+  altConnect(AuxARing,  alt_inputs[1]); 
+  altConnect(AuxBTip ,  alt_inputs[2]);
+  altConnect(AuxBRing,  alt_inputs[3]);
   
     // check if any inputs are set to ext intervalometer
   boolean doExt = false;
@@ -92,10 +96,8 @@ void altSetup() {
  */
  
 void altHandler(byte p_which) {
- 
-  volatile static unsigned long trigLast = millis();
-  
-  if( millis() - trigLast > ALT_TRIG_THRESH ) {
+    
+  if((millis() - trigLast) >= ALT_TRIG_THRESH ) {
     
     trigLast = millis();
     
@@ -125,23 +127,23 @@ void altHandler(byte p_which) {
 /** Handler for ISR One */
       
 void altISROne() {
-  altHandler(AuxATip);
+  altHandler(0);
 }
 
 /** Handler for ISR Two */
 void altISRTwo() {
-  altHandler(AuxARing);
+  altHandler(1);
 }
 
 /** Handler for ISR One */
       
 void altISRThree() {
-  altHandler(AuxBTip);
+  altHandler(2);
 }
 
 /** Handler for ISR Two */
 void altISRFour() {
-  altHandler(AuxBRing);
+  altHandler(3);
 }
 
 /** Connect (or Disconnect) an Alt I/O Line
@@ -161,18 +163,27 @@ void altISRFour() {
 
 void altConnect(byte p_which, byte p_mode) {
   
-  alt_inputs[p_which] = p_mode;
+  //alt_inputs[p_which] = p_mode;
 
+
+    if( p_which == AuxARing) {
+        detachInterrupt(0);//, altISRTwo, alt_direction);
+    } else if ( p_which == AuxATip) {
+        detachInterrupt(1);//, altISROne, alt_direction);
+    } else if ( p_which == AuxBTip) {
+        detachInterrupt(6);//, altISRThree, alt_direction);
+    } else {
+        detachInterrupt(7);//, altISRFour, alt_direction);
+    }
 
     // disable the input?
  
   if( p_mode == ALT_OFF ) {
-      detachInterrupt(p_which);
-      pinMode(ALT_START_PIN + p_which, INPUT);
-      //digitalWrite(ALT_START_PIN + p_which, ! alt_out_trig);
-      alt_out_flags &= ~( ALT_OUT_FLAG_A << p_which );
-      alt_out_flags &= ~( ALT_OUT_FLAG_B << p_which );
-      return;
+    pinMode(ALT_START_PIN + p_which, INPUT);
+    //digitalWrite(ALT_START_PIN + p_which, ! alt_out_trig);
+    alt_out_flags &= ~( ALT_OUT_FLAG_A << p_which );
+    alt_out_flags &= ~( ALT_OUT_FLAG_B << p_which );
+    return;
   }
   
     // only attach interrupts for input modes
@@ -197,9 +208,7 @@ void altConnect(byte p_which, byte p_mode) {
         attachInterrupt(7, altISRFour, alt_direction);
         break;
     }
-  }
-  
-  else {
+  } else {
     
       // it's an output mode
     
