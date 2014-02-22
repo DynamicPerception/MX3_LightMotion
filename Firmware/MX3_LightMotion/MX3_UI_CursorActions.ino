@@ -101,6 +101,8 @@ void uiCursorAdjustSMS(byte p_dir) {
     {
       motorDir(i, 0);
       motorSpeed(i, 0.001);
+      OMEEPROM::write(EE_M0FLAG + (EE_MOTOR_SPACE * i), motors[i].flags);
+      OMEEPROM::write(EE_MORSPEED + (EE_MOTOR_SPACE * i), motors[i].speed);
     }
   }
   else
@@ -109,6 +111,8 @@ void uiCursorAdjustSMS(byte p_dir) {
     {
       motorDir(i, 0);
       motorSpeed(i, 0.01);
+      OMEEPROM::write(EE_M0FLAG + (EE_MOTOR_SPACE * i), motors[i].flags);
+      OMEEPROM::write(EE_MORSPEED + (EE_MOTOR_SPACE * i), motors[i].speed);
     }
   }
   
@@ -310,6 +314,7 @@ void uiCursorChangeMotLead(byte p_dir) {
   motors[ui_curMotor].lead += p_dir ? 1 : -1;
   if (motors[ui_curMotor].lead >= 655)
     motors[ui_curMotor].lead = 0;
+  OMEEPROM::write(EE_M0LEAD + (EE_MOTOR_SPACE * ui_curMotor), motors[ui_curMotor].lead);
 }
 
 void uiCursorChangeMotRamp(byte p_dir) {

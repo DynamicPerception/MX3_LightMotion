@@ -275,6 +275,15 @@ float motorMaxSpeedRatio(byte p_motor) {
   
 void motorDir(byte p_motor, boolean p_dir) {
   
+   bool flag_on = false;
+
+  //disable enable flag while switching directions
+  if(motors[p_motor].flags & MOTOR_ENABLE_FLAG){
+    flag_on = true;
+    motors[p_motor].flags &= ~MOTOR_ENABLE_FLAG;
+  }
+  
+  
   //Turns off the motor diver so that it won't trip the battery when switching directions
   if (p_motor == 0)
     MOTOR_DRV_PREG &= ~(B00000001 << 2);
@@ -293,7 +302,8 @@ void motorDir(byte p_motor, boolean p_dir) {
     motors[p_motor].flags &= ~(MOTOR_CDIR_FLAG);  
         
   //delays motor to prevent battery tripping
-  delay(motor_dir_delay); 
+  delayMicroseconds(65534);
+  delayMicroseconds(65534);
   
   //Turns the motor driver back on
   if (p_motor == 0)
@@ -302,6 +312,11 @@ void motorDir(byte p_motor, boolean p_dir) {
     MOTOR_DRV_PREG |= (B00000001 << 5);
   else 
     MOTOR_DRV_PREG2 |= (B00000001); 
+  
+  //tursn the flag back on if it was on  
+  if(flag_on){
+    motors[p_motor].flags |= MOTOR_ENABLE_FLAG;
+  }
   
 }
 
@@ -338,45 +353,41 @@ void motorDirFlip() {
  
 void motorDirFlip(byte p_motor) {
   
-  bool flag_on = false;
-  
-  if(motors[p_motor].flags & MOTOR_ENABLE_FLAG){
-    flag_on = true;
-    motors[p_motor].flags &= ~MOTOR_ENABLE_FLAG;
-  }
+
+    motorDir(p_motor, ! (boolean) (motors[p_motor].flags & MOTOR_CDIR_FLAG) );
   
   
   //Turns off the motor diver so that it won't trip the battery when switching directions
-  if (p_motor == 0)
-    MOTOR_DRV_PREG &= ~(B00000001 << 2);
-  else if (p_motor == 1)
-    MOTOR_DRV_PREG &= ~(B00000001 << 5);
-  else 
-    MOTOR_DRV_PREG2 &= ~(B00000001);             
-  
-  MOTOR_DRV_PREG  &= ~(B00000011 << (p_motor*3));
-
-  //Set direction 
-  motors[p_motor].flags ^= (MOTOR_CDIR_FLAG); 
-    
-  //delays motor to prevent battery tripping
-  //delay(3000); 
-  delayMicroseconds(65534);
-  delayMicroseconds(65534);
-
-
-  
-  //Turns the motor driver back on
-  if (p_motor == 0)
-    MOTOR_DRV_PREG |= (B00000001 << 2);
-  else if (p_motor == 1)
-    MOTOR_DRV_PREG |= (B00000001 << 5);
-  else 
-    MOTOR_DRV_PREG2 |= (B00000001);  
-    
-  if(flag_on){
-    motors[p_motor].flags |= MOTOR_ENABLE_FLAG;
-  }
+//  if (p_motor == 0)
+//    MOTOR_DRV_PREG &= ~(B00000001 << 2);
+//  else if (p_motor == 1)
+//    MOTOR_DRV_PREG &= ~(B00000001 << 5);
+//  else 
+//    MOTOR_DRV_PREG2 &= ~(B00000001);             
+//  
+//  MOTOR_DRV_PREG  &= ~(B00000011 << (p_motor*3));
+//
+//  //Set direction 
+//  motors[p_motor].flags ^= (MOTOR_CDIR_FLAG); 
+//    
+//  //delays motor to prevent battery tripping
+//  //delay(3000); 
+//  delayMicroseconds(65534);
+//  delayMicroseconds(65534);
+//
+//
+//  
+//  //Turns the motor driver back on
+//  if (p_motor == 0)
+//    MOTOR_DRV_PREG |= (B00000001 << 2);
+//  else if (p_motor == 1)
+//    MOTOR_DRV_PREG |= (B00000001 << 5);
+//  else 
+//    MOTOR_DRV_PREG2 |= (B00000001);  
+//    
+//  if(flag_on){
+//    motors[p_motor].flags |= MOTOR_ENABLE_FLAG;
+//  }
   
   
 }
@@ -550,9 +561,7 @@ void motorRunISRSMS() {
            // going down, disable output pin
            motors[i].flags &= (~( MOTOR_ENABLE_FLAG | MOTOR_HIGH_FLAG ) );
            MOTOR_DRV_PREG  &= ~(B00000011 << (i*3));
-            // MOTOR_DRV_PREG  &= ~(B00000001 << (i*3 + (((motors[i].flags & MOTOR_CDIR_FLAG) >> 2)))); 
-           
-
+            // MOTOR_DRV_PREG  &= ~(B00000001 << (i*3 + (((motors[i].flags & MOTOR_CDIR_FLAG) >> 2))));
            
          } else {  
            //check to see if the motor is on an off period
@@ -560,9 +569,11 @@ void motorRunISRSMS() {
              //sees if the invert dir flag is on
              if( motors[i].flags & MOTOR_DIR_FLAG ){
                MOTOR_DRV_PREG  |= (B00000001 << (i*3 + (!((motors[i].flags & MOTOR_CDIR_FLAG) >> 2))));
+               MOTOR_DRV_PREG  &= ~(B00000001 << (i*3 + (((motors[i].flags & MOTOR_CDIR_FLAG) >> 2))));
                                                          //!((motors[i].flags & MOTOR_CDIR_FLAG) >> 2)
              } else {
                MOTOR_DRV_PREG  |= (B00000001 << (i*3 + (((motors[i].flags & MOTOR_CDIR_FLAG) >> 2))));
+               MOTOR_DRV_PREG  &= ~(B00000001 << (i*3 + (!((motors[i].flags & MOTOR_CDIR_FLAG) >> 2))));
              } 
              motors[i].smsOnPeriods++;
            } 
@@ -580,6 +591,7 @@ void motorRunISRSMS() {
      MOTOR_DRV_PREG  &= ~(B00000011 << (i*3));
     }
   }
+ 
   
     // moved all motors the required distance?
   if( moved == moveCnt ) {
@@ -728,7 +740,7 @@ void motorCheckLead() {
      for( byte i = 0; i < MOTOR_COUNT; i++ ) {
        
       if( motors[i].lead > 0 && ( camera_fired < motors[i].lead || camera_fired > (camera_max_shots - motors[i].lead) ) )
-        motors[i].flags &= (B11111111 ^ MOTOR_ENABLE_FLAG);
+        motors[i].flags &= ~(MOTOR_ENABLE_FLAG);
       else if( motors[i].lead > 0 && ( camera_fired > motors[i].lead || camera_fired < (camera_max_shots - motors[i].lead) ) )
         motors[i].flags |= MOTOR_ENABLE_FLAG;
         
@@ -748,6 +760,9 @@ void motorCheckRamp() {
   
       for( byte i = 0; i < MOTOR_COUNT; i++ ) {
         
+        USBSerial.print("camera shots = ");
+        USBSerial.print(camera_fired);
+
         //check to see if motor is user enabled
         if(motors[i].flags & MOTOR_UEN_FLAG ) {
           
@@ -760,10 +775,16 @@ void motorCheckRamp() {
             unsigned int rampEnd = motors[i].lead  + motors[i].ramp_start;
             unsigned int rampEndF = motors[i].lead + motors[i].ramp_end;
             float diff;
+            USBSerial.print(" rampEnd of ");            
+            USBSerial.print(i);
+            USBSerial.print(" is ");            
+            
             
               // if we started during run time, set new ramp start point, in shots
             if( motors[i].startShots > 0 )
               rampEnd = rampEnd + motors[i].startShots;
+              
+            USBSerial.print(rampEnd);
               
             if( motors[i].flags & MOTOR_RAMP_FLAG ) {
                 // force ramp down?
@@ -771,7 +792,7 @@ void motorCheckRamp() {
               
               if( diff <= 0.0 ) {
                   // disable motor (user wanted the motor off when ramp completed...)
-                  motors[i].flags &= (B11111111 ^ (MOTOR_RAMP_FLAG | MOTOR_UEN_FLAG));
+                  motors[i].flags &= ~(MOTOR_RAMP_FLAG | MOTOR_UEN_FLAG);
                   motors[i].inRamp = 0;
                   motorSpeed(i, motors[i].setSpeed);
                   continue;
@@ -788,6 +809,7 @@ void motorCheckRamp() {
               motors[i].inRamp = 0;
             }
             else if( camera_fired < rampEnd ) {
+              
               diff = (float) (camera_fired - motors[i].startShots - motors[i].lead) / (float) motors[i].ramp_start;
                  // set motor currently ramping flag
               motors[i].inRamp = 1;
@@ -800,8 +822,11 @@ void motorCheckRamp() {
             else {
               continue;
             }
-            
+
             diff = motors[i].setSpeed * diff;
+            
+            USBSerial.print(" the difference for motor speed is ");
+            USBSerial.println(diff);
 
             motorSpeed(i, diff, true);
           } // end if motors[i].ramp  

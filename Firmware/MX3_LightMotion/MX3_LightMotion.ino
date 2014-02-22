@@ -90,7 +90,7 @@ LiquidCrystal lcd(LCD_RS, LCD_EN, LCD_D4, LCD_D5, LCD_D6, LCD_D7);
 
 // OMMoCoMaster myBus = OMMoCoMaster(Serial);
 
-//unsigned long time;
+unsigned long time = millis();
 
 
 
@@ -98,11 +98,10 @@ LiquidCrystal lcd(LCD_RS, LCD_EN, LCD_D4, LCD_D5, LCD_D6, LCD_D7);
 
 void setup() {
   
+  USBSerial.begin(57600);
   
-//  USBSerial.begin(57600);
-//  
-//  lcd.print("Waiting...");
-//  
+  lcd.print("Waiting...");
+  
 //   while( ! USBSerial ) {
 //     delay(10); // do nothing
 //    }
@@ -150,26 +149,10 @@ void setup() {
 
 void loop() {
   
-//  if (millis() - time >= 1000){
-//    USBSerial.print(sizeof(alt_inputs), DEC);
-//    USBSerial.print(" ");
-//    for (int i = 0; i < sizeof(alt_inputs); i++)
-//    {
-//      USBSerial.print(alt_inputs[i]);
-//    }
-//    USBSerial.print(" ");
-//        for (int i = 0; i < sizeof(alt_inputs); i++)
-//    {
-//      USBSerial.print(alt_inputs_old[i]);
-//    }
-//    USBSerial.print(" ");
-//    USBSerial.print(altArraysCompare());
-//
-//    USBSerial.println();
-//
-//    //USBSerial.println();
-//    time = millis();
-//  }
+  if (millis() - time >= 100){
+    USBSerial.println(MOTOR_DRV_PREG,BIN);
+    time = millis();
+  }
 
   
   static unsigned long  sensor_tm = 0;
