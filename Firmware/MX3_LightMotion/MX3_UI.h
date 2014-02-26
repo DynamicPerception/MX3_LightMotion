@@ -101,9 +101,10 @@ const char STR_CCW       =  '-';
 const char STR_BLNK[]    =  "                ";
 const char STR_FOC[]     =  "F ";
   // en, dis, and ramp must be same length
-const char STR_EN[]      =  " On ";
-const char STR_DIS[]     =  " Off";
-const char STR_RAMP[]    =  " RMP";
+const char STR_EN[]      =  " On  ";
+const char STR_DIS[]     =  " Off ";
+const char STR_RAMP[]    =  " RMP ";
+const char STR_LEAD[]    =  " LEAD";
 const char STR_INIT[]    =  "Input Init";
 const char STR_DONE[]    =  "Done!";
 const char STR_RES1[]    =  "Reset In   Sec";
@@ -194,7 +195,7 @@ MENU_SELECT_LIST  ui_sel_list_hilo[]    = { &ui_sel_high, &ui_sel_low };
 MENU_SELECT  ui_sl_camBulb     = { &camera_bulb,    MENU_SELECT_SIZE(ui_sel_list_onoff), MENU_TARGET(&ui_sel_list_onoff) };
 MENU_SELECT  ui_sl_camLock     = { &camera_focLock, MENU_SELECT_SIZE(ui_sel_list_onoff), MENU_TARGET(&ui_sel_list_onoff) };
 
-MENU_VALUE   ui_in_camMaxShots = { TYPE_UINT,             0,           0, MENU_TARGET(&camera_max_shots), EE_MAXSHOT };
+MENU_VALUE   ui_in_camMaxShots = { TYPE_UINT,         65535,           0, MENU_TARGET(&camera_max_shots), EE_MAXSHOT };
 MENU_VALUE   ui_in_camRepeat   = { TYPE_BYTE,             0,           0, MENU_TARGET(&camera_repeat),    EE_CAMREP };
 MENU_VALUE   ui_in_camBulb     = { TYPE_SELECT,           0,           0, MENU_TARGET(&ui_sl_camBulb),    EE_CAMBULB };
 MENU_VALUE   ui_in_camLock     = { TYPE_SELECT,           0,           0, MENU_TARGET(&ui_sl_camLock),    EE_CAMLOCK };

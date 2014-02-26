@@ -65,7 +65,7 @@ float smsOnPeriodRatio = 4;
 
  // create an array of structures for our three motors
 
-MotorDefinition motors[] = { MotorDefinition(), MotorDefinition(), MotorDefinition() };
+//MotorDefinition motors[] = { MotorDefinition(), MotorDefinition(), MotorDefinition() };
 
  // Motor Presets
  
@@ -351,44 +351,9 @@ void motorDirFlip() {
  C. A. Church
  */
  
-void motorDirFlip(byte p_motor) {
-  
+void motorDirFlip(byte p_motor) { 
 
-    motorDir(p_motor, ! (boolean) (motors[p_motor].flags & MOTOR_CDIR_FLAG) );
-  
-  
-  //Turns off the motor diver so that it won't trip the battery when switching directions
-//  if (p_motor == 0)
-//    MOTOR_DRV_PREG &= ~(B00000001 << 2);
-//  else if (p_motor == 1)
-//    MOTOR_DRV_PREG &= ~(B00000001 << 5);
-//  else 
-//    MOTOR_DRV_PREG2 &= ~(B00000001);             
-//  
-//  MOTOR_DRV_PREG  &= ~(B00000011 << (p_motor*3));
-//
-//  //Set direction 
-//  motors[p_motor].flags ^= (MOTOR_CDIR_FLAG); 
-//    
-//  //delays motor to prevent battery tripping
-//  //delay(3000); 
-//  delayMicroseconds(65534);
-//  delayMicroseconds(65534);
-//
-//
-//  
-//  //Turns the motor driver back on
-//  if (p_motor == 0)
-//    MOTOR_DRV_PREG |= (B00000001 << 2);
-//  else if (p_motor == 1)
-//    MOTOR_DRV_PREG |= (B00000001 << 5);
-//  else 
-//    MOTOR_DRV_PREG2 |= (B00000001);  
-//    
-//  if(flag_on){
-//    motors[p_motor].flags |= MOTOR_ENABLE_FLAG;
-//  }
-  
+    motorDir(p_motor, ! (boolean) (motors[p_motor].flags & MOTOR_CDIR_FLAG) );   
   
 }
 
@@ -535,6 +500,8 @@ void motorRunISRSMS() {
     moved   = 0;       //2
     motor_flushSMS = false;  //2
   }
+  
+  
   
   for( byte i = 0; i < MOTOR_COUNT; i++ ) {  //5
     if( motors[i].flags & MOTOR_ENABLE_FLAG && motors[i].flags & MOTOR_UEN_FLAG ) {   //6
@@ -738,10 +705,16 @@ void motorRunISR() {
 void motorCheckLead() {
   
      for( byte i = 0; i < MOTOR_COUNT; i++ ) {
+//       USBSerial.print(" startShots is ");            
+//       USBSerial.print(motors[i].startShots);
+//       USBSerial.print(" .lead is ");  
+//       USBSerial.print(motors[i].lead);
+//       USBSerial.print(" .ramp_start is ");  
+//       USBSerial.println(motors[i].ramp_start);
        
-      if( motors[i].lead > 0 && ( camera_fired < motors[i].lead || camera_fired > (camera_max_shots - motors[i].lead) ) )
+      if( motors[i].lead > 0 && ( camera_fired <= (motors[i].lead + motors[i].startShots) || camera_fired >= (camera_max_shots - (motors[i].lead + motors[i].startShots) ) ) )
         motors[i].flags &= ~(MOTOR_ENABLE_FLAG);
-      else if( motors[i].lead > 0 && ( camera_fired > motors[i].lead || camera_fired < (camera_max_shots - motors[i].lead) ) )
+      else if( motors[i].lead > 0 && ( camera_fired > (motors[i].lead + motors[i].startShots) || camera_fired < (camera_max_shots - (motors[i].lead + motors[i].startShots)) ) )
         motors[i].flags |= MOTOR_ENABLE_FLAG;
         
     } 
@@ -759,9 +732,12 @@ void motorCheckLead() {
 void motorCheckRamp() {
   
       for( byte i = 0; i < MOTOR_COUNT; i++ ) {
-        
-        USBSerial.print("camera shots = ");
-        USBSerial.print(camera_fired);
+//        
+//        USBSerial.print("camera shots = ");
+//        USBSerial.print(camera_fired);
+//        USBSerial.print(" flag is ");  
+//        USBSerial.print(motors[i].flags,BIN); 
+//        USBSerial.print("      "); 
 
         //check to see if motor is user enabled
         if(motors[i].flags & MOTOR_UEN_FLAG ) {
@@ -769,22 +745,17 @@ void motorCheckRamp() {
           if( motors[i].ramp_start > 0 || motors[i].ramp_end > 0 ) {
             
               // do not apply ramp if still in lead-in, or in lead-out
-            if( motors[i].lead > 0 && ( camera_fired < motors[i].lead || camera_fired > (camera_max_shots - motors[i].lead) ) )
+            if( motors[i].lead > 0 && ( camera_fired <= (motors[i].lead + motors[i].startShots) || camera_fired > (camera_max_shots - (motors[i].lead + motors[i].startShots)) ) )
               continue;
              
             unsigned int rampEnd = motors[i].lead  + motors[i].ramp_start;
             unsigned int rampEndF = motors[i].lead + motors[i].ramp_end;
-            float diff;
-            USBSerial.print(" rampEnd of ");            
-            USBSerial.print(i);
-            USBSerial.print(" is ");            
+            float diff; 
             
             
               // if we started during run time, set new ramp start point, in shots
             if( motors[i].startShots > 0 )
               rampEnd = rampEnd + motors[i].startShots;
-              
-            USBSerial.print(rampEnd);
               
             if( motors[i].flags & MOTOR_RAMP_FLAG ) {
                 // force ramp down?
@@ -824,9 +795,14 @@ void motorCheckRamp() {
             }
 
             diff = motors[i].setSpeed * diff;
-            
-            USBSerial.print(" the difference for motor speed is ");
-            USBSerial.println(diff);
+//            USBSerial.print(" startShots is ");            
+//            USBSerial.print(motors[i].startShots);
+//            USBSerial.print(" .lead is ");  
+//            USBSerial.print(motors[i].lead);
+//            USBSerial.print(" .ramp_start is ");  
+//            USBSerial.print(motors[i].ramp_start);           
+//            USBSerial.print(" the difference for motor speed is ");
+//            USBSerial.println(diff);
 
             motorSpeed(i, diff, true);
           } // end if motors[i].ramp  

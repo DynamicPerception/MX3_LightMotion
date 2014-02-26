@@ -57,7 +57,7 @@ void uiCursorToggleRun(byte p_dir) {
   } else if (camera_flag){
     camera_flag = false;
   } else {
-    startProgram();
+    startProgram();    
   }
     
   eepromWrite();
