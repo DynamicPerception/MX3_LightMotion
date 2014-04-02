@@ -103,6 +103,15 @@ void altHandler(byte p_which) {
     
     if( alt_inputs[p_which] == ALT_START) 
         startProgram();
+    else if( alt_inputs[p_which] == ALT_STOP_MOTORS && running == true){
+      for(byte i = 0; i < MOTOR_COUNT; i++ ){
+        motorStopThis(i);
+        // disable motor
+        motors[i].flags &= ~MOTOR_UEN_FLAG;
+        motor_running = false;
+        OMEEPROM::write(EE_M0FLAG + (EE_MOTOR_SPACE * i), motors[i].flags);
+      }
+    }
     else if( alt_inputs[p_which] == ALT_STOP)
         stopProgram();
     else if( alt_inputs[p_which] == ALT_TOGGLE) {

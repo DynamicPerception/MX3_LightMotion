@@ -260,6 +260,8 @@ void uiCursorChangeMotEn(byte p_dir) {
       motors[ui_curMotor].flags &= (B11111111 ^ MOTOR_UEN_FLAG);
     }
     else {
+      //sets the speed to zero to prevent any jump in the motor when the motor is enabled and the program is on
+      motors[ui_curMotor].onTimePeriods = 0.0;
       
         // program already running when motor turned on?
       if( running ) {

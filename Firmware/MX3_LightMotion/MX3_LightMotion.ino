@@ -34,6 +34,9 @@
 #include "OMState.h"
 #include "OMEEPROM.h"
 #include "OMMenuMgr.h"
+//#include "OMAxis.h"
+//#include "OMMoCoBus.h"
+//#include "OMMoCoMaster.h"
 
  // Our pin mappings, structs, constants, etc.
 
@@ -103,7 +106,6 @@ void setup() {
 //  USBSerial.begin(57600);
 //  
 //  lcd.print("Waiting...");
-  
 //   while( ! USBSerial ) {
 //     delay(10); // do nothing
 //    }
@@ -151,8 +153,21 @@ void setup() {
 
 void loop() {
 //  
-//  if (millis() - time >= 100){
-//    USBSerial.println(MOTOR_DRV_PREG,BIN);
+//  if (millis() - time >= 500){
+//    for(byte i = 0; i < MOTOR_COUNT; i++ ) {
+//      
+//      USBSerial.print("Flag Check for motor ");
+//      USBSerial.print(i);
+//      USBSerial.print(" is ");
+//      USBSerial.print(((motors[i].flags & MOTOR_CDIR_FLAG == 0)^(motors[i].flags & MOTOR_DIR_FLAG == 0)));
+//          // set to 10% speed as default
+//      USBSerial.print(" flag & cdir ");
+//      USBSerial.print(motors[i].flags & MOTOR_CDIR_FLAG);
+//      USBSerial.print(" flag & dir ");
+//      USBSerial.println(motors[i].flags & MOTOR_DIR_FLAG);
+//
+//    }
+//    
 //    time = millis();
 //  }
 
@@ -231,6 +246,7 @@ void startProgram() {
   
   for( byte i = 0; i < MOTOR_COUNT; i++ ) {
       motors[i].startShots = 0;
+      motors[i].onTimePeriods = 0;
   }
   
      // start program

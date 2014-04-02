@@ -98,6 +98,7 @@ void motorSetup() {
   for(byte i = 0; i < MOTOR_COUNT; i++ ) {
           // set to 10% speed as default
     motorSpeed(i, motors[i].speed);
+    motors[i].desiredDirection = (motors[i].flags & MOTOR_CDIR_FLAG > 0 ? 1 : 0);
   }
  
    digitalWrite(MOTOR_INH_0, HIGH);
@@ -129,27 +130,26 @@ void motorSpeed(byte p_motor, float p_rel, boolean p_ramp) {
  
     // periods off between each on period to achieve percentage of time moving per minute
   
-  motor_pwm_maxperiod  = ( 60000000.0 / (float) motor_pwm_minperiod );
-  
-  if( p_rel <= 0.0 ) {
-      motors[p_motor].onTimePeriods = 0.0;
-  }
-  else if( p_rel >= 1.0 ) {
-      motors[p_motor].onTimePeriods = motor_pwm_maxperiod;
-  }
-  else {
-      float offTime       = (1.0 - p_rel) * motor_pwm_maxperiod;
-      float onTime        = motor_pwm_maxperiod - offTime;
-      float onTimePeriods = onTime / offTime;
-      motors[p_motor].onTimePeriods = onTimePeriods;
-  }
+//  motor_pwm_maxperiod  = ( 60000000.0 / (float) motor_pwm_minperiod );
+//  
+//  if( p_rel <= 0.0 ) {
+//      motors[p_motor].onTimePeriods = 0.0;
+//  }
+//  else if( p_rel >= 1.0 ) {
+//      motors[p_motor].onTimePeriods = motor_pwm_maxperiod;
+//  }
+//  else {
+//      float offTime       = (1.0 - p_rel) * motor_pwm_maxperiod;
+//      float onTime        = motor_pwm_maxperiod - offTime;
+//      float onTimePeriods = onTime / offTime;
+//      motors[p_motor].onTimePeriods = onTimePeriods;
+//  }
 
   motors[p_motor].speed         = p_rel;
   
   if( ! p_ramp ) 
     motors[p_motor].setSpeed    = p_rel;
     
-
 }
 
 /** Get Speed Percent for a Given Motor
@@ -275,48 +275,58 @@ float motorMaxSpeedRatio(byte p_motor) {
   
 void motorDir(byte p_motor, boolean p_dir) {
   
-   bool flag_on = false;
-
-  //disable enable flag while switching directions
-  if(motors[p_motor].flags & MOTOR_ENABLE_FLAG){
-    flag_on = true;
-    motors[p_motor].flags &= ~MOTOR_ENABLE_FLAG;
-  }
+  motors[p_motor].desiredDirection = p_dir;
   
-  
-  //Turns off the motor diver so that it won't trip the battery when switching directions
-  if (p_motor == 0)
-    MOTOR_DRV_PREG &= ~(B00000001 << 2);
-  else if (p_motor == 1)
-    MOTOR_DRV_PREG &= ~(B00000001 << 5);
-  else 
-    MOTOR_DRV_PREG2 &= ~(B00000001);             
-  
-  //turns off driver
-  MOTOR_DRV_PREG  &= ~(B00000011 << (p_motor*3));
-    
-  //Set direction  
-  if (p_dir)
-    motors[p_motor].flags |= (MOTOR_CDIR_FLAG); 
-  else
-    motors[p_motor].flags &= ~(MOTOR_CDIR_FLAG);  
-        
-  //delays motor to prevent battery tripping
-  delayMicroseconds(65534);
-  delayMicroseconds(65534);
-  
-  //Turns the motor driver back on
-  if (p_motor == 0)
-    MOTOR_DRV_PREG |= (B00000001 << 2);
-  else if (p_motor == 1)
-    MOTOR_DRV_PREG |= (B00000001 << 5);
-  else 
-    MOTOR_DRV_PREG2 |= (B00000001); 
-  
-  //tursn the flag back on if it was on  
-  if(flag_on){
-    motors[p_motor].flags |= MOTOR_ENABLE_FLAG;
-  }
+//   bool flag_on = false;
+//
+//  //disable enable flag while switching directions
+//  if(motors[p_motor].flags & MOTOR_ENABLE_FLAG){
+//    flag_on = true;
+//    motors[p_motor].flags &= ~MOTOR_ENABLE_FLAG;
+//  }
+//  
+//  
+//  //Turns off the motor diver so that it won't trip the battery when switching directions
+//  if (p_motor == 0)
+//    MOTOR_DRV_PREG &= ~(B00000001 << 2);
+//  else if (p_motor == 1)
+//    MOTOR_DRV_PREG &= ~(B00000001 << 5);
+//  else 
+//    MOTOR_DRV_PREG2 &= ~(B00000001);             
+//  
+//  //turns off driver
+//  MOTOR_DRV_PREG  &= ~(B00000011 << (p_motor*3));
+//    
+//  //Set direction  
+//  if (p_dir)
+//    motors[p_motor].flags |= (MOTOR_CDIR_FLAG); 
+//  else
+//    motors[p_motor].flags &= ~(MOTOR_CDIR_FLAG);  
+//        
+//  //delays motor to prevent battery tripping
+//  delayMicroseconds(65534);
+//  delayMicroseconds(65534);
+//  delayMicroseconds(65534);
+//  delayMicroseconds(65534);
+//  delayMicroseconds(65534);
+//  delayMicroseconds(65534);
+//  delayMicroseconds(65534);
+//  delayMicroseconds(65534);
+//  delayMicroseconds(65534);
+//  
+//  
+//  //Turns the motor driver back on
+//  if (p_motor == 0)
+//    MOTOR_DRV_PREG |= (B00000001 << 2);
+//  else if (p_motor == 1)
+//    MOTOR_DRV_PREG |= (B00000001 << 5);
+//  else 
+//    MOTOR_DRV_PREG2 |= (B00000001); 
+//  
+//  //tursn the flag back on if it was on  
+//  if(flag_on){
+//    motors[p_motor].flags |= MOTOR_ENABLE_FLAG;
+//  }
   
 }
 
@@ -335,7 +345,6 @@ void motorDirFlip() {
   for(int i = 0; i < MOTOR_COUNT; i++)
   {
     motorDirFlip(i);
-    delay(20);
   }
     
 }
@@ -352,8 +361,18 @@ void motorDirFlip() {
  */
  
 void motorDirFlip(byte p_motor) { 
+  
+  if (!(motor_running))
+  {
+    byte p_dir = ! (boolean) (motors[p_motor].flags & MOTOR_CDIR_FLAG);
+    if (p_dir)
+      motors[p_motor].flags |= (MOTOR_CDIR_FLAG); 
+    else
+      motors[p_motor].flags &= ~(MOTOR_CDIR_FLAG); 
 
-    motorDir(p_motor, ! (boolean) (motors[p_motor].flags & MOTOR_CDIR_FLAG) );   
+  }
+  
+  motorDir(p_motor, ! (boolean) (motors[p_motor].desiredDirection) );   //.flags & MOTOR_CDIR_FLAG));
   
 }
 
@@ -375,9 +394,11 @@ void motorRun(boolean p_once) {
     return;
     
     // (program)-enable each motor, if it does not have a lead-in/out
-  for(byte i = 0; i < MOTOR_COUNT; i++ ) 
+  for(byte i = 0; i < MOTOR_COUNT; i++ ) {
     if( ! motors[i].lead )
       motors[i].flags |= MOTOR_ENABLE_FLAG;
+    
+  }
     
   motorStartISR(p_once);
   
@@ -417,6 +438,8 @@ void motorRun(boolean p_once, byte p_motor) {
 void motorStop(boolean p_once) {
   motor_running = false;
   Timer1.detachInterrupt();
+  for(byte i = 0; i < MOTOR_COUNT; i++ )
+    motors[i].onTimePeriods = 0;
   
   
   if( ! p_once ) {
@@ -504,9 +527,72 @@ void motorRunISRSMS() {
   
   
   for( byte i = 0; i < MOTOR_COUNT; i++ ) {  //5
-    if( motors[i].flags & MOTOR_ENABLE_FLAG && motors[i].flags & MOTOR_UEN_FLAG ) {   //6
+  
+  
+   //function the ramps the motor up and down to prevent battery tripping
+   if(motors[i].speedSteps >= 15){
+   
+      //determine current speed based on time periods that the motor PWM is high
+      float curSpeed = motors[i].onTimePeriods / (1 + motors[i].onTimePeriods);
+
+      //account for the direction 
+      if ((motors[i].flags & MOTOR_CDIR_FLAG))
+        curSpeed *= -1;
+      if ((motors[i].flags & MOTOR_DIR_FLAG))
+        curSpeed *= -1;
+        
+      //determine desire speed and account for desired direction
+      float desired = 0.8; 
+      if (motors[i].desiredDirection)
+        desired *= -1;
+      if ((motors[i].flags & MOTOR_DIR_FLAG))
+        desired *= -1;
+
+      //increment speed toward desired
+      float change = 0.1;
+      if (curSpeed >= (.1 + desired)){
+//         USBSerial.print(" Motor is ");            
+//         USBSerial.print(i);
+//         USBSerial.print(" onTimePeriods is ");            
+//         USBSerial.print(motors[i].onTimePeriods);
+//         USBSerial.print(" current speed is ");  
+//         USBSerial.println(curSpeed);
+        curSpeed -= change;
+      }
+      else if (curSpeed <= (desired - 0.1)){
+        curSpeed += change;
+      }
+      else {
+        curSpeed = desired;
+      }
+      
+      //determine if the current direction flag needs to be switched
+      if( (curSpeed < 0.1) && (curSpeed > -0.1) && (((motors[i].flags & MOTOR_CDIR_FLAG) > 0) != (motors[i].desiredDirection > 0))){
+        motors[i].flags ^= MOTOR_CDIR_FLAG;
+      } 
+      
+      //recalculate onTimePeriods
+      if( abs(curSpeed) < 0.001 ) {
+          motors[i].onTimePeriods = 0.0;
+      }
+      else if( abs(curSpeed) >= 1.0 ) {
+        motors[i].onTimePeriods = motor_pwm_maxperiod;
+      }
+      else {
+        motors[i].onTimePeriods = abs(curSpeed) / (1 - abs(curSpeed));
+      }
+      motors[i].speedSteps=0;
+   }
+   motors[i].speedSteps++;
+
+  
+  
+  
+    
+  
+    if( (motors[i].flags & MOTOR_ENABLE_FLAG) && (motors[i].flags & MOTOR_UEN_FLAG)) {
        // motor is enabled
-       if( !(motors[i].flags & MOTOR_HIGH_FLAG) && motors[i].speed > 0.0) {      //8
+       if( !(motors[i].flags & MOTOR_HIGH_FLAG) && (motors[i].speed > 0.0)) {      //8
          // motor is not currently moving
          if( motors[i].flags & MOTOR_DIR_FLAG ){
            MOTOR_DRV_PREG  |= (B00000001 << (i*3 + (!((motors[i].flags & MOTOR_CDIR_FLAG) >> 2))));
@@ -532,7 +618,7 @@ void motorRunISRSMS() {
            
          } else {  
            //check to see if the motor is on an off period
-           if (motors[i].smsOnPeriods < smsOnPeriodRatio){             
+           if (motors[i].smsOnPeriods < motors[i].onTimePeriods){             
              //sees if the invert dir flag is on
              if( motors[i].flags & MOTOR_DIR_FLAG ){
                MOTOR_DRV_PREG  |= (B00000001 << (i*3 + (!((motors[i].flags & MOTOR_CDIR_FLAG) >> 2))));
@@ -600,7 +686,62 @@ void motorRunISR() {
     // check status of each motor
 
  for(byte i = 0; i < MOTOR_COUNT; i++) {
-   if( motors[i].flags & MOTOR_ENABLE_FLAG && motors[i].flags & MOTOR_UEN_FLAG ) {
+   
+   
+   //function the ramps the motor up and down to prevent battery tripping
+   if(motors[i].speedSteps >= 15){
+   
+      //determine current speed based on time periods that the motor PWM is high
+      float curSpeed = motors[i].onTimePeriods / (1 + motors[i].onTimePeriods);
+
+      //account for the direction 
+      if ((motors[i].flags & MOTOR_CDIR_FLAG))
+        curSpeed *= -1;
+      if ((motors[i].flags & MOTOR_DIR_FLAG))
+        curSpeed *= -1;
+        
+      //determine desire speed and account for desired direction
+      float desired = motors[i].speed; 
+      if (motors[i].desiredDirection)
+        desired *= -1;
+      if ((motors[i].flags & MOTOR_DIR_FLAG))
+        desired *= -1;
+
+      //increment speed toward desired
+      float change = 0.1;
+      if (curSpeed >= (.1 + desired)){
+        curSpeed -= change;
+      }
+      else if (curSpeed <= (desired - 0.1)){
+        curSpeed += change;
+      }
+      else {
+        curSpeed = desired;
+      }
+      
+      //determine if the current direction flag needs to be switched
+      if( (curSpeed < 0.1) && (curSpeed > -0.1) && (((motors[i].flags & MOTOR_CDIR_FLAG) > 0) != (motors[i].desiredDirection > 0))){
+        motors[i].flags ^= MOTOR_CDIR_FLAG;
+      } 
+      
+      //recalculate onTimePeriods
+      if( abs(curSpeed) < 0.001 ) {
+          motors[i].onTimePeriods = 0.0;
+      }
+      else if( abs(curSpeed) >= 1.0 ) {
+        motors[i].onTimePeriods = motor_pwm_maxperiod;
+      }
+      else {
+        motors[i].onTimePeriods = abs(curSpeed) / (1 - abs(curSpeed));
+      }
+      motors[i].speedSteps=0;
+   }
+   motors[i].speedSteps++;
+   
+   
+   
+   
+   if( motors[i].flags & MOTOR_ENABLE_FLAG && motors[i].flags & MOTOR_UEN_FLAG) {
        // motor is enabled
        
      if( ! (motors[i].flags & MOTOR_HIGH_FLAG) && motors[i].speed > 0.0) {

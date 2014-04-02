@@ -114,14 +114,15 @@ const int ALT_TRIG_THRESH  = 750;
 
   // what alt i/o modes do we support?
 
-const byte    ALT_OFF = 0;
-const byte  ALT_START = 1;
-const byte   ALT_STOP = 2;
-const byte ALT_TOGGLE = 3;
-const byte ALT_EXTINT = 4;
-const byte    ALT_DIR = 5;
-const byte  ALT_OUT_B = 6;
-const byte  ALT_OUT_A = 7;
+const byte         ALT_OFF = 0;
+const byte       ALT_START = 1;
+const byte        ALT_STOP = 2;
+const byte      ALT_TOGGLE = 3;
+const byte      ALT_EXTINT = 4;
+const byte         ALT_DIR = 5;
+const byte       ALT_OUT_B = 6;
+const byte       ALT_OUT_A = 7;
+const byte ALT_STOP_MOTORS = 8;
 
 const byte ALT_OUT_FLAG_B = B00010000;
 const byte ALT_OUT_FLAG_A = B00000001;
@@ -263,6 +264,15 @@ struct MotorDefinition {
   /** Shot count for ramp starting (when started motor during program run)*/
  unsigned long startShots;
  
+ /** pwm step count for speed ramping*/
+ int speedSteps;
+ 
+ /** desired speed for the motor to reach */
+// float = desiredSpeed;
+ 
+ /** desired direction for the motor to move, 0 or 1 */
+ bool desiredDirection;
+ 
    /** Default Constructor */
    
  MotorDefinition() {
@@ -280,6 +290,8 @@ struct MotorDefinition {
    startShots = 0;
    smsOnPeriods = 0;
    inRamp = 0;
+   speedSteps = 0;
+   desiredDirection = 0;
  }
  
 };
@@ -295,7 +307,7 @@ struct MotorDefinition {
 
  // stored memory layout version
  // this number MUST be changed every time the memory layout is changed
-const unsigned int MEMORY_VERSION    = 38;
+const unsigned int MEMORY_VERSION    = 39;
 
 
 /* Locations of each variable to be stored, note correct spacing

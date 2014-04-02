@@ -499,7 +499,7 @@ void uiMotorScreen(byte p_motor) {
   
   if( def->flags & MOTOR_ROT_FLAG ) {
  
-    if( def->flags & MOTOR_CDIR_FLAG )
+    if(def->flags & MOTOR_CDIR_FLAG )
        lcd.print(STR_CW);
     else
        lcd.print(STR_CCW); 
