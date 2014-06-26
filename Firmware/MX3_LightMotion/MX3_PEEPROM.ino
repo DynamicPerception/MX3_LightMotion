@@ -60,8 +60,7 @@ void eepromCheck() {
   }
   else {
     eepromWrite();
-  }
-    
+  }  
 }
 
  /** Write All Variables to EEPROM */
@@ -93,7 +92,11 @@ void eepromWrite() {
     write(EE_M0RAMP + (EE_MOTOR_SPACE * i), motors[i].ramp_start);
     write(EE_M0RAMPE + (EE_MOTOR_SPACE * i), motors[i].ramp_end);
     write(EE_M0LEAD + (EE_MOTOR_SPACE * i), motors[i].lead);
-    write(EE_MORSPEED + (EE_MOTOR_SPACE * i), motors[i].speed);
+	write(EE_MORSPEED + (EE_MOTOR_SPACE * i), motors[i].speed);
+	write(EE_DES_SPEED0 + (EE_MOTOR_SPACE_V1_1 * i), motors[i].target_speed);
+	write(EE_DES_SMSDIST0 + (EE_MOTOR_SPACE_V1_1 * i), motors[i].target_sms_distance);
+	write(EE_EZADJ0 + (EE_MOTOR_SPACE_V1_1 * i), motors[i].ez_adjust);
+	
   }
   
   write(EE_LCDOFF, lcdDisable);
@@ -115,8 +118,17 @@ void eepromWrite() {
   write(EE_VOLTH, sensor_minVoltage);
   write(EE_VOLWARN, sensor_enVWarn);
   write(EE_HEATER, sensor_enHeater);
-  write(EE_METRIC, disp_metric);
+  write(EE_UNITS, units);
   write(EE_INCREMENT, motorIncrement);
+
+  // Is the device set as a MoCoBus node?
+  write(EE_NODE, node);
+  write(EE_ADDR, dev_addr);
+
+  write(EE_CAMFL, camera_focal_length);
+
+  write(EE_EZMODE, ez_mode);
+  write(EE_EZX, ez_extended);
   
 }
 
@@ -149,6 +161,9 @@ void eepromRestore() {
     read(EE_M0RAMPE + (EE_MOTOR_SPACE * i), motors[i].ramp_end);
     read(EE_M0LEAD + (EE_MOTOR_SPACE * i), motors[i].lead);
     read(EE_MORSPEED + (EE_MOTOR_SPACE * i), motors[i].speed);
+	read(EE_DES_SPEED0 + (EE_MOTOR_SPACE_V1_1 * i), motors[i].target_speed);
+	read(EE_DES_SMSDIST0 + (EE_MOTOR_SPACE_V1_1 * i), motors[i].target_sms_distance);
+	read(EE_EZADJ0 + (EE_MOTOR_SPACE_V1_1 * i), motors[i].ez_adjust);
   }
   
   read(EE_LCDOFF, lcdDisable);
@@ -170,8 +185,17 @@ void eepromRestore() {
   read(EE_VOLTH, sensor_minVoltage);
   read(EE_VOLWARN, sensor_enVWarn);
   read(EE_HEATER, sensor_enHeater);
-  read(EE_METRIC, disp_metric);
+  read(EE_UNITS, units);
   read(EE_INCREMENT, motorIncrement);
+
+  // Is the device set as a MoCoBus node?
+  read(EE_NODE, node);
+  read(EE_ADDR, dev_addr);
+  
+  read(EE_CAMFL, camera_focal_length);
+
+  read(EE_EZMODE, ez_mode);
+  read(EE_EZX, ez_extended);
   
 }
 
@@ -205,6 +229,9 @@ void eepromWrite_SS0() {
     write(EE_M0RAMPE_SS0 + (EE_MOTOR_SPACE_SS0 * i), motors[i].ramp_end);
     write(EE_M0LEAD_SS0 + (EE_MOTOR_SPACE_SS0 * i), motors[i].lead);
     write(EE_MORSPEED_SS0 + (EE_MOTOR_SPACE_SS0 * i), motors[i].speed);
+	write(EE_DES_SPEED0_SS0 + (EE_MOTOR_SPACE_V1_1_SS0 * i), motors[i].target_speed);
+	write(EE_DES_SMSDIST0_SS0 + (EE_MOTOR_SPACE_V1_1_SS0 * i), motors[i].target_sms_distance);
+	write(EE_EZADJ0_SS0 + (EE_MOTOR_SPACE_V1_1_SS0 * i), motors[i].ez_adjust);
   }
   
   write(EE_LCDOFF_SS0, lcdDisable);
@@ -225,8 +252,17 @@ void eepromWrite_SS0() {
   write(EE_VOLTH_SS0, sensor_minVoltage);
   write(EE_VOLWARN_SS0, sensor_enVWarn);
   write(EE_HEATER_SS0, sensor_enHeater);
-  write(EE_METRIC_SS0, disp_metric);
+  write(EE_UNITS_SS0, units);
   write(EE_INCREMENT_SS0, motorIncrement);
+
+  // Is the device set as a MoCoBus node?
+  write(EE_NODE_SS0, node);
+  write(EE_ADDR_SS0, dev_addr);
+
+  write(EE_CAMFL_SS0, camera_focal_length);
+
+  write(EE_EZMODE_SS0, ez_mode);
+  write(EE_EZX_SS0, ez_extended);
   
 }
 
@@ -259,6 +295,9 @@ void eepromWrite_SS1() {
     write(EE_M0RAMPE_SS1 + (EE_MOTOR_SPACE_SS1 * i), motors[i].ramp_end);
     write(EE_M0LEAD_SS1 + (EE_MOTOR_SPACE_SS1 * i), motors[i].lead);
     write(EE_MORSPEED_SS1 + (EE_MOTOR_SPACE_SS1 * i), motors[i].speed);
+	write(EE_DES_SPEED0_SS1 + (EE_MOTOR_SPACE_V1_1_SS1 * i), motors[i].target_speed);
+	write(EE_DES_SMSDIST0_SS1 + (EE_MOTOR_SPACE_V1_1_SS1 * i), motors[i].target_sms_distance);
+	write(EE_EZADJ0_SS1 + (EE_MOTOR_SPACE_V1_1_SS1 * i), motors[i].ez_adjust);
   }
   
   write(EE_LCDOFF_SS1, lcdDisable);
@@ -279,8 +318,17 @@ void eepromWrite_SS1() {
   write(EE_VOLTH_SS1, sensor_minVoltage);
   write(EE_VOLWARN_SS1, sensor_enVWarn);
   write(EE_HEATER_SS1, sensor_enHeater);
-  write(EE_METRIC_SS1, disp_metric);
+  write(EE_UNITS_SS1, units);
   write(EE_INCREMENT_SS1, motorIncrement);
+
+  // Is the device set as a MoCoBus node?
+  write(EE_NODE_SS1, node);
+  write(EE_ADDR_SS1, dev_addr);
+
+  write(EE_CAMFL_SS1, camera_focal_length);
+
+  write(EE_EZMODE_SS1, ez_mode);
+  write(EE_EZX_SS1, ez_extended);
   
 }
 
@@ -313,6 +361,9 @@ void eepromWrite_SS2() {
     write(EE_M0RAMPE_SS2 + (EE_MOTOR_SPACE_SS2 * i), motors[i].ramp_end);
     write(EE_M0LEAD_SS2 + (EE_MOTOR_SPACE_SS2 * i), motors[i].lead);
     write(EE_MORSPEED_SS2 + (EE_MOTOR_SPACE_SS2 * i), motors[i].speed);
+	write(EE_DES_SPEED0_SS2 + (EE_MOTOR_SPACE_V1_1_SS2 * i), motors[i].target_speed);
+	write(EE_DES_SMSDIST0_SS2 + (EE_MOTOR_SPACE_V1_1_SS2 * i), motors[i].target_sms_distance);
+	write(EE_EZADJ0_SS2 + (EE_MOTOR_SPACE_V1_1_SS2 * i), motors[i].ez_adjust);
   }
   
   write(EE_LCDOFF_SS2, lcdDisable);
@@ -333,8 +384,17 @@ void eepromWrite_SS2() {
   write(EE_VOLTH_SS2, sensor_minVoltage);
   write(EE_VOLWARN_SS2, sensor_enVWarn);
   write(EE_HEATER_SS2, sensor_enHeater);
-  write(EE_METRIC_SS2, disp_metric);
+  write(EE_UNITS_SS2, units);
   write(EE_INCREMENT_SS2, motorIncrement);
+
+  // Is the device set as a MoCoBus node?
+  write(EE_NODE_SS2, node);
+  write(EE_ADDR_SS2, dev_addr);
+
+  write(EE_CAMFL_SS2, camera_focal_length);
+
+  write(EE_EZMODE_SS2, ez_mode);
+  write(EE_EZX_SS2, ez_extended);
   
 }
 
@@ -366,6 +426,9 @@ void eepromRestore_SS0() {
     read(EE_M0RAMPE_SS0 + (EE_MOTOR_SPACE_SS0 * i), motors[i].ramp_end);
     read(EE_M0LEAD_SS0 + (EE_MOTOR_SPACE_SS0 * i), motors[i].lead);
     read(EE_MORSPEED_SS0 + (EE_MOTOR_SPACE_SS0 * i), motors[i].speed);
+	read(EE_DES_SPEED0_SS0 + (EE_MOTOR_SPACE_V1_1_SS0 * i), motors[i].target_speed);
+	read(EE_DES_SMSDIST0_SS0 + (EE_MOTOR_SPACE_V1_1_SS0 * i), motors[i].target_sms_distance);
+	read(EE_EZADJ0_SS0 + (EE_MOTOR_SPACE_V1_1_SS0 * i), motors[i].ez_adjust);
   }
   
   read(EE_LCDOFF_SS0, lcdDisable);
@@ -386,9 +449,18 @@ void eepromRestore_SS0() {
   read(EE_VOLTH_SS0, sensor_minVoltage);
   read(EE_VOLWARN_SS0, sensor_enVWarn);
   read(EE_HEATER_SS0, sensor_enHeater);
-  read(EE_METRIC_SS0, disp_metric);
+  read(EE_UNITS_SS0, units);
   read(EE_INCREMENT_SS0, motorIncrement);
-  
+
+  // Is the device set as a MoCoBus node?
+  read(EE_NODE_SS0, node);
+  read(EE_ADDR_SS0, dev_addr);
+
+  read(EE_CAMFL_SS0, camera_focal_length);
+
+  read(EE_EZMODE_SS0, ez_mode);
+  read(EE_EZX_SS0, ez_extended);
+   
 }
 
 /** Restore All Variables from Save State 1 */
@@ -419,6 +491,9 @@ void eepromRestore_SS1() {
     read(EE_M0RAMPE_SS1 + (EE_MOTOR_SPACE_SS1 * i), motors[i].ramp_end);
     read(EE_M0LEAD_SS1 + (EE_MOTOR_SPACE_SS1 * i), motors[i].lead);
     read(EE_MORSPEED_SS1 + (EE_MOTOR_SPACE_SS1 * i), motors[i].speed);
+	read(EE_DES_SPEED0_SS1 + (EE_MOTOR_SPACE_V1_1_SS1 * i), motors[i].target_speed);
+	read(EE_DES_SMSDIST0_SS1 + (EE_MOTOR_SPACE_V1_1_SS1 * i), motors[i].target_sms_distance);
+	read(EE_EZADJ0_SS1 + (EE_MOTOR_SPACE_V1_1_SS1 * i), motors[i].ez_adjust);
   }
   
   read(EE_LCDOFF_SS1, lcdDisable);
@@ -439,8 +514,17 @@ void eepromRestore_SS1() {
   read(EE_VOLTH_SS1, sensor_minVoltage);
   read(EE_VOLWARN_SS1, sensor_enVWarn);
   read(EE_HEATER_SS1, sensor_enHeater);
-  read(EE_METRIC_SS1, disp_metric);
+  read(EE_UNITS_SS1, units);
   read(EE_INCREMENT_SS1, motorIncrement);
+
+  // Is the device set as a MoCoBus node?
+  read(EE_NODE_SS1, node);
+  read(EE_ADDR_SS1, dev_addr);
+
+  read(EE_CAMFL_SS1, camera_focal_length);
+
+  read(EE_EZMODE_SS1, ez_mode);
+  read(EE_EZX_SS1, ez_extended);
   
 }
 
@@ -472,6 +556,9 @@ void eepromRestore_SS2() {
     read(EE_M0RAMPE_SS2 + (EE_MOTOR_SPACE_SS2 * i), motors[i].ramp_end);
     read(EE_M0LEAD_SS2 + (EE_MOTOR_SPACE_SS2 * i), motors[i].lead);
     read(EE_MORSPEED_SS2 + (EE_MOTOR_SPACE_SS2 * i), motors[i].speed);
+	read(EE_DES_SPEED0_SS2 + (EE_MOTOR_SPACE_V1_1_SS2 * i), motors[i].target_speed);
+	read(EE_DES_SMSDIST0_SS2 + (EE_MOTOR_SPACE_V1_1_SS2 * i), motors[i].target_sms_distance);
+	read(EE_EZADJ0_SS2 + (EE_MOTOR_SPACE_V1_1_SS2 * i), motors[i].ez_adjust);
   }
   
   read(EE_LCDOFF_SS2, lcdDisable);
@@ -492,8 +579,17 @@ void eepromRestore_SS2() {
   read(EE_VOLTH_SS2, sensor_minVoltage);
   read(EE_VOLWARN_SS2, sensor_enVWarn);
   read(EE_HEATER_SS2, sensor_enHeater);
-  read(EE_METRIC_SS2, disp_metric);
+  read(EE_UNITS_SS2, units);
   read(EE_INCREMENT_SS2, motorIncrement);
+
+  // Is the device set as a MoCoBus node?
+  read(EE_NODE_SS2, node);
+  read(EE_ADDR_SS2, dev_addr);
+
+  read(EE_CAMFL_SS2, camera_focal_length);
+
+  read(EE_EZMODE_SS2, ez_mode);
+  read(EE_EZX_SS2, ez_extended);
   
 }
 

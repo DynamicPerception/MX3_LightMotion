@@ -113,10 +113,10 @@ void altHandler(byte p_which) {
       }
     }
     else if( alt_inputs[p_which] == ALT_STOP)
-        stopProgram();
+        stopProgram(false);
     else if( alt_inputs[p_which] == ALT_TOGGLE) {
         if( running )
-          stopProgram();
+          stopProgram(false);
         else
           startProgram();
     }

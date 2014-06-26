@@ -254,34 +254,68 @@ void uiLCDBackLight(boolean p_en) {
  */
  
 void uiBaseScreen(byte p_button) {
-  
+
   static byte             screen = UI_SCREEN_MAIN;
   static byte         lastScreen = screen;
   static unsigned long lastUpdTm = 0;
  
- 
-     // only let up and down change screens when the cursor isn't on an item
-  
+  // only let up and down change screens when the cursor isn't on an item
   if( ! ui_cursor.enabled ) {
     if( p_button == BUTTON_INCREASE ) {
-      lcd.clear();
-      screen++;
+		
+		lcd.clear();
+		
+		// If the user tries to increment to a screen higher than allowed, wrap around to the lowest numbered screen
+		// Manual mode
+		if (!ez_mode && screen == UI_SCREEN_MOTOR3)
+			screen = UI_SCREEN_MAIN;
+		// EZ mode, extended on
+		else if (ez_mode && ez_extended && screen == UI_SCREEN_EZMODE){
+			screen = UI_SCREEN_MAIN;
+		}
+		// EZ mode, extended off
+		else if (ez_mode && !ez_extended){
+			if (screen == UI_SCREEN_CAMERA)
+				screen = UI_SCREEN_EZMODE;
+			else if (screen > UI_SCREEN_CAMERA)
+				screen = UI_SCREEN_MAIN;
+			else
+				screen++;
+		}
+		else
+			screen++;
     }
+	
     else if( p_button == BUTTON_DECREASE ) {
-      lcd.clear();
-      screen = screen == UI_SCREEN_MAIN ? UI_SCREEN_MOTOR3 : screen - 1;
-    }
       
-    if( screen > UI_SCREEN_MOTOR3 )
-      screen = UI_SCREEN_MAIN;
+		lcd.clear();
+
+		// If the user tries to decrement to a negative numbered screen, wrap around to the highest numbered screen	
+		// Manual mode
+		if (!ez_mode && screen == UI_SCREEN_MAIN)
+			screen = UI_SCREEN_MOTOR3;
+		// EZ mode, extended on
+		else if (ez_mode && ez_extended && screen == UI_SCREEN_MAIN){
+			screen = UI_SCREEN_MOTOR3;
+		}
+		// EZ mode, extended off
+		else if (ez_mode && !ez_extended) {
+			if (ez_mode && screen == UI_SCREEN_MAIN)
+				screen = UI_SCREEN_EZMODE;
+			else if (ez_mode && screen == UI_SCREEN_EZMODE)
+				screen = UI_SCREEN_CAMERA;
+			else
+				screen--;
+		}
+		else
+			screen--;
+    }	
   }
-  
-  
-      // handle screen navigation
     
+  // handle screen navigation
   uiScreenInput(screen, p_button);
     
-      // display, or update the screen?
+  // display, or update the screen?
   if( ui_refresh || screen != lastScreen || millis() - lastUpdTm > UI_REFRESH_TM ) {
     
    lcd.noBlink();    //turns the blinking cursor off while refreshing the screen
@@ -291,14 +325,16 @@ void uiBaseScreen(byte p_button) {
    lastScreen = screen;
    lastUpdTm = millis();
 
-      // first page of display
-    
-    if( screen == UI_SCREEN_MAIN )
-      uiMainScreen();
-    else if( screen == UI_SCREEN_CAMERA )
-      uiCamScreen();
-    else
-      uiMotorScreen(screen);
+   // first page of display
+   if (screen == UI_SCREEN_MAIN)
+	   screen = uiMainScreen();
+   else if (screen == UI_SCREEN_CAMERA)
+	   uiCamScreen();
+   else if (screen == UI_SCREEN_EZMODE)
+	   uiEZModeScreen();
+   else {
+	   uiMotorScreen(screen);
+   }
       
   }
  
@@ -309,113 +345,303 @@ void uiBaseScreen(byte p_button) {
   }
 }
 
+/** Interval Calculation and Display Used in Main Display and EZ Mode **/
+
+void mainFirstLine(){
+
+	float minInt = 0.0; // Minimum camera interval, accounting for camera settings, motor moves, etc.
+
+	// minimum interval calculation
+	//if( camera_bulb )
+	minInt += camera_exposure;
+	//else
+	//  minInt += CAM_MIN_TRIG;
+
+	minInt += camera_wait;
+	minInt += camera_focus;
+
+	if (alt_out_flags & ALT_OUT_ANY_B){ //checks to see if any aux i/o are on before the camera shoots
+		minInt += alt_before_ms;
+		minInt += alt_before_delay;
+	}
+
+	if (alt_out_flags & ALT_OUT_ANY_A) { //checks to see if any aux i/o are on after the camera shoots
+		minInt += alt_after_ms;
+		minInt += alt_after_delay;
+	}
+
+	if (motion_sms)
+	{
+		byte motorEnabled = 0;
+		byte longestMotor = 0;
+		for (byte i = 0; i < MOTOR_COUNT; i++)
+		{
+			if (motors[i].flags & MOTOR_UEN_FLAG) {
+				if (motors[i].speed > motors[longestMotor].speed) {    //determine the longest running enabled motor
+					longestMotor = i;
+				}
+				motorEnabled = 1;
+			}
+		}
+
+		minInt += motorEnabled * motor_pwm_maxperiod * motors[longestMotor].speed * motor_pwm_minperiod / 1000.0;  //adds time required by longest running motor
+			}
+
+	minInt = minInt / 1000.0; // Convert minInt from milliseconds to seconds
+
+	// display correct running string
+	if (running) {
+		if (alt_ext_int)
+			lcd.print(STR_EXT);
+		else
+			lcd.print(STR_RUN);
+	}
+	else if (camera_flag){
+		lcd.print(STR_TIM);
+	}
+	else {
+		lcd.print(STR_STOP);
+	}
+
+	lcd.print(STR_SPACE);
+
+	if (minInt > camera_delay)
+	{
+		lcd.print(minInt, 1);
+		camera_delay = minInt;
+	}
+	else
+		lcd.print(camera_delay, 1);
+
+
+	lcd.print(STR_SEC);
+
+	lcd.setCursor(10, 0);
+
+	if (motion_sms)
+		lcd.print(STR_SMS);
+	else
+		lcd.print(STR_CONT);
+}
+
 /** Main Display Screen */
 
 byte uiMainScreen() {
 
-  float minInt = 0.0;
-  
-    // minimum interval calculation
-  //if( camera_bulb )
-    minInt += camera_exposure;
-  //else
-  //  minInt += CAM_MIN_TRIG;
-    
-  minInt += camera_wait;
-  minInt += camera_focus;
-  
-  if(alt_out_flags & ALT_OUT_ANY_B){ //checks to see if any aux i/o are on befroe the camera shoots
-   minInt += alt_before_ms;
-   minInt += alt_before_delay;
-  }
-  
-  if(alt_out_flags & ALT_OUT_ANY_A) { //checks to see if any aux i/o are on after the camera shoots
-   minInt += alt_after_ms;
-   minInt += alt_after_delay;
-  }
-  
-  if (motion_sms)
-  {
-    byte motorEnabled = 0;
-    byte longestMotor = 0;
-    for ( byte i = 0; i < MOTOR_COUNT; i++ )
-    {
-      if (motors[i].flags & MOTOR_UEN_FLAG) {
-        if (motors[i].speed > motors[longestMotor].speed) {    //determine the longest running enabled motor
-          longestMotor = i;
-        }
-        motorEnabled = 1;
-      }
-    }
-      
-    minInt += motorEnabled * motor_pwm_maxperiod * motors[longestMotor].speed * motor_pwm_minperiod / 1000.;  //adds time required by longest running motor
-  }
-  
-  minInt = minInt / 1000.0;
-  
-    // display correct running string
-  if( running ) {
-    if( alt_ext_int )
-      lcd.print(STR_EXT);
-    else
-      lcd.print(STR_RUN);
-  } else if (camera_flag){
-      lcd.print(STR_TIM); 
-  } else {
-    lcd.print(STR_STOP);
-  }
-  
-  lcd.print(STR_SPACE);
-  
-  if( minInt > camera_delay )
-  {
-    lcd.print(minInt, 1);
-    camera_delay = minInt;
-  }
-  else 
-    lcd.print(camera_delay, 1);
-  
-  
-  lcd.print(STR_SEC);
-  
-  lcd.setCursor(12, 0);
-  
-  if( motion_sms ) 
-    lcd.print(STR_SMS);
-  else
-    lcd.print(STR_CONT);
-    
-  
-  lcd.setCursor(0, 1);
-  
-  
-  if (camera_flag)
-  {
-    temp_time = camera_timer * 60 - (delay_time - start_time)/1000;
-    hours = ( temp_time ) / 3600;
-    mins  = ( temp_time - (hours * 3600) ) / 60;
-    secs  = ( temp_time - (hours * 3600) - (mins * 60) ) ;
-    
-  } else {
-    hours = run_time / 3600000L;
-    mins  = ( run_time - (hours * 3600000) ) / 60000L;
-    secs  = ( run_time - (hours * 3600000) - (mins * 60000L) ) / SECOND;
-  }
-  lcd.print(STR_TIME);
-  uiPad(2, hours);
-  lcd.print(STR_SQUOTE);
-  uiPad(2, mins);
-  lcd.print(STR_QUOTE);
-  uiPad(2, secs);
-  
+	// Calculate the minimum interval between shots, print 
+	// the on/off option, and print the cont/SMS option 
+	mainFirstLine();
 
-  lcd.setCursor(17,0);   //moves cursor off screen, prevents a blinking cursor from showing up at the end
-  
+	static byte cursor_position;
 
-  return UI_SCREEN_MAIN;
+	// Print whether EZ mode or manual mode is active
+	lcd.setCursor(13, 1);
+	if (ez_mode)
+		lcd.print("EZ ");
+	else
+		lcd.print("Man");
+  
+	// Print the elapsed time on the second line of the screen
+	lcd.setCursor(0, 1);
+  
+	if (camera_flag)
+	{
+	temp_time = camera_timer * 60 - (delay_time - start_time)/1000;
+	hours = ( temp_time ) / 3600;
+	mins  = ( temp_time - (hours * 3600) ) / 60;
+	secs  = ( temp_time - (hours * 3600) - (mins * 60) ) ;
+    
+	} else {
+	hours = run_time / 3600000L;
+	mins  = ( run_time - (hours * 3600000) ) / 60000L;
+	secs  = ( run_time - (hours * 3600000) - (mins * 60000L) ) / SECOND;
+	}
+	lcd.print(STR_TIME);
+	uiPad(2, hours);
+	lcd.print(STR_SQUOTE);
+	uiPad(2, mins);
+	lcd.print(STR_QUOTE);
+	uiPad(2, secs);
+
+	lcd.setCursor(17,0);   //moves cursor off screen, prevents a blinking cursor from showing up at the end
+
+	return UI_SCREEN_MAIN;
   
 }
 
+// Helper functions for calling uiEZTimeEstimate from menus
+void uiEZTimeEstimate0(){
+	uiEZTimeEstimate(0);
+}
+
+void uiEZTimeEstimate1(){
+	uiEZTimeEstimate(1);
+}
+
+void uiEZTimeEstimate2(){
+	uiEZTimeEstimate(2);
+}
+
+void uiEZTimeEstimate(byte p_motor) {
+
+	Menu.enable(false);
+	lcd.noBlink();
+
+	int dist_est;	// Estimate of the distance/hr based on currnt speed / SMS settings --> Can by modified by user to alter speed setting
+	int shots_est;	// Estimate of shots/hr
+	byte button;
+
+	shots_est = (SEC_PER_MIN / camera_delay) * MIN_PER_HR;
+
+	if (!motion_sms)
+		dist_est = motors[p_motor].target_speed * MIN_PER_HR; // Target speed is in inches, cm, or deg/min, so multiply by 60 to get the total per hour
+	else
+		dist_est = motors[p_motor].target_sms_distance * shots_est;
+
+	lcd.clear();
+	lcd.home();
+	lcd.print("Dist/hr: ");
+	lcd.print(dist_est);
+	if (!(motors[p_motor].flags & MOTOR_ROT_FLAG)) {
+		if (units == STANDARD || units == PERCENT)
+			lcd.print("in");
+		else if (units == METRIC)
+			lcd.print("cm");
+	}
+	else
+		lcd.print("deg");
+
+	lcd.setCursor(0, 1);
+	lcd.print("Shots/hr: ");
+	lcd.print(shots_est);
+
+	while (1) {
+
+		button = Menu.checkInput();
+		
+		if (button == BUTTON_INCREASE || button == BUTTON_DECREASE) {
+			if (button == BUTTON_INCREASE)
+				dist_est++;
+			else if (button == BUTTON_DECREASE)
+				dist_est--;
+			// Clear the old distance estimate, then print the new one
+			lcd.setCursor(9, 0);
+			lcd.print("        ");
+			lcd.setCursor(9, 0);
+			lcd.print(dist_est);
+			
+			// Print the appropriate unit again
+			if (!(motors[p_motor].flags & MOTOR_ROT_FLAG)) {
+				if (units == STANDARD || units == PERCENT)
+					lcd.print("in");
+				else if (units == METRIC)
+					lcd.print("cm");
+			}
+			else
+				lcd.print("deg");
+		}
+		// If the user presses the select button, convert the new distance estimate back into the targets speed / SMS move distance and the new EZ adjust value
+		else if (button == BUTTON_SELECT) {
+			if (!motion_sms){
+				motors[p_motor].target_speed = (float)dist_est / MIN_PER_HR;
+				motors[p_motor].ez_adjust = motors[p_motor].target_speed / motors[p_motor].ez_center_val;
+			}
+			else {
+				motors[p_motor].target_sms_distance = (float)dist_est / shots_est;
+				motors[p_motor].ez_adjust = motors[p_motor].target_sms_distance / motors[p_motor].ez_center_val;
+			}
+			// Break out of the while loop
+			break;
+		}
+		// If the user presses the back button, bail from the while loop, but don't save the changes made
+		else if (button == BUTTON_BACK) {
+			break;
+		}
+	}
+	Menu.enable(true);
+	return;
+}
+
+
+/** EZ Mode Display Screen **/
+byte uiEZModeScreen() {
+	
+	static float ez_adjust_old[3] = { 1.0, 1.0, 1.0};
+
+	// Calculate the minimum interval between shots, print 
+	// the on/off option, and print the cont/SMS option 
+	mainFirstLine();
+
+	lcd.setCursor(14, 0);
+	lcd.print("EZ");
+
+	//USBSerial.println("Refreshing...................");
+
+	// Print the direction and adjust options for the three separate axes
+	for (byte i = 0; i < MOTOR_COUNT; i++) {
+
+		/** If the EZ adjust value has changed, computed the new speed / distance setting **/
+		if (abs(motors[i].ez_adjust - ez_adjust_old[i]) > 0.05) {
+			// Update the motor speed / SMS distance settings
+			EZmodeUpdate(i);
+		}
+
+		// Check to see if the motor is in rotary mode
+		boolean rotary = (motors[i].flags & MOTOR_ROT_FLAG);
+
+		lcd.setCursor((i * 6), 1);
+		if (motors[i].desiredDirection == 0) {
+			if (rotary)
+				lcd.print("-");
+			else
+				lcd.print("L");
+		}
+		else {
+			if (rotary)
+				lcd.print("+");
+			else
+				lcd.print("R");
+		}
+
+		lcd.setCursor((i * 6) + 1, 1);
+		lcd.print("  ");
+		lcd.setCursor((i * 6) + 1, 1);
+
+		// If the EZ adjust range is too high, indicate it by showing asterisks
+		if (motors[i].ez_adjust > EZADJUST_MAX)
+			lcd.print("*.*");
+		// Otherwise, just show the value
+		else
+			lcd.print(motors[i].ez_adjust, 1);
+
+		// Save the new EZ adjust and camera delay values for future comparison
+		ez_adjust_old[i] = motors[i].ez_adjust;
+
+		// Serial output for debugging
+		//USBSerial.print("The EZadjust value is: ");
+		//USBSerial.println(motors[i].ez_adjust);
+		//USBSerial.print("The set speed is: ");
+		//USBSerial.print(motors[i].target_speed);
+		//if (rotary && motion_sms)
+		//	USBSerial.println("deg/move");
+		//else if (rotary && !motion_sms)
+		//	USBSerial.println("deg/min");
+		//else if (!rotary && motion_sms)
+		//	USBSerial.println("inch/move");
+		//else if (!rotary && !motion_sms)
+		//	USBSerial.println("inch/min");
+		//USBSerial.print("The set speed is: ");
+		//USBSerial.print(motorSpeed(i)*100);
+		//USBSerial.println("%");
+		//USBSerial.println("");
+
+	}
+	
+	lcd.setCursor(17, 0);   //moves cursor off screen, prevents a blinking cursor from showing up at the end
+
+	return UI_SCREEN_EZMODE;
+		
+}
 
   
  /** Display Screen for Camera */
@@ -452,12 +678,16 @@ void uiCamScreen() {
     
  lcd.setCursor(9, 1);
  
- lcd.print(STR_FOC);
+ lcd.print("FL");
  
- lcd.print("      ");    //Clears old time
- lcd.setCursor(11, 1);
+ lcd.print("      ");    //Clears old focal length
+ if (camera_focal_length >= 100)
+	 lcd.setCursor(11, 1);
+ else
+	 lcd.setCursor(12, 1);
  
- uiDisplayCamTime(camera_focus);
+ lcd.print(camera_focal_length);
+ lcd.print("mm");
  
  lcd.setCursor(17,0);   //moves cursor off screen, prevents a blinking cursor from showing up at the end
  
@@ -469,73 +699,154 @@ void uiCamScreen() {
 
 void uiMotorScreen(byte p_motor) {
 
+	// Print "Axis" on LCD
+	lcd.print(STR_MOTOR);
 
-  lcd.print(STR_MOTOR);
+	// Motor screen 1 is screen == 2, motor screen 2 is screen == 3, etc.
+	// so subtract 1 before displaying axis number
+	p_motor -= 1;
+
+	// Print which motor screen is being displayed
+	lcd.print(p_motor, DEC);
+
+	// Subtract 1 again so we're working with motors 0, 1, 2 
+	// instead of motors 1, 2, 3
+	p_motor -= 1;
+
+	// Create a pointer to the address of the motors struct
+	MotorDefinition* def = &motors[p_motor];
+	// Which motor are we using?
+	ui_curMotor = p_motor;
+
+	// Print the current move setting, "LEAD", "RMP", "On", or "Off"  
+	if ((def->lead > 0) && (def->flags & MOTOR_UEN_FLAG) && (camera_fired <= (def->lead + def->startShots) || camera_fired > (camera_max_shots - (def->lead + def->startShots))) && running)
+		lcd.print(STR_LEAD);
+	else if (def->flags & MOTOR_RAMP_FLAG || motors[p_motor].inRamp)
+		lcd.print(STR_RAMP);
+	else if (def->flags & MOTOR_UEN_FLAG)
+		lcd.print(STR_EN);
+	else
+		lcd.print(STR_DIS);
+
+	// Print the lead-in / -out values
+	lcd.setCursor(12, 0);
+	lcd.print(STR_RA);
+	uiPad(3, def->lead);
+
+	// Move down to the second line or the display
+	lcd.setCursor(0, 1);
+
+	// Rotary move
+	if (def->flags & MOTOR_ROT_FLAG) {
+
+		// Check current direction and print result
+		if (def->flags & MOTOR_CDIR_FLAG)
+			lcd.print(STR_CW);
+		else
+			lcd.print(STR_CCW);
+	}
+	// Linear move
+	else {
+		// Check current direction and print result
+		if (def->flags & MOTOR_CDIR_FLAG)
+			lcd.print(STR_RIGHT);
+		else
+			lcd.print(STR_LEFT);
+	}
+
+	float		spd;					// The speed or SMS distance to display on the LCD
+	byte		spdPrec;			// Number of decimal places of precision to use in the SMS distance / continuous speed readout
+	static byte old_units = STANDARD;	// Variable to keep track of the units we were using the last time the screen refreshed
+
+	// If we're returning from being in percent mode, update the target speed/distance with that dicated by the last percent/time setting
+	// Do this for all the motors, just not the current one
+	if (units != old_units && old_units == PERCENT) {
+		for (byte i = 0; i < MOTOR_COUNT; i++) {
+			if (!motion_sms)
+				motors[i].target_speed = motorSpeedCalc(i);
+			else
+				motors[i].target_sms_distance = motorSpeedCalc(i);
+		}
+	}
+
+	// Set the speed value to be displayed based on SMS or continuous targets
+	if (motion_sms && (units == STANDARD || units == METRIC) && !ez_mode)
+		spd = motors[p_motor].target_sms_distance;
+	else if (!motion_sms && (units == STANDARD || units == METRIC) && !ez_mode)
+		spd = motors[p_motor].target_speed;
+	else if (!motion_sms && units == PERCENT && !ez_mode)
+		// Multiply by 100 to convert from 0.0-1.0 range to 0-100 range
+		spd = motorSpeed(p_motor) * 100.0;
+	else if (motion_sms && units == PERCENT && !ez_mode)
+		// Multiply by 60 to give move time in seconds
+		spd = motorSpeed(p_motor) * SEC_PER_MIN;
+	else if (ez_mode)
+		spd = motors[p_motor].ez_adjust;
+
+	// If units are metric and we're not in rotary or EZ modes, multiply standard speed by 2.54 to give cm
+	if (units == METRIC && !(motors[p_motor].flags & MOTOR_ROT_FLAG) && !ez_mode)
+		spd *= CM_CONSTANT;
+
+	// Clear old speed
+	lcd.setCursor(1, 1);
+	lcd.print("        ");
+
+	// Position the cursor, pad with a 0 if necessary, and set spdPrec
+		// EZ Mode
+		if (ez_mode) {
+			lcd.setCursor(3, 1);
+			spdPrec = 1;
+		}
+		// Manual Mode
+		else {
+			lcd.setCursor(2, 1);
+			// Compare to 9.9999 instead of 10 because of floating point inaccuracy
+			if (spd < 9.9999) {
+				lcd.print("0");
+			}
+			else if ((int)spd >= 100) {
+				lcd.setCursor(1, 1);
+			}
+			spdPrec = 2;
+		}
+
+	// If in EZ mode and the adjust value has been calculated to be higher than the allowable maximum, indicate with asterisks
+	if (ez_mode && motors[p_motor].ez_adjust > EZADJUST_MAX)
+		lcd.print("*.*");
+	// Print the speed in inches, cm, %, seconds, or EZ units
+	else
+		lcd.print(spd, spdPrec);
+
+	// Print the appropriate unit (but don't print units when in EZ mode)
+	if (!ez_mode && (units == STANDARD || units == METRIC)) {
+		if (motors[p_motor].flags & MOTOR_ROT_FLAG)
+			lcd.print("deg");
+		else if (!(motors[p_motor].flags & MOTOR_ROT_FLAG)){
+			if (units == STANDARD)
+				lcd.print("in");
+			else if (units == METRIC)
+				lcd.print("cm");
+		}
+	}
+	else if (!ez_mode && units == PERCENT) {
+		if (!motion_sms)
+			lcd.print("%");
+		else if (motion_sms)
+			lcd.print("sec");
+	}
+	else if (ez_mode)
+		lcd.print("ez");
   
-  p_motor -= 1;
+	// Print the number of frames used for ramping in and out
+	lcd.setCursor(12, 1);
+	lcd.print(STR_UA);
   
-  lcd.print(p_motor, DEC);
-  
-  p_motor -= 1;
-  
-  
-  MotorDefinition* def = &motors[p_motor];
-  ui_curMotor          = p_motor;
-  
-  if ((def->lead > 0) && (def->flags & MOTOR_UEN_FLAG) && ( camera_fired <= (def->lead + def->startShots) || camera_fired > (camera_max_shots - (def->lead + def->startShots)) ) && running )
-    lcd.print(STR_LEAD);  
-  else if( def->flags & MOTOR_RAMP_FLAG || motors[p_motor].inRamp )
-    lcd.print(STR_RAMP);
-  else if( def->flags & MOTOR_UEN_FLAG )
-    lcd.print(STR_EN);
-  else
-    lcd.print(STR_DIS);
-    
-  lcd.setCursor(12, 0);
-  lcd.print(STR_RA);
-  uiPad(3,def->lead);
-  
-  lcd.setCursor(0, 1);
-  
-  if( def->flags & MOTOR_ROT_FLAG ) {
- 
-    if(def->flags & MOTOR_CDIR_FLAG )
-       lcd.print(STR_CW);
-    else
-       lcd.print(STR_CCW); 
-  }
-  else {
-    if( def->flags & MOTOR_CDIR_FLAG )
-       lcd.print(STR_RIGHT);
-    else
-       lcd.print(STR_LEFT); 
-  }  
-  
-  lcd.print(STR_SPACE);
-  
-  byte spdPrec = (motorMaxSpeedRatio(p_motor) / 100 < 0.1) ? 3 : 2;
-  float    spd = motorSpeedRatio(p_motor);
-  
-  if(motion_sms)
-  {
-    spdPrec = (motorMaxSpeedRatio(p_motor) / 100 < 0.1) ? 3 : 4;      
-  }
-  
-    // show CM instead of inches when in metric mode and linear motion
-  if( ! (def->flags & MOTOR_ROT_FLAG) && disp_metric ) {
-    spd *= CM_CONSTANT;
-  }
-  
-  lcd.print(spd, spdPrec);
-  lcd.print(" ");
-  
-  lcd.setCursor(12, 1);
-  lcd.print(STR_UA);
-  
-  if( def->ramp_start == def->ramp_end )
-    uiPad(3, def->ramp_start);
-  else
-    lcd.print(STR_AST);
+	if( def->ramp_start == def->ramp_end )
+	uiPad(3, def->ramp_start);
+	else
+	lcd.print(STR_AST);
+
+	old_units = units;
       
 }
 
@@ -558,9 +869,9 @@ void uiMotorScreen(byte p_motor) {
 void uiScreenInput(byte p_screen, byte p_button) {
 
   static byte wasScreen = UI_SCREEN_MAIN;
-  static byte uiPos     = 0;
 
-  byte action = 0;
+    byte action = 0;
+	static byte uiPos = 0;
   
 
     // reset cursor if screen has changed
@@ -599,6 +910,18 @@ void uiScreenInput(byte p_screen, byte p_button) {
    else if( p_button == BUTTON_DECREASE ) {
       action = 1;
    }
+
+   // If EZ mode is active, only let the user change the 0.1 place of the EZ adjust value
+   if (ez_mode && (p_screen == UI_SCREEN_MOTOR1 || p_screen == UI_SCREEN_MOTOR2 || p_screen == UI_SCREEN_MOTOR3)){
+	   if (uiPos == 3 && p_button == BUTTON_FORWARD)
+		   uiPos += 2;
+	   else if (uiPos == 6 && p_button == BUTTON_FORWARD)
+		   uiPos++;
+	   else if (uiPos == 6 && p_button == BUTTON_BACK)
+		   uiPos--;
+	   else if (uiPos == 4 && p_button == BUTTON_BACK)
+		   uiPos -= 2;
+   }
   
     // get cursor
   const uiDisplayCursors* thsCursor = ui_dc_list[p_screen];
@@ -630,7 +953,7 @@ void uiScreenInput(byte p_screen, byte p_button) {
     // set cursor enabled, blink, and note position of cursor
   ui_cursor.enabled = 1;
   //lcd.blink();
-
+   
   uiDisplayCursorTarget** targets = reinterpret_cast<uiDisplayCursorTarget**>(thsCursor->targets);
   
   uiDisplayCursorTarget* target = targets[uiPos - 1];

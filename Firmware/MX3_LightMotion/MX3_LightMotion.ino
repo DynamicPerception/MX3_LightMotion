@@ -22,6 +22,13 @@
 
 */
 
+/*
+
+========================================
+Library Includes
+========================================
+
+*/
 
 #include <TimerOne.h>
 #include <Arduino.h>
@@ -35,27 +42,81 @@
 #include "OMEEPROM.h"
 #include "OMMenuMgr.h"
 //#include "OMAxis.h"
-//#include "OMMoCoBus.h"
-//#include "OMMoCoMaster.h"
 
  // Our pin mappings, structs, constants, etc.
 
 #include "MX3_PinMapping.h" 
 #include "MX3_Core.h"
 
+// MoCoBus libraries needed to establish the bus object object,
+// and provide master and node functionalities
+#include "OMMoCoBus.h"
+//#include "OMMoCoNode.h"
+#include "OMMoCoMaster.h"
 
 
+/*
+
+========================================
+MoCoBus Definitions and Declarations
+========================================
+
+*/
+
+// Register and pin definitions for AT90USB1287 chip
+// These are used to enable and handle MoCoBus RS-485 communications
+
+// RS-485 driver enable pin
+#define OMDE_PIN       28
+// The register on which the driver pin is located
+#define OMB_DEREG      PORTD
+// The port name for the driver pin
+#define DOMB_DEPFLAG   PORTD4
+// Receieve buffer register
+#define OMB_SRDREG     UDR1
+// Data register empty flag
+#define OMB_SRRFLAG    UDRE1
+// USART constrol and status register
+#define OMB_SRSREG     UCSR1A
+// Transmit complete flag
+#define OMB_SRTXFLAG   TXC1
+
+
+// Setting device IDs
+char devId[] = "MX3Ctrl!";
+int devVer = 1;
+byte dev_addr = 0;
+boolean node = false;
+
+// Setting the device address (2 is default node address)
+byte devAddr = 2;
+
+// initialize node / master object
+//OMMoCoNode Node = OMMoCoNode(Serial, devAddr, devVer, devId);
+OMMoCoMaster Master = OMMoCoMaster(Serial);
+
+
+
+
+
+/*
+
+========================================
+MX3 Declarations
+========================================
+
+*/
 
   // predefine this function to declare the default argument
 void stopProgram(boolean force_clear = true);
 
 
   // Prep Control Variables that must be defined early
-
+boolean				ez_mode = false;
+boolean			ez_extended = false;
 boolean          motion_sms = false;
 boolean             running = false;
 boolean       motor_running = false;
-boolean           metric_ui = false;
 byte             lcdDisable = 30;
 byte               VFDBright = 3;        // 0 = 25%, 1 = 50%, 2 = 75%, 3 = 100%
 unsigned long    check_time = 0;
@@ -65,8 +126,9 @@ float     sensor_minVoltage = 10.5;
 boolean      sensor_enVWarn = true;
 boolean     sensor_enHeater = false;
 byte              alt_block = 0;
-boolean         disp_metric = 0;
 
+enum unit_types { STANDARD, METRIC, PERCENT, EZ };
+byte         units = STANDARD;
 
 //variables for timer
 unsigned long       start_time = 0;
@@ -89,9 +151,6 @@ OMState      Engine = OMState(7);
  // initialize LCD object
 LiquidCrystal lcd(LCD_RS, LCD_EN, LCD_D4, LCD_D5, LCD_D6, LCD_D7);
 
-//byte nodeAddr 	= 2;
-
-// OMMoCoMaster myBus = OMMoCoMaster(Serial);
 
 unsigned long time = millis();
 
@@ -99,47 +158,76 @@ unsigned long time = millis();
 MotorDefinition motors[] = { MotorDefinition(), MotorDefinition(), MotorDefinition() };
 
 
-
+// PWM Cycle count used for ghetto timer in battery test mode in MX3_UI_MenuActions.ino
+long cycle_count = 0;
 
 void setup() {
+
+/*
+
+========================================
+MoCoBus setup and debugging features
+========================================
+
+*/
+
+  // Start USBSerial to enable debugging through serial terminal
+
+  USBSerial.begin(57600);
   
-//  USBSerial.begin(57600);
-//  
-//  lcd.print("Waiting...");
-//   while( ! USBSerial ) {
-//     delay(10); // do nothing
-//    }
-//    
-//    delay(20);
+  //lcd.print("Waiting...");
+  // while( ! USBSerial ) {
+  //   delay(10); // do nothing
+  //  }
+  //  
+  // delay(20);
+   
+   USBSerial.println("Communication established");
 
-    
+  // Start serial communications to enable MoCoBus  
+ Serial.begin(OM_SER_BPS);
+
+ // Set the enable pin on the rs-485 converter low (enable receieve (high enables transmit))
+ digitalWrite(28, LOW);
+
+ // Set default MoCoBus command handler functions
+ //Node.setHandler(commandHandler);
+ //Node.setBCastHandler(bCastHandler);
 
 
-  
- // Serial.begin(OM_SER_BPS);
+ /*
 
-    // manage restoring EEPROM memory
+ ========================================
+ MX3 setup
+ ========================================
+
+ */
+ 
+ // manage restoring EEPROM memory
  eepromCheck();
  
-    // initalize state engine
+ // initalize state engine
  cycleSetup();
  Engine.state(ST_BLOCK);
  
-   // setup camera defaults
+ // setup camera defaults
  camSetup();
  
-   // setup motor
+ // setup motor
  motorSetup();
  
-   // setup Menu
+ // setup Menu
  uiMenuSetup();
  
-   // Setup Alt I/O
+ // Setup Alt I/O
  altSetup();
  
-   // Setup Sensors
+ // Setup Sensors
  sensorSetup();
- 
+
+ // Refresh the motor power based on the initial battery setting
+ refreshMotors(true);
+
  jumpSetup();
  
 
@@ -159,18 +247,22 @@ void loop() {
 //      USBSerial.print("Flag Check for motor ");
 //      USBSerial.print(i);
 //      USBSerial.print(" is ");
-//      USBSerial.print(((motors[i].flags & MOTOR_CDIR_FLAG == 0)^(motors[i].flags & MOTOR_DIR_FLAG == 0)));
+//      USBSerial.print(((motors[i].flags & MOTOR_CDIR_FLAG == 0)^(motors[i].flags & MOTOR_INVERT_FLAG == 0)));
 //          // set to 10% speed as default
 //      USBSerial.print(" flag & cdir ");
 //      USBSerial.print(motors[i].flags & MOTOR_CDIR_FLAG);
 //      USBSerial.print(" flag & dir ");
-//      USBSerial.println(motors[i].flags & MOTOR_DIR_FLAG);
+//      USBSerial.println(motors[i].flags & MOTOR_INVERT_FLAG);
 //
 //    }
 //    
 //    time = millis();
 //  }
 
+	// If the node flag is set, immediately enter the node mode
+//	if (node) {
+//		nodeMode();
+//	}
   
   static unsigned long  sensor_tm = 0;
    
@@ -190,6 +282,7 @@ void loop() {
 
        // handle UI interaction/updates
    uiCheck();
+
    
    if (!altArraysCompare()){
      altSetup();
@@ -206,8 +299,11 @@ void loop() {
        // check current engine state and handle appropriately
      Engine.checkCycle();
 
-   }
- 
+
+   } 
+
+   // Refresh the motor power if the wait time has been exceeded
+   refreshMotors(false);
 }
 
 
@@ -234,8 +330,11 @@ void stopProgram(boolean force_clear) {
   altOutStop();
 
   motorStop(false);
-   
-  camClear();
+
+  if (force_clear)
+	  Camera.stop();
+  else
+	  camClear();
   
     // Force block on state engine
   Engine.state(ST_BLOCK);
@@ -246,7 +345,7 @@ void startProgram() {
   
   for( byte i = 0; i < MOTOR_COUNT; i++ ) {
       motors[i].startShots = 0;
-      motors[i].onTimePeriods = 0;
+      motors[i].onCycleRatio = 0;
   }
   
      // start program
@@ -258,7 +357,6 @@ void startProgram() {
   camera_tm  = millis();
                     
 }
-
 
 
 

@@ -50,13 +50,16 @@
 void uiCursorToggleRun(byte p_dir) {
   if( running ){
     stopProgram();
-  } else if(camera_timer > 0 && !camera_flag) {
+  } 
+  else if(camera_timer > 0 && !camera_flag) {
     start_time = millis();
     delay_time = start_time;
     camera_flag = true;
-  } else if (camera_flag){
+  } 
+  else if (camera_flag){
     camera_flag = false;
-  } else {
+  } 
+  else {
     startProgram();    
   }
     
@@ -89,37 +92,201 @@ void uiCursorAdjustInt(byte p_dir) {
 
 void uiCursorAdjustSMS(byte p_dir) {
   
-    // can't switch to SMS while running!
+  // can't switch to SMS while running!
   if( running )
     return;
-    
+  
+  // Switch SMS state
   motion_sms = !motion_sms;
-  
-  if(motion_sms)
-  {
-    for(byte i = 0; i < MOTOR_COUNT; i++ ) 
-    {
-      motorDir(i, 0);
-      motorSpeed(i, 0.001);
-      OMEEPROM::write(EE_M0FLAG + (EE_MOTOR_SPACE * i), motors[i].flags);
-      OMEEPROM::write(EE_MORSPEED + (EE_MOTOR_SPACE * i), motors[i].speed);
-    }
+
+  // Arrays to store the current mode speed. Allows
+  // for restoring of last used speed in each state
+  static float continuous_speed[3];
+  static float SMS_speed[3];
+
+  // Emperically tested PWM settings for each mode
+  const int CONTINUOUS_PERIOD = 1200;
+  const int SMS_PERIOD = 300;
+
+  // For SMS mode, set the speed to 0.001 in/s, cm/s, etc.
+  if(motion_sms) {
+	  
+	  for (byte i = 0; i < MOTOR_COUNT; i++) {
+
+		  // Save the continuous speeds for later
+		  continuous_speed[i] = motorSpeed(i);
+
+		  // Set PWM period
+		  motor_pwm_minperiod = SMS_PERIOD;
+
+		  // We don't really want to reset the direction, do we?
+		  // motorDir(i, 0);
+
+		  // Restore the speeds last used in SMS mode
+		  motorSpeed(i, SMS_speed[i] );
+		  OMEEPROM::write(EE_M0FLAG + (EE_MOTOR_SPACE * i), motors[i].flags);
+		  OMEEPROM::write(EE_MORSPEED + (EE_MOTOR_SPACE * i), motors[i].speed);
+	  }
   }
-  else
-  {
-    for(byte i = 0; i < MOTOR_COUNT; i++ ) 
-    {
-      motorDir(i, 0);
-      motorSpeed(i, 0.01);
-      OMEEPROM::write(EE_M0FLAG + (EE_MOTOR_SPACE * i), motors[i].flags);
-      OMEEPROM::write(EE_MORSPEED + (EE_MOTOR_SPACE * i), motors[i].speed);
-    }
+  // Continuous mode
+  else {
+	  for(byte i = 0; i < MOTOR_COUNT; i++ ) {
+		  
+		  // Save the SMS speeds for later
+		  SMS_speed[i] = motorSpeed(i);
+		  
+		  // Set PWM period
+		  motor_pwm_minperiod = CONTINUOUS_PERIOD;
+		  
+		  // Restore the speeds last used in continuous mode
+		  motorSpeed(i, continuous_speed[i] );
+		  OMEEPROM::write(EE_M0FLAG + (EE_MOTOR_SPACE * i), motors[i].flags);
+		  OMEEPROM::write(EE_MORSPEED + (EE_MOTOR_SPACE * i), motors[i].speed);
+	  }
   }
-  
-  OMEEPROM::write(EE_SMS, motion_sms);
-    
-  
+
+  // If we're in EZ mode, update all the motor speeds using the EZ adjust value.
+  if (ez_mode)
+	  EZmodeUpdateAll();
+
+
+  OMEEPROM::write(EE_SMS, motion_sms);  
 }
+
+/** Enter EZ Mode **/
+
+void uiCursorEZmode(byte p_dir){
+
+	// Can't switch to EZ mode while running
+	if (running)
+		return;
+
+	Menu.enable(false);
+
+	// Switch EZ mode state
+	ez_mode = !ez_mode;
+
+	static byte enable_states[MOTOR_COUNT];
+
+	for (byte i = 0; i < MOTOR_COUNT; i++) {
+		// If entering EZ mode, save the current motor enable states and then enable them
+		if (ez_mode) {
+			// Save the MOTOR_UEN_FLAG only if the current state is disabled. This makes the XOR logic work when restoring the states below
+			enable_states[i] = (motors[i].flags & MOTOR_UEN_FLAG) ? 0 : MOTOR_UEN_FLAG;
+			motors[i].flags |= MOTOR_UEN_FLAG;
+		}
+		// If exiting EZ mode, restore the motor enable states
+		else {
+			motors[i].flags ^= enable_states[i];
+		}
+	}
+
+	// If we're entering EZ mode and not exiting it, request setup info
+	if (ez_mode) {
+
+		// Prompt the user to camera focal length
+		lcd.noBlink();
+		lcd.clear();
+		lcd.home();
+		lcd.print("Set focal length");
+		lcd.setCursor(0, 1);
+		lcd.print(camera_focal_length);
+		lcd.setCursor(3, 1);
+		lcd.print("mm");
+
+		// Remain in the prompt until the user hits "select"
+		byte button;
+		while (button != BUTTON_SELECT) {
+
+			button = Menu.checkInput();
+			if (button == BUTTON_INCREASE || button == BUTTON_DECREASE) {
+
+				uiCursorChangeFocalLength(button);
+				lcd.setCursor(0, 1);
+				lcd.print("   ");
+				lcd.setCursor(0, 1);
+				lcd.print(camera_focal_length);
+			}
+		}
+
+		for (byte i = 0; i < MOTOR_COUNT; i++) {
+			// Prompt user to set the motor presets
+			uiMenuPreset(i);
+		}
+
+		for (byte i = 0; i < MOTOR_COUNT; i++) {
+			// Reset the ez_adjust value to 1.0
+			motors[i].ez_adjust = 1.0;
+		}
+
+		
+
+		// Update the motor speeds using the default EZ settings
+		EZmodeUpdateAll();
+	}
+
+	lcd.clear();
+
+	Menu.enable(true);
+
+	OMEEPROM::write(EE_EZMODE, ez_mode);
+}
+
+/*
+
+==============
+EZ Mode Screen Cursors
+==============
+
+*/
+
+// Change EZ Direction
+void uiCursorEZdir0(byte p_dir){
+	uiCursorEZdir(0);
+}
+
+void uiCursorEZdir1(byte p_dir){
+	uiCursorEZdir(1);
+}
+
+void uiCursorEZdir2(byte p_dir){
+	uiCursorEZdir(2);
+}
+
+void uiCursorEZdir(byte p_motor) {
+	motorDirFlip(p_motor);
+	OMEEPROM::write(EE_M0FLAG + (EE_MOTOR_SPACE * p_motor), motors[p_motor].flags);
+}
+
+
+// Change EZ Adjust Value
+void uiCursorEZadjust0(byte p_dir){
+	changeEZadjust(0, p_dir);
+}
+
+void uiCursorEZadjust1(byte p_dir){
+	changeEZadjust(1, p_dir);
+}
+
+void uiCursorEZadjust2(byte p_dir){
+	changeEZadjust(2, p_dir);
+}
+
+void changeEZadjust(byte p_motor, byte p_dir) {
+
+	float increment = p_dir ? EZADJUST_INCREMENT : -EZADJUST_INCREMENT;
+	motors[p_motor].ez_adjust += increment;
+	if (motors[p_motor].ez_adjust < EZADJUST_MIN) {
+		motors[p_motor].ez_adjust = EZADJUST_MIN;
+
+	}
+	else if (motors[p_motor].ez_adjust > EZADJUST_MAX) {
+		motors[p_motor].ez_adjust = EZADJUST_MAX;
+	}
+
+	OMEEPROM::write((EE_EZADJ0 + EE_MOTOR_SPACE_V1_1 * p_motor), motors[p_motor].ez_adjust);
+}
+
 
 /*
 
@@ -227,6 +394,25 @@ void uiCursorChangeFocusTime(byte p_dir) {
     
 }
 
+// Adjust the camera focal length
+void uiCursorChangeFocalLength(byte p_dir) {
+
+	if ((p_dir == BUTTON_INCREASE || p_dir == 1) && camera_focal_length < CAMFL_MAX && camera_focal_length >= CAMFL_MIN)
+		camera_focal_length++;
+	else if ((p_dir == BUTTON_DECREASE || p_dir == 0) && camera_focal_length <= CAMFL_MAX && camera_focal_length > CAMFL_MIN)
+		camera_focal_length--;
+	else
+		camera_focal_length = camera_focal_length;
+
+	// If for some reason the focal length was set outside the acceptable bounds, reset it to the minimum value
+	if (!(camera_focal_length <= CAMFL_MAX && camera_focal_length >= CAMFL_MIN))
+		camera_focal_length = CAMFL_MIN;
+		
+
+	OMEEPROM::write(EE_CAMFL, camera_focal_length);
+
+}
+
 
 /*
 
@@ -261,7 +447,7 @@ void uiCursorChangeMotEn(byte p_dir) {
     }
     else {
       //sets the speed to zero to prevent any jump in the motor when the motor is enabled and the program is on
-      motors[ui_curMotor].onTimePeriods = 0.0;
+      motors[ui_curMotor].onCycleRatio = 0.0;
       
         // program already running when motor turned on?
       if( running ) {
@@ -284,26 +470,111 @@ void uiCursorChangeMotEn(byte p_dir) {
   
 }
 
+/** Helper functions for the changing the motor speed/SMS distance from the UI **/
 
-void uiCursorChangeMotSpd(byte p_dir) {
+void uiCursorChangeMotSpd_100(byte p_dir) {
+	uiCursorChangeMotSpd(p_dir, 100);
+}
+void uiCursorChangeMotSpd_10(byte p_dir) {
+	uiCursorChangeMotSpd(p_dir, 10);
+}
+void uiCursorChangeMotSpd_1(byte p_dir) {
+	uiCursorChangeMotSpd(p_dir, 1);
+}
+void uiCursorChangeMotSpd_0_1(byte p_dir) {
+	uiCursorChangeMotSpd(p_dir, 0.1);
+}
+void uiCursorChangeMotSpd_0_01(byte p_dir) {
+	uiCursorChangeMotSpd(p_dir, 0.01);
+}
 
- float   curSpd = motorSpeed(ui_curMotor);
- float   mod    = .00025;
- 
- if(motion_sms)
- {
-   mod = .00025;
-   curSpd += p_dir ? mod : mod * -1.0;
-   curSpd = curSpd > .1 ? .1 : curSpd < mod ? mod : curSpd;
- }
- else
- {
-   curSpd += p_dir ? motorIncrement : motorIncrement * -1.0;
-   curSpd = curSpd > 1.0 ? 1.0 : curSpd < motorIncrement ? motorIncrement : curSpd;
- }
+/** Change the target speed or SMS distance for the current motor
 
- motorSpeed(ui_curMotor, curSpd);  
- OMEEPROM::write(EE_MORSPEED + (EE_MOTOR_SPACE * ui_curMotor), motors[ui_curMotor].speed);
+	@param p_dir
+	Whether the button press was an increase or decrease
+
+	@param p_mod
+	// By how much the speed value should be changed
+
+	@author
+	M. Ploof
+*/
+void uiCursorChangeMotSpd(byte p_dir, float p_mod) {
+
+	float		curSpd;												// Value used to set motorSpeedCalc() for continuous moves or motorSpeed() for SMS moves	
+
+	// Percent mode
+	if (units == PERCENT && !ez_mode) {
+		if (motion_sms){
+
+			// Convert from power setting to seconds
+			curSpd = motors[ui_curMotor].speed * SEC_PER_MIN;
+			// Add or subtract the necessary seconds
+			curSpd += p_dir ? p_mod : p_mod * -1.0;
+			// Convert back to power setting 0.0-1.0
+			curSpd /= SEC_PER_MIN;
+
+		}
+		else {
+			curSpd = motors[ui_curMotor].speed;
+			// Divide the modifier by 100 since the user sees a value 0-100, but the power setting is really 0.0-1.0
+			p_mod /= 100;
+			curSpd += p_dir ? p_mod : p_mod * -1.0;
+			curSpd = curSpd > 1.0 ? 1.0 : curSpd < 0.0 ? 0.0 : curSpd;
+		}
+
+		motorSpeed(ui_curMotor, curSpd);
+
+	}
+	// Standard or metric mode
+	else if ((units == STANDARD || units == METRIC) && !ez_mode) {
+		// SMS speed change
+		if (motion_sms) {
+			// Adjusting up or down?
+			motors[ui_curMotor].target_sms_distance += p_dir ? p_mod : p_mod * -1.0;
+			// If we try to set the distance to less than zero, set it to zero
+			motors[ui_curMotor].target_sms_distance = motors[ui_curMotor].target_sms_distance > 0 ? motors[ui_curMotor].target_sms_distance : 0;
+			// Divide the distance by the max speed for this motor to determine what fraction of a minute it should stay on to complete the SMS move
+			curSpd = motors[ui_curMotor].target_sms_distance / (motorMaxSpeed(ui_curMotor));
+
+			//USBSerial.println("SMS change");
+			//USBSerial.print("Setting speed to: ");
+			//USBSerial.println(curSpd, 5);
+
+			// Set the motor power perecent directly
+			motorSpeed(ui_curMotor, curSpd);
+		}
+
+		// Continuous speed change
+		else {
+			//mod = motorIncrement;
+			motors[ui_curMotor].target_speed += p_dir ? p_mod : p_mod * -1.0;
+			// If the user attempts to set the motor below 0, set it to 0. If the user attempts to set the motor higher than the maximum possible speed for the battery voltage, set it to the max speed
+			motors[ui_curMotor].target_speed = motors[ui_curMotor].target_speed < 0 ? 0 : motors[ui_curMotor].target_speed > motorMaxSpeedCompensated(ui_curMotor) ? motorMaxSpeedCompensated(ui_curMotor) : motors[ui_curMotor].target_speed;
+			curSpd = motors[ui_curMotor].target_speed;
+			
+			//USBSerial.println("Continuous change");
+			//USBSerial.print("Setting speed to: ");
+			//USBSerial.println(curSpd, 4);
+
+			// Set the motor power percent via the speed calculation function
+			motorSpeedCalc(ui_curMotor, curSpd);
+		}
+	}
+	// EZ mode
+	else if (ez_mode) {
+		// Adjust the value
+		motors[ui_curMotor].ez_adjust += p_dir ? EZADJUST_INCREMENT : EZADJUST_INCREMENT * -1.0;
+		// Make sure it's within the acceptable bounds
+		motors[ui_curMotor].ez_adjust = motors[ui_curMotor].ez_adjust < EZADJUST_MIN ? EZADJUST_MIN : motors[ui_curMotor].ez_adjust > EZADJUST_MAX ? EZADJUST_MAX : motors[ui_curMotor].ez_adjust;
+		// Update the real speed
+		EZmodeUpdate(ui_curMotor);
+		// Save the EZ adjuste value to EEPROM
+		OMEEPROM::write((EE_EZADJ0 + EE_MOTOR_SPACE_V1_1*ui_curMotor), motors[ui_curMotor].ez_adjust);
+	}
+	
+	OMEEPROM::write(EE_MORSPEED + (EE_MOTOR_SPACE * ui_curMotor), motors[ui_curMotor].speed);
+
 }
 
 void uiCursorChangeMotDir(byte p_dir) {

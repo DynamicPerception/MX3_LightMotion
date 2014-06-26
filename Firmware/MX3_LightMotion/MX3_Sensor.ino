@@ -115,10 +115,9 @@ float sensorTemp(byte p_sensor) {
  */
  
 void sensorPoll() {
-  
-    // check input voltage
-   float volts = sensorVoltage();
-      
+
+	float volts = sensorVoltage();
+   
    if( sensor_enVWarn ) {
     
       // ignore voltage warning if running on USB only
@@ -133,9 +132,8 @@ void sensorPoll() {
      sensor_statFlags &= ~SENS_VOLT_FLAG;
    }
    
-     // check total motor current draw
-
-   if(sensorCurrent() > MAX_CURRENT) {
+	// check total motor current draw
+	if(sensorCurrent() > MAX_CURRENT) {
      sensor_statFlags |= SENS_CURRENT_FLAG; 
      motorStop(); // force a motor stop
    }
