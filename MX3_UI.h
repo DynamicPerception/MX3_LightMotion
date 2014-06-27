@@ -85,6 +85,7 @@ const char MX3_C2STR[]   =  "Perception";
   // run, stop, and ext must be exact same length, pad with spaces
 const char STR_RUN[]     =  "On ";
 const char STR_STOP[]    =  "Off";
+const char STR_PAUSE[]	 =	"Pse";
 const char STR_TIM[]     =  "TIM";
 const char STR_EXT[]     =  "Ext";
 const char STR_TIME[]    =  "Tm: ";
@@ -175,11 +176,12 @@ MENU_SELECT_ITEM   ui_sel_off = { 0, {"Off"} };
 MENU_SELECT_ITEM  ui_sel_altstart    = { ALT_START,             {"Start"} };
 MENU_SELECT_ITEM  ui_sel_altstop     = { ALT_STOP,               {"Stop"} };
 MENU_SELECT_ITEM  ui_sel_alttog      = { ALT_TOGGLE,           {"Toggle"} };
-MENU_SELECT_ITEM  ui_sel_altext      = { ALT_EXTINT,         {"Ext. Int"} };
-MENU_SELECT_ITEM  ui_sel_altdir      = { ALT_DIR,                {"Dir."} };
-MENU_SELECT_ITEM  ui_sel_altoutb     = { ALT_OUT_B,            {"Out B4"} };
-MENU_SELECT_ITEM  ui_sel_altouta     = { ALT_OUT_A,           {"Out Aft"} };
+MENU_SELECT_ITEM  ui_sel_altext      = { ALT_EXTINT,    {"Ext. Interval"} };
+MENU_SELECT_ITEM  ui_sel_altdir      = { ALT_DIR,      {"Direction Flip"} };
+MENU_SELECT_ITEM  ui_sel_altoutb     = { ALT_OUT_B,        {"Out Before"} };
+MENU_SELECT_ITEM  ui_sel_altouta     = { ALT_OUT_A,         {"Out After"} };
 MENU_SELECT_ITEM  ui_sel_altstopmot  = { ALT_STOP_MOTORS, {"Stop Motors"} };
+MENU_SELECT_ITEM  ui_sel_altpause	 = { ALT_PAUSE_PRGM, { "Pause Program" } };
 
 MENU_SELECT_ITEM ui_sel_falling = { FALLING, {"Falling"} };
 MENU_SELECT_ITEM ui_sel_rising  = { RISING,  {"Rising"} };
@@ -194,7 +196,7 @@ MENU_SELECT_ITEM   ui_sel_units_percent		= { PERCENT, { "% / Sec" } };
 
 MENU_SELECT_LIST  ui_sel_list_units[] = { &ui_sel_units_standard, &ui_sel_units_metric, &ui_sel_units_percent };
 MENU_SELECT_LIST  ui_sel_list_onoff[]  = { &ui_sel_off, &ui_sel_on };
-MENU_SELECT_LIST  ui_sel_list_alt[]    = { &ui_sel_off, &ui_sel_altstart, &ui_sel_altstop, &ui_sel_alttog, &ui_sel_altext, &ui_sel_altdir, &ui_sel_altoutb, &ui_sel_altouta, &ui_sel_altstopmot };
+MENU_SELECT_LIST  ui_sel_list_alt[] = { &ui_sel_off, &ui_sel_altstart, &ui_sel_altstop, &ui_sel_alttog, &ui_sel_altext, &ui_sel_altdir, &ui_sel_altoutb, &ui_sel_altouta, &ui_sel_altstopmot, &ui_sel_altpause };
 MENU_SELECT_LIST  ui_sel_list_altOut[] = { &ui_sel_off, &ui_sel_altoutb, &ui_sel_altouta };
 MENU_SELECT_LIST  ui_sel_list_dir[]    = { &ui_sel_falling, &ui_sel_rising };
 MENU_SELECT_LIST  ui_sel_list_hilo[]    = { &ui_sel_high, &ui_sel_low };

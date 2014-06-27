@@ -293,7 +293,7 @@ const float MOTOR_MAX_RPM = 3000.0; // The max no-load speed of the motors witho
 
 float pwmRMS(float p_value, boolean p_find_percent) {
 
-	// If we're looking for the voltage from a 
+	// If we're looking for the voltage from a power setting
 	if (!p_find_percent) {
 		p_value *= 100; // Multiply by 100 to convert from decimal to true percentage 0-100
 		float rms; // The RMS voltage of the PWM output
@@ -438,9 +438,10 @@ void refreshMotors(boolean force_refresh) {
 	static int delay_old = 0;
 	static boolean delay_changed = false;
 
+
 	// If the current target speed is above the max possible speed upon refresh, update it to the new max speed
 	for (byte i = 0; i < MOTOR_COUNT; i++) {
-		motors[i].target_speed = motors[i].target_speed < 0 ? 0 : motors[i].target_speed > motorMaxSpeedCompensated(i) ? motorMaxSpeedCompensated(i) : motors[i].target_speed;
+			motors[i].target_speed = motors[i].target_speed < 0 ? 0 : motors[i].target_speed > motorMaxSpeedCompensated(i) ? motorMaxSpeedCompensated(i) : motors[i].target_speed;
 	}
 
 	if (millis() - time_at_refresh > WAIT && (ez_mode || (running && units != PERCENT)) || force_refresh) {
@@ -452,10 +453,21 @@ void refreshMotors(boolean force_refresh) {
 		
 		for (byte i = 0; i < MOTOR_COUNT; i++) {
 
-			if (!ez_mode && !motion_sms) {
+			// Don't modify the speed if the motor is currently ramping
+			if (motors[i].inRamp){
+				USBSerial.print("Motor ");
+				USBSerial.print(i);
+				USBSerial.print(" ramp state: ");
+				USBSerial.println(motors[i].inRamp);
+				continue;
+			}
+			// If running in continuous manual mode
+			else if (!ez_mode && !motion_sms) {
 
 				motorSpeedCalc(i, motors[i].target_speed);
+
 			}
+			// If running in SMS manual mode
 			else if (!ez_mode && motion_sms) {
 				motorSpeedCalc(i, motors[i].target_sms_distance);
 			}
@@ -537,7 +549,7 @@ void EZmodeUpdate(byte p_motor){
 	}
 
 	// If continuous mode is enabled, calculate the speed required to move the same distance per shot as in SMS mode.
-	// Divide the distance by the time between camera shots, then convert units to in/min or deg/min by multiplying SEC_PER_MIN.
+	// Divide the distance by the time between camera shots, then convert units to in/min or deg/min by multiplying by SEC_PER_MIN.
 	if (!motion_sms) {
 
 		// Determine the speed necessary to emulate the SMS move center value at a continuous speed
@@ -806,7 +818,7 @@ void motorSpeedCalc(byte p_motor, float p_desired_spd_dist, boolean p_ramp) {
 
 float voltageCompensation(float compensated_value) {
 
-	const float EMPERICAL_ADJUST = 1.06; // Returned voltages seemed to be about 5% low, so multiply by this factor for continuous moves
+	const float EMPERICAL_ADJUST = 1.06; // Returned voltages seemed to be about 6% low, so multiply by this factor for continuous moves
 	
 	// For continuous moves, apply the emperical adjustment factor
 	if (!motion_sms)

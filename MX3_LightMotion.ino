@@ -116,6 +116,7 @@ boolean				ez_mode = false;
 boolean			ez_extended = false;
 boolean          motion_sms = false;
 boolean             running = false;
+boolean				 paused = false;
 boolean       motor_running = false;
 byte             lcdDisable = 30;
 byte               VFDBright = 3;        // 0 = 25%, 1 = 50%, 2 = 75%, 3 = 100%
@@ -175,12 +176,12 @@ MoCoBus setup and debugging features
 
   USBSerial.begin(57600);
   
-  //lcd.print("Waiting...");
-  // while( ! USBSerial ) {
-  //   delay(10); // do nothing
-  //  }
-  //  
-  // delay(20);
+  lcd.print("Waiting...");
+   while( ! USBSerial ) {
+     delay(10); // do nothing
+    }
+    
+   delay(20);
    
    USBSerial.println("Communication established");
 
@@ -313,9 +314,13 @@ void pauseProgram() {
      
   if( alt_block )
     altOutStop();
-    
+
   Camera.stop();
   running = false;
+  paused = true;
+
+  if (!motion_sms)
+	  motorStop(false);
 }
 
 void stopProgram(boolean force_clear) {
@@ -342,19 +347,27 @@ void stopProgram(boolean force_clear) {
 }
 
 void startProgram() {
+
+	// If resuming from a paused state, unpause and don't reset lead-in / ramping counters
+	if (paused){
+		paused = false;
+	}
+
+	else {
+		camClear();
+		for (byte i = 0; i < MOTOR_COUNT; i++) {
+			motors[i].startShots = 0;
+			motors[i].onCycleRatio = 0;
+		}
+	}
   
-  for( byte i = 0; i < MOTOR_COUNT; i++ ) {
-      motors[i].startShots = 0;
-      motors[i].onCycleRatio = 0;
-  }
+		// start program
+	running = true;
   
-     // start program
-  running = true;
+	Engine.state(ST_CLEAR); 
   
-  Engine.state(ST_CLEAR); 
-  
-  check_time = millis();
-  camera_tm  = millis();
+	check_time = millis();
+	camera_tm  = millis();
                     
 }
 

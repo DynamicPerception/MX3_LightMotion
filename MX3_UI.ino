@@ -399,6 +399,9 @@ void mainFirstLine(){
 	else if (camera_flag){
 		lcd.print(STR_TIM);
 	}
+	else if (paused){
+		lcd.print(STR_PAUSE);
+	}
 	else {
 		lcd.print(STR_STOP);
 	}

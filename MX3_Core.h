@@ -151,6 +151,7 @@ const byte         ALT_DIR = 5;
 const byte       ALT_OUT_B = 6;
 const byte       ALT_OUT_A = 7;
 const byte ALT_STOP_MOTORS = 8;
+const byte  ALT_PAUSE_PRGM = 9;
 
 const byte ALT_OUT_FLAG_B = B00010000;
 const byte ALT_OUT_FLAG_A = B00000001;
