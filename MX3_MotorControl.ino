@@ -116,53 +116,6 @@ void motorSetup() {
   
 }
 
-/** Set Target Speed for a Given Motor
-
-Sets target speed in real units
-
-@param p_motor
-The motor to set the speed for, 0, 1, or 2
-
-@param p_speed
-The target motor speed in inches/min or deg/min
-
-@author
-M. Ploof
-*/
-
-void setTargetSpeed(byte p_motor, float p_speed) {
-
-	motors[p_motor].target_speed = p_speed;
-
-	// Save the new target speed to EEPROM
-	OMEEPROM::write(EE_DES_SPEED0 + EE_MOTOR_SPACE_V1_1 * p_motor, motors[p_motor].target_speed);
-
-}
-
-/** Set Target SMS Distance for a Given Motor
-
-Sets target SMS distance in real units
-
-@param p_motor
-The motor to set the speed for, 0, 1, or 2
-
-@param p_speed
-The target motor SMS distance in inches/move or deg/move
-
-@author
-M. Ploof
-*/
-
-void setTargetDist(byte p_motor, float p_dist) {
-
-	motors[p_motor].target_sms_distance = p_dist;
-
-	// Save the new target speed to EEPROM
-	OMEEPROM::write(EE_DES_SMSDIST0 + EE_MOTOR_SPACE_V1_1 * p_motor, motors[p_motor].target_sms_distance);
-
-}
-
-
 /** Set Speed Percent for a Given Motor
  
  Sets speed for a given motor as a percentage of time, per minute, that the motor
@@ -231,8 +184,14 @@ void motorSpeed(byte p_motor, float p_rel, boolean p_ramp) {
 	if (ez_mode && !motion_sms && p_rel < 0.05) {
 		p_rel = 0.05;
 		motors[p_motor].speed = p_rel;
-		setTargetSpeed(p_motor, motorSpeedCalc(p_motor));
+		motors[p_motor].target_speed = motorSpeedCalc(p_motor);
 		motors[p_motor].ez_adjust = motors[p_motor].target_speed / motors[p_motor].ez_center_val;
+
+		USBSerial.print("Power too low, new target speed: ");
+		USBSerial.println(motors[p_motor].target_speed);
+
+		USBSerial.print("New EZ adjust value: ");
+		USBSerial.println(motors[p_motor].target_speed);
 		return;
 
 	}
@@ -240,8 +199,14 @@ void motorSpeed(byte p_motor, float p_rel, boolean p_ramp) {
 	else if (ez_mode && !motion_sms && p_rel > 1.0) {
 		p_rel = 0.95;
 		motors[p_motor].speed = p_rel;
-		setTargetSpeed(p_motor, motorSpeedCalc(p_motor));
+		motors[p_motor].target_speed = motorSpeedCalc(p_motor);
 		motors[p_motor].ez_adjust = motors[p_motor].target_speed / motors[p_motor].ez_center_val;
+
+		USBSerial.print("Power too high, new target speed: ");
+		USBSerial.println(motors[p_motor].target_speed);
+
+		USBSerial.print("New EZ adjust value: ");
+		USBSerial.println(motors[p_motor].target_speed);
 		return;
 
 	}
@@ -476,8 +441,7 @@ void refreshMotors(boolean force_refresh) {
 
 	// If the current target speed is above the max possible speed upon refresh, update it to the new max speed
 	for (byte i = 0; i < MOTOR_COUNT; i++) {
-		float speed_check = motors[i].target_speed < 0 ? 0 : motors[i].target_speed > motorMaxSpeedCompensated(i) ? motorMaxSpeedCompensated(i) : motors[i].target_speed;
-		setTargetSpeed(i, speed_check);
+			motors[i].target_speed = motors[i].target_speed < 0 ? 0 : motors[i].target_speed > motorMaxSpeedCompensated(i) ? motorMaxSpeedCompensated(i) : motors[i].target_speed;
 	}
 
 	if (millis() - time_at_refresh > WAIT && (ez_mode || (running && units != PERCENT)) || force_refresh) {
@@ -516,7 +480,7 @@ void refreshMotors(boolean force_refresh) {
 				motorSpeedCalc(i,motors[i].target_speed);
 			}
 			else if (ez_mode && motion_sms && !(fl_changed || delay_changed)) {
-				motorSpeedCalc(i, motors[i].target_sms_distance);
+				motorSpeedCalc(i, motors[i].target_speed);
 			}
 		}
 
@@ -592,8 +556,8 @@ void EZmodeUpdate(byte p_motor){
 		motors[p_motor].ez_center_val = (motors[p_motor].ez_center_val / camera_delay) * SEC_PER_MIN;
 
 		// Multiply that speed by the ez_adjust value
-		float speed_calc = motors[p_motor].ez_center_val*motors[p_motor].ez_adjust;
-		setTargetSpeed(p_motor, speed_calc);
+		motors[p_motor].target_speed = motors[p_motor].ez_center_val*motors[p_motor].ez_adjust;
+
 
 		// Set the speed percentage based upon the calculated speed
 		motorSpeedCalc(p_motor, motors[p_motor].target_speed, false);
@@ -611,8 +575,7 @@ void EZmodeUpdate(byte p_motor){
 	else {
 
 		// Save the calculated speed
-		float speed_temp = motors[p_motor].ez_center_val*motors[p_motor].ez_adjust;
-		setTargetDist(p_motor, speed_temp);
+		motors[p_motor].target_sms_distance = motors[p_motor].ez_center_val*motors[p_motor].ez_adjust;
 
 		// Set the speed percentage based upon the calculated speed
 		motorSpeedCalc(p_motor, motors[p_motor].target_sms_distance, false);
