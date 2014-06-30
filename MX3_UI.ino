@@ -487,12 +487,12 @@ void uiEZTimeEstimate2(){
 
 void uiEZTimeEstimate(byte p_motor) {
 
-	Menu.enable(false);
 	lcd.noBlink();
+	Menu.enable(false);
+	lcd.setCursor(9, 0);
 
 	int dist_est;	// Estimate of the distance/hr based on currnt speed / SMS settings --> Can by modified by user to alter speed setting
 	int shots_est;	// Estimate of shots/hr
-	byte button;
 
 	shots_est = (SEC_PER_MIN / camera_delay) * MIN_PER_HR;
 
@@ -503,8 +503,14 @@ void uiEZTimeEstimate(byte p_motor) {
 
 	lcd.clear();
 	lcd.home();
-	lcd.print("Dist/hr: ");
-	lcd.print(dist_est);
+	lcd.print("Dist/hr:");
+
+	if (dist_est > 9999)
+		lcd.print(">9999");
+	else {
+		lcd.print(" ");
+		lcd.print(dist_est);
+	}	
 	if (!(motors[p_motor].flags & MOTOR_ROT_FLAG)) {
 		if (units == STANDARD || units == PERCENT)
 			lcd.print("in");
@@ -520,19 +526,27 @@ void uiEZTimeEstimate(byte p_motor) {
 
 	while (1) {
 
-		button = Menu.checkInput();
+		byte button = Menu.checkInput();
 		
 		if (button == BUTTON_INCREASE || button == BUTTON_DECREASE) {
+			
 			if (button == BUTTON_INCREASE)
 				dist_est++;
 			else if (button == BUTTON_DECREASE)
 				dist_est--;
+
 			// Clear the old distance estimate, then print the new one
-			lcd.setCursor(9, 0);
+			lcd.setCursor(8, 0);
 			lcd.print("        ");
-			lcd.setCursor(9, 0);
-			lcd.print(dist_est);
-			
+			lcd.setCursor(8, 0);
+
+			if (dist_est > 9999)
+				lcd.print(">9999");
+			else {
+				lcd.print(" ");
+				lcd.print(dist_est);
+			}
+
 			// Print the appropriate unit again
 			if (!(motors[p_motor].flags & MOTOR_ROT_FLAG)) {
 				if (units == STANDARD || units == PERCENT)
@@ -543,21 +557,18 @@ void uiEZTimeEstimate(byte p_motor) {
 			else
 				lcd.print("deg");
 		}
+	
 		// If the user presses the select button, convert the new distance estimate back into the targets speed / SMS move distance and the new EZ adjust value
 		else if (button == BUTTON_SELECT) {
 			if (!motion_sms){
-				motors[p_motor].target_speed = (float)dist_est / MIN_PER_HR;
+				setTargetSpeed(p_motor, ((float)dist_est / MIN_PER_HR));
 				motors[p_motor].ez_adjust = motors[p_motor].target_speed / motors[p_motor].ez_center_val;
 			}
 			else {
-				motors[p_motor].target_sms_distance = (float)dist_est / shots_est;
+				setTargetDist(p_motor, ((float)dist_est / shots_est));
 				motors[p_motor].ez_adjust = motors[p_motor].target_sms_distance / motors[p_motor].ez_center_val;
 			}
 			// Break out of the while loop
-			break;
-		}
-		// If the user presses the back button, bail from the while loop, but don't save the changes made
-		else if (button == BUTTON_BACK) {
 			break;
 		}
 	}
@@ -766,9 +777,9 @@ void uiMotorScreen(byte p_motor) {
 	if (units != old_units && old_units == PERCENT) {
 		for (byte i = 0; i < MOTOR_COUNT; i++) {
 			if (!motion_sms)
-				motors[i].target_speed = motorSpeedCalc(i);
+				setTargetSpeed(i, motorSpeedCalc(i));
 			else
-				motors[i].target_sms_distance = motorSpeedCalc(i);
+				setTargetDist(i, motorSpeedCalc(i));
 		}
 	}
 
