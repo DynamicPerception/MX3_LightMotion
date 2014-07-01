@@ -120,8 +120,11 @@ void uiCursorAdjustSMS(byte p_dir) {
 		  // Set PWM period
 		  motor_pwm_minperiod = SMS_PERIOD;
 
-		  // Restore the speeds last used in SMS mode
-		  motorSpeed(i, SMS_dist[i]);
+		  // Refresh the motor power settings. Do this just once, since refeshMotors() refreshes them all
+		  if (i == (MOTOR_COUNT - 1))
+			  refreshMotors(true);
+
+		  // Save the new settings
 		  OMEEPROM::write(EE_M0FLAG + (EE_MOTOR_SPACE * i), motors[i].flags);
 	  }
   }
@@ -396,7 +399,7 @@ void uiCursorChangeFocusTime(byte p_dir) {
     
 }
 
-// Adjust the camera focal length
+ //Adjust the camera focal length
 void uiCursorChangeFocalLength(byte p_dir) {
 
 	if ((p_dir == BUTTON_INCREASE || p_dir == 1) && camera_focal_length < CAMFL_MAX && camera_focal_length >= CAMFL_MIN)
@@ -543,8 +546,12 @@ void uiCursorChangeMotSpd(byte p_dir, float p_mod) {
 			//USBSerial.print("Setting speed to: ");
 			//USBSerial.println(curSpd, 5);
 
+			/*
 			// Set the motor power perecent directly
 			motorSpeed(ui_curMotor, curSpd);
+			*/
+
+			motorSpeedCalc(ui_curMotor, motors[ui_curMotor].target_sms_distance);
 
 			// Save new SMS distance
 			OMEEPROM::write((EE_DES_SMSDIST0 + EE_MOTOR_SPACE_V1_1 * ui_curMotor), motors[ui_curMotor].target_sms_distance);

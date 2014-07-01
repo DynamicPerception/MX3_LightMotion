@@ -135,30 +135,30 @@ void motorSetup() {
  */
  
 void motorSpeed(byte p_motor, float p_rel, boolean p_ramp) {
- 
-    // periods off between each on period to achieve percentage of time moving per minute
-  
-//  motor_pwm_maxperiod  = ( 60000000.0 / (float) motor_pwm_minperiod );
-//  
-//  if( p_rel <= 0.0 ) {
-//      motors[p_motor].onCycleRatio = 0.0;
-//  }
-//  else if( p_rel >= 1.0 ) {
-//      motors[p_motor].onCycleRatio = motor_pwm_maxperiod;
-//  }
-//  else {
-//      float offTime       = (1.0 - p_rel) * motor_pwm_maxperiod;
-//      float onTime        = motor_pwm_maxperiod - offTime;
-//      float onCycleRatio = onTime / offTime;
-//      motors[p_motor].onCycleRatio = onCycleRatio;
-//  }
+
+	// periods off between each on period to achieve percentage of time moving per minute
+
+	//  motor_pwm_maxperiod  = ( 60000000.0 / (float) motor_pwm_minperiod );
+	//  
+	//  if( p_rel <= 0.0 ) {
+	//      motors[p_motor].onCycleRatio = 0.0;
+	//  }
+	//  else if( p_rel >= 1.0 ) {
+	//      motors[p_motor].onCycleRatio = motor_pwm_maxperiod;
+	//  }
+	//  else {
+	//      float offTime       = (1.0 - p_rel) * motor_pwm_maxperiod;
+	//      float onTime        = motor_pwm_maxperiod - offTime;
+	//      float onCycleRatio = onTime / offTime;
+	//      motors[p_motor].onCycleRatio = onCycleRatio;
+	//  }
 
 	USBSerial.print("Requested power for motor");
 	USBSerial.print(p_motor);
 	USBSerial.print(": ");
 	USBSerial.println(p_rel);
 
-	// Don't allow the speed to be set below 10% or above 100% of full power if we're in continuous mode and EZ mode
+	// Let the user know if the desired speed is too high or low for continuous mode
 	if (p_rel < 0.05 && !motion_sms && ez_mode) {
 		lcd.clear();
 		lcd.home();
@@ -195,8 +195,8 @@ void motorSpeed(byte p_motor, float p_rel, boolean p_ramp) {
 		return;
 
 	}
-	// Don't let the motor power go above 100% at any time
-	else if (ez_mode && !motion_sms && p_rel > 1.0) {
+	// Don't let the motor power go above 100% at any time during continuous moves
+	else if (!motion_sms && p_rel > 1.0) {
 		p_rel = 0.95;
 		motors[p_motor].speed = p_rel;
 		motors[p_motor].target_speed = motorSpeedCalc(p_motor);
@@ -210,8 +210,6 @@ void motorSpeed(byte p_motor, float p_rel, boolean p_ramp) {
 		return;
 
 	}
-
-
 
 	// Assign the new value to the motor's speed setting
 	motors[p_motor].speed         = p_rel;
@@ -786,6 +784,29 @@ void motorSpeedCalc(byte p_motor, float p_desired_spd_dist, boolean p_ramp) {
 		//USBSerial.println(p_desired_spd_dist);
 		//USBSerial.print("Max motor output RPM");
 		//USBSerial.println(motorMaxSpeed(p_motor));
+
+		// If running in rotary SMS mode... 
+		if (motion_sms && (motors[p_motor].flags & MOTOR_ROT_FLAG)){
+			USBSerial.println("Ready for some correction Action-Jackson");
+			// and the user wants a move of less than 1 degree, apply the empirical correction factor from the correction table
+			if (p_desired_spd_dist <= 1.0){
+				byte lookup_val = motors[p_motor].target_sms_distance * 100;
+				USBSerial.print("Desired move size is: ");
+				USBSerial.println(motors[p_motor].target_sms_distance, 4);
+				USBSerial.print("Lookup value is: ");
+				USBSerial.println(lookup_val);
+				USBSerial.print("Table value is: ");
+				USBSerial.println(correction_table[lookup_val], 4);
+				USBSerial.print("Time setting was: ");
+				USBSerial.println(p_desired_spd_dist, 5);
+				p_desired_spd_dist *= correction_table[lookup_val];
+				USBSerial.print("Time setting is now: ");
+				USBSerial.println(p_desired_spd_dist, 5);
+			}
+			// and the user wants a move between 1 and 5 degrees, apply the empirical static correction factor
+			else if (p_desired_spd_dist > 1.0 && p_desired_spd_dist <= 5.0)
+				p_desired_spd_dist *= STATIC_CORRECTION;
+		}
 		
 		power_pct = p_desired_spd_dist / motorMaxSpeed(p_motor); 
 		//

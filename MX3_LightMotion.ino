@@ -137,6 +137,8 @@ unsigned long     camera_timer = 0;
 unsigned long      delay_time  = 0;
 bool               camera_flag = false;
 
+float correction_table[100];
+const float STATIC_CORRECTION = 1.05;
 
 
  // initialize core objects
@@ -176,10 +178,10 @@ MoCoBus setup and debugging features
 
   USBSerial.begin(57600);
   
-  //lcd.print("Waiting...");
-  // while( ! USBSerial ) {
-  //   delay(10); // do nothing
-  //  }
+  lcd.print("Waiting...");
+   while( ! USBSerial ) {
+     delay(10); // do nothing
+    }
     
    delay(20);
    
@@ -225,6 +227,23 @@ MoCoBus setup and debugging features
  
  // Setup Sensors
  sensorSetup();
+
+ // Initialize correction lookup table for correcting rotational SMS moves
+ // Values for moves > 0.20 degrees are based on an empirical 4th order polynomial
+ // Values for moves <= 0.20 degress are basedon a power function fit
+ for (byte i = 1; i <= 100; i++){
+	 float degrees = (float)i / 100.0;
+	 if (i <= 20)
+		 correction_table[i] = 0.902349032 * pow(degrees, 0.6473069713) / degrees;
+	 else {
+		 correction_table[i] =
+			 4.1828928087055699e+000 * pow(degrees, 0)
+			 + -1.5948465805487203e+001 * pow(degrees, 1)
+			 + 3.3103884510080256e+001 * pow(degrees, 2)
+			 + -3.1003023885246094e+001 * pow(degrees, 3)
+			 + 1.0822107570207381e+001 * pow(degrees, 4);
+	 }
+ }
 
  // Refresh the motor power based on the initial battery setting
  refreshMotors(true);
