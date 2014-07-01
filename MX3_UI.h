@@ -271,13 +271,14 @@ MENU_VALUE   ui_in_m0_ratio    = { TYPE_FLOAT_1000, 5000, 0, MENU_TARGET(&motors
 
 MENU_ITEM    ui_it_m0_pres     = { {"Motor Preset"}, ITEM_ACTION, 0, MENU_TARGET(uiMenuPresetOne) };
 MENU_ITEM    ui_it_m0_man      = { {"Manual Move"},  ITEM_ACTION, 0, MENU_TARGET(uiMenuManualOne) };
-MENU_ITEM	 ui_it_m0_est	   = { { "Dist/Shots Est"}, ITEM_ACTION, 0, MENU_TARGET(uiEZTimeEstimate0) };
+MENU_ITEM	 ui_it_m0_dist	   = { { "Set Dist/hr" }, ITEM_ACTION, 0, MENU_TARGET(uiDistEstimate0) };
+MENU_ITEM	 ui_it_m0_shots	   = { { "Set Shots/hr" }, ITEM_ACTION, 0, MENU_TARGET(uiShotsEstimate0) };
 MENU_ITEM    ui_it_m0_rot      = { {"Rotary"},       ITEM_VALUE,  0, MENU_TARGET(&ui_in_m0_rot) };
 MENU_ITEM    ui_it_m0_flip     = { {"Invert Dir"},   ITEM_VALUE,  0, MENU_TARGET(&ui_in_m0_flip) };
 MENU_ITEM    ui_it_m0_rpm      = { {"RPM"},          ITEM_VALUE,  0, MENU_TARGET(&ui_in_m0_rpm) };
 MENU_ITEM    ui_it_m0_ratio    = { {"Ratio"},        ITEM_VALUE,  0, MENU_TARGET(&ui_in_m0_ratio) };
 
-MENU_LIST    ui_list_m0[]	   = { &ui_it_m0_man, &ui_it_m0_est, &ui_it_m0_pres, &ui_it_m0_rot, &ui_it_m0_flip, &ui_it_m0_rpm, &ui_it_m0_ratio, &ui_it_mmSetting };
+MENU_LIST    ui_list_m0[]	   = { &ui_it_m0_man, &ui_it_m0_dist, &ui_it_m0_shots, &ui_it_m0_pres, &ui_it_m0_rot, &ui_it_m0_flip, &ui_it_m0_rpm, &ui_it_m0_ratio, &ui_it_mmSetting };
 MENU_ITEM    ui_it_m0List      = { {"Axis 1"}, ITEM_MENU, MENU_SIZE(ui_list_m0), MENU_TARGET(&ui_list_m0) };
 
   // motor 2 inputs
@@ -292,13 +293,14 @@ MENU_VALUE   ui_in_m1_ratio    = { TYPE_FLOAT_1000, 5000, 0, MENU_TARGET(&motors
 
 MENU_ITEM    ui_it_m1_pres     = { {"Motor Preset"}, ITEM_ACTION, 0, MENU_TARGET(uiMenuPresetTwo) };
 MENU_ITEM    ui_it_m1_man      = { {"Manual Move"},  ITEM_ACTION, 0, MENU_TARGET(uiMenuManualTwo) };
-MENU_ITEM	 ui_it_m1_est	   = { { "Dist/Shots Est" }, ITEM_ACTION, 0, MENU_TARGET(uiEZTimeEstimate1) };
+MENU_ITEM	 ui_it_m1_dist	   = { { "Set Dist/hr" }, ITEM_ACTION, 0, MENU_TARGET(uiDistEstimate1) };
+MENU_ITEM	 ui_it_m1_shots    = { { "Set Shots/hr" }, ITEM_ACTION, 0, MENU_TARGET(uiShotsEstimate1) };
 MENU_ITEM    ui_it_m1_rot      = { {"Rotary"},       ITEM_VALUE,  0, MENU_TARGET(&ui_in_m1_rot) };
 MENU_ITEM    ui_it_m1_flip     = { {"Invert Dir"},   ITEM_VALUE,  0, MENU_TARGET(&ui_in_m1_flip) };
 MENU_ITEM    ui_it_m1_rpm      = { {"RPM"},          ITEM_VALUE,  0, MENU_TARGET(&ui_in_m1_rpm) };
 MENU_ITEM    ui_it_m1_ratio    = { {"Ratio"},        ITEM_VALUE,  0, MENU_TARGET(&ui_in_m1_ratio) };
 
-MENU_LIST    ui_list_m1[]	   = { &ui_it_m1_man, &ui_it_m1_est, &ui_it_m1_pres, &ui_it_m1_rot, &ui_it_m1_flip, &ui_it_m1_rpm, &ui_it_m1_ratio, &ui_it_mmSetting };
+MENU_LIST    ui_list_m1[] = { &ui_it_m1_man, &ui_it_m1_dist, &ui_it_m1_shots, &ui_it_m1_pres, &ui_it_m1_rot, &ui_it_m1_flip, &ui_it_m1_rpm, &ui_it_m1_ratio, &ui_it_mmSetting };
 MENU_ITEM    ui_it_m1List      = { {"Axis 2"}, ITEM_MENU, MENU_SIZE(ui_list_m1), MENU_TARGET(&ui_list_m1) };
 
   // motor 3 inputs
@@ -313,13 +315,14 @@ MENU_VALUE   ui_in_m2_ratio    = { TYPE_FLOAT_1000, 5000, 0, MENU_TARGET(&motors
 
 MENU_ITEM    ui_it_m2_pres     = { {"Motor Preset"}, ITEM_ACTION, 0, MENU_TARGET(uiMenuPresetThree) };
 MENU_ITEM    ui_it_m2_man      = { {"Manual Move"},  ITEM_ACTION, 0, MENU_TARGET(uiMenuManualThree) };
-MENU_ITEM	 ui_it_m2_est	   = { { "Dist/Shots Est" }, ITEM_ACTION, 0, MENU_TARGET(uiEZTimeEstimate2) };
+MENU_ITEM	 ui_it_m2_dist = { { "Set Dist/hr" }, ITEM_ACTION, 0, MENU_TARGET(uiDistEstimate2) };
+MENU_ITEM	 ui_it_m2_shots = { { "Set Shots/hr" }, ITEM_ACTION, 0, MENU_TARGET(uiShotsEstimate2) };
 MENU_ITEM    ui_it_m2_rot      = { {"Rotary"},       ITEM_VALUE,  0, MENU_TARGET(&ui_in_m2_rot) };
 MENU_ITEM    ui_it_m2_flip     = { {"Invert Dir"},   ITEM_VALUE,  0, MENU_TARGET(&ui_in_m2_flip) };
 MENU_ITEM    ui_it_m2_rpm      = { {"RPM"},          ITEM_VALUE,  0, MENU_TARGET(&ui_in_m2_rpm) };
 MENU_ITEM    ui_it_m2_ratio    = { {"Ratio"},        ITEM_VALUE,  0, MENU_TARGET(&ui_in_m2_ratio) };
 
-MENU_LIST    ui_list_m2[]	   = { &ui_it_m2_man, &ui_it_m2_est, &ui_it_m2_pres, &ui_it_m2_rot, &ui_it_m2_flip, &ui_it_m2_rpm, &ui_it_m2_ratio, &ui_it_mmSetting };
+MENU_LIST    ui_list_m2[] = { &ui_it_m2_man, &ui_it_m2_dist, &ui_it_m2_shots, &ui_it_m2_pres, &ui_it_m2_rot, &ui_it_m2_flip, &ui_it_m2_rpm, &ui_it_m2_ratio, &ui_it_mmSetting };
 MENU_ITEM    ui_it_m2List      = { {"Axis 3"}, ITEM_MENU, MENU_SIZE(ui_list_m2), MENU_TARGET(&ui_list_m2) };
 
 

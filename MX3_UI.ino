@@ -83,14 +83,14 @@ void uiMenuSetup() {
   lcd.setCursor(0, 1);
   lcd.print(MX3_SUBSTR);
   
-  delay(3000);
+ // delay(3000);
 
   lcd.clear();
   lcd.print(MX3_C1STR);
   lcd.setCursor(0,1);
   lcd.print(MX3_C2STR);
 
-  delay(2000); 
+  // delay(2000); 
   uiClear();
   
 }
@@ -349,45 +349,8 @@ void uiBaseScreen(byte p_button) {
 
 void mainFirstLine(){
 
-	float minInt = 0.0; // Minimum camera interval, accounting for camera settings, motor moves, etc.
-
-	// minimum interval calculation
-	//if( camera_bulb )
-	minInt += camera_exposure;
-	//else
-	//  minInt += CAM_MIN_TRIG;
-
-	minInt += camera_wait;
-	minInt += camera_focus;
-
-	if (alt_out_flags & ALT_OUT_ANY_B){ //checks to see if any aux i/o are on before the camera shoots
-		minInt += alt_before_ms;
-		minInt += alt_before_delay;
-	}
-
-	if (alt_out_flags & ALT_OUT_ANY_A) { //checks to see if any aux i/o are on after the camera shoots
-		minInt += alt_after_ms;
-		minInt += alt_after_delay;
-	}
-
-	if (motion_sms)
-	{
-		byte motorEnabled = 0;
-		byte longestMotor = 0;
-		for (byte i = 0; i < MOTOR_COUNT; i++)
-		{
-			if (motors[i].flags & MOTOR_UEN_FLAG) {
-				if (motors[i].speed > motors[longestMotor].speed) {    //determine the longest running enabled motor
-					longestMotor = i;
-				}
-				motorEnabled = 1;
-			}
-		}
-
-		minInt += motorEnabled * motor_pwm_maxperiod * motors[longestMotor].speed * motor_pwm_minperiod / 1000.0;  //adds time required by longest running motor
-			}
-
-	minInt = minInt / 1000.0; // Convert minInt from milliseconds to seconds
+	// Determine the minimum camera interval
+	float minInt = calcMinInterval();
 
 	// display correct running string
 	if (running) {
@@ -471,100 +434,6 @@ byte uiMainScreen() {
 	return UI_SCREEN_MAIN;
   
 }
-
-// Helper functions for calling uiEZTimeEstimate from menus
-void uiEZTimeEstimate0(){
-	uiEZTimeEstimate(0);
-}
-
-void uiEZTimeEstimate1(){
-	uiEZTimeEstimate(1);
-}
-
-void uiEZTimeEstimate2(){
-	uiEZTimeEstimate(2);
-}
-
-void uiEZTimeEstimate(byte p_motor) {
-
-	Menu.enable(false);
-	lcd.noBlink();
-
-	int dist_est;	// Estimate of the distance/hr based on currnt speed / SMS settings --> Can by modified by user to alter speed setting
-	int shots_est;	// Estimate of shots/hr
-	byte button;
-
-	shots_est = (SEC_PER_MIN / camera_delay) * MIN_PER_HR;
-
-	if (!motion_sms)
-		dist_est = motors[p_motor].target_speed * MIN_PER_HR; // Target speed is in inches, cm, or deg/min, so multiply by 60 to get the total per hour
-	else
-		dist_est = motors[p_motor].target_sms_distance * shots_est;
-
-	lcd.clear();
-	lcd.home();
-	lcd.print("Dist/hr: ");
-	lcd.print(dist_est);
-	if (!(motors[p_motor].flags & MOTOR_ROT_FLAG)) {
-		if (units == STANDARD || units == PERCENT)
-			lcd.print("in");
-		else if (units == METRIC)
-			lcd.print("cm");
-	}
-	else
-		lcd.print("deg");
-
-	lcd.setCursor(0, 1);
-	lcd.print("Shots/hr: ");
-	lcd.print(shots_est);
-
-	while (1) {
-
-		button = Menu.checkInput();
-		
-		if (button == BUTTON_INCREASE || button == BUTTON_DECREASE) {
-			if (button == BUTTON_INCREASE)
-				dist_est++;
-			else if (button == BUTTON_DECREASE)
-				dist_est--;
-			// Clear the old distance estimate, then print the new one
-			lcd.setCursor(9, 0);
-			lcd.print("        ");
-			lcd.setCursor(9, 0);
-			lcd.print(dist_est);
-			
-			// Print the appropriate unit again
-			if (!(motors[p_motor].flags & MOTOR_ROT_FLAG)) {
-				if (units == STANDARD || units == PERCENT)
-					lcd.print("in");
-				else if (units == METRIC)
-					lcd.print("cm");
-			}
-			else
-				lcd.print("deg");
-		}
-		// If the user presses the select button, convert the new distance estimate back into the targets speed / SMS move distance and the new EZ adjust value
-		else if (button == BUTTON_SELECT) {
-			if (!motion_sms){
-				motors[p_motor].target_speed = (float)dist_est / MIN_PER_HR;
-				motors[p_motor].ez_adjust = motors[p_motor].target_speed / motors[p_motor].ez_center_val;
-			}
-			else {
-				motors[p_motor].target_sms_distance = (float)dist_est / shots_est;
-				motors[p_motor].ez_adjust = motors[p_motor].target_sms_distance / motors[p_motor].ez_center_val;
-			}
-			// Break out of the while loop
-			break;
-		}
-		// If the user presses the back button, bail from the while loop, but don't save the changes made
-		else if (button == BUTTON_BACK) {
-			break;
-		}
-	}
-	Menu.enable(true);
-	return;
-}
-
 
 /** EZ Mode Display Screen **/
 byte uiEZModeScreen() {
@@ -1117,4 +986,250 @@ void uiSensorErrorScreen() {
    }
      
   
+}
+
+// Constants for uiEstimate() argument
+const byte MOD_DIST = 0;
+const byte MOD_SHOTS = 1;
+
+// Helper functions for calling uiEstimate from menus
+void uiDistEstimate0(){
+	uiEstimate(0, MOD_DIST);
+}
+
+void uiDistEstimate1(){
+	uiEstimate(1, MOD_DIST);
+}
+
+void uiDistEstimate2(){
+	uiEstimate(2, MOD_DIST);
+}
+
+void uiShotsEstimate0(){
+	uiEstimate(0, MOD_SHOTS);
+}
+
+void uiShotsEstimate1(){
+	uiEstimate(1, MOD_SHOTS);
+}
+
+void uiShotsEstimate2(){
+	uiEstimate(2, MOD_SHOTS);
+}
+
+/** Time / Shots Estimate
+
+This ui screen displays the estimated distance per hour and the
+estimated shots per hour. The estimated distance or shots may be
+modified in order to calculate a new speed for the motor or camera interval.
+
+@param p_motor
+The motor to get the speed for, 0, 1, or 2
+
+@p_which
+Can be either MOD_DIST or MOD_SHOTS. MOD_DIST will allow the user to change
+the estimate distance and MOD_SHOTS will allow the user to change the estimated shots
+
+@author
+M. Ploof
+*/
+
+
+void uiEstimate(byte p_motor, byte p_which) {
+
+	Menu.enable(false);
+	lcd.noBlink();
+
+	long int dist_est;	// Estimate of the distance/hr based on currnt speed / SMS settings --> Can by modified by user to alter speed setting
+	int shots_est;	// Estimate of shots/hr
+	byte button;
+
+	shots_est = (SEC_PER_MIN / camera_delay) * MIN_PER_HR;
+
+	if (!motion_sms)
+		dist_est = motors[p_motor].target_speed * MIN_PER_HR; // Target speed is in inches, cm, or deg/min, so multiply by 60 to get the total per hour
+	else
+		dist_est = motors[p_motor].target_sms_distance * shots_est;
+
+	lcd.clear();
+	lcd.home();
+	lcd.print("Dist/hr:");
+	// Handle it if the number is too larget for the display
+	if (dist_est > 9999)
+		lcd.print(">9999");
+	else{
+		lcd.print(" ");
+		lcd.print(dist_est);
+	}
+
+	if (!(motors[p_motor].flags & MOTOR_ROT_FLAG)) {
+		if (units == STANDARD || units == PERCENT)
+			lcd.print("in");
+		else if (units == METRIC)
+			lcd.print("cm");
+	}
+	else
+		lcd.print("deg");
+
+	lcd.setCursor(0, 1);
+	lcd.print("Shots/hr: ");
+	lcd.print(shots_est);
+
+	while (1) {
+
+		button = Menu.checkInput();
+
+		float minInt = calcMinInterval();	// Minimum interval 
+		float interval;						// Inverval calculated from modified shots/hr estimate
+
+		// Modifying the distance per hour
+		if (p_which == MOD_DIST) {
+			// Don't allow blind modification of the estimate value when it's too large to display
+			if (dist_est <= 9999 && (button == BUTTON_INCREASE || button == BUTTON_DECREASE)) {
+				if (button == BUTTON_INCREASE)
+					dist_est++;
+				else if (button == BUTTON_DECREASE)
+					dist_est--;
+				// Clear the old distance estimate, then print the new one
+				lcd.setCursor(8, 0);
+				lcd.print("        ");
+				lcd.setCursor(8, 0);
+				// Handle it if the number is too larget for the display
+				if (dist_est > 9999)
+					lcd.print(">9999");
+				else{
+					lcd.print(" ");
+					lcd.print(dist_est);
+				}
+
+				// Print the appropriate unit again
+				if (!(motors[p_motor].flags & MOTOR_ROT_FLAG)) {
+					if (units == STANDARD || units == PERCENT)
+						lcd.print("in");
+					else if (units == METRIC)
+						lcd.print("cm");
+				}
+				else
+					lcd.print("deg");
+			}
+			// If the user presses the select button, convert the new distance estimate back into the targets speed / SMS move distance and the new EZ adjust value
+			else if (button == BUTTON_SELECT) {
+				if (!motion_sms){
+					motors[p_motor].target_speed = (float)dist_est / MIN_PER_HR;
+					motors[p_motor].ez_adjust = motors[p_motor].target_speed / motors[p_motor].ez_center_val;
+					
+					// Save new continuous speed
+					OMEEPROM::write((EE_DES_SPEED0 + EE_MOTOR_SPACE_V1_1 * p_motor), motors[p_motor].target_speed);
+				}
+				else {
+					motors[p_motor].target_sms_distance = (float)dist_est / shots_est;
+					motors[p_motor].ez_adjust = motors[p_motor].target_sms_distance / motors[p_motor].ez_center_val;
+					
+					// Save new SMS distance
+					OMEEPROM::write((EE_DES_SMSDIST0 + EE_MOTOR_SPACE_V1_1 * p_motor), motors[p_motor].target_sms_distance);
+				}
+
+				// Save new EZ adjust value
+				OMEEPROM::write((EE_EZADJ0 + EE_MOTOR_SPACE_V1_1 * p_motor), motors[p_motor].ez_adjust);
+
+				// Break out of the while loop
+				break;
+			}
+		}
+
+		// Modifying the shots per hour
+		else if (p_which == MOD_SHOTS) {
+
+			if (button == BUTTON_INCREASE || button == BUTTON_DECREASE) {
+				if (button == BUTTON_INCREASE)
+					shots_est++;
+				else if (button == BUTTON_DECREASE)
+					shots_est--;
+
+				interval = (float) SEC_PER_HR / shots_est;
+
+				// If the new calculated interval is less than allowed, set it to the minimum and bounce the shots_est up to the previous value
+				if (interval < minInt) {
+					interval = minInt;
+					shots_est++;
+				}
+
+				// Clear the old distance estimate, then print the new one
+				lcd.setCursor(9, 1);
+				lcd.print("       ");
+				lcd.setCursor(10, 1);
+				lcd.print(shots_est);
+			}
+
+			// If the user presses the select button, convert the new shots estimate back into the new interval
+			else if (button == BUTTON_SELECT) {
+
+				// Save the calculated interval
+				camera_delay = interval;
+				OMEEPROM::write(EE_CAMDEL, camera_delay);
+
+				// Break out of the while loop
+				break;
+			}
+		}
+
+		// If the user presses the back button, bail from the while loop, but don't save the changes made
+		if (button == BUTTON_BACK) {
+			break;
+		}
+	}
+	Menu.enable(true);
+	return;
+}
+
+/** Calculate the Minimum Camera Interval
+
+Determins the minimum camera interval, accounting for camera settings, motor moves, etc.
+
+
+*/
+
+float calcMinInterval() {
+
+	float minInt = 0.0;
+
+	// minimum interval calculation
+	//if( camera_bulb )
+	minInt += camera_exposure;
+	//else
+	//  minInt += CAM_MIN_TRIG;
+
+	minInt += camera_wait;
+	minInt += camera_focus;
+
+	if (alt_out_flags & ALT_OUT_ANY_B){ //checks to see if any aux i/o are on before the camera shoots
+		minInt += alt_before_ms;
+		minInt += alt_before_delay;
+	}
+
+	if (alt_out_flags & ALT_OUT_ANY_A) { //checks to see if any aux i/o are on after the camera shoots
+		minInt += alt_after_ms;
+		minInt += alt_after_delay;
+	}
+
+	if (motion_sms)
+	{
+		byte motorEnabled = 0;
+		byte longestMotor = 0;
+		for (byte i = 0; i < MOTOR_COUNT; i++)
+		{
+			if (motors[i].flags & MOTOR_UEN_FLAG) {
+				if (motors[i].speed > motors[longestMotor].speed) {    //determine the longest running enabled motor
+					longestMotor = i;
+				}
+				motorEnabled = 1;
+			}
+		}
+
+		minInt += motorEnabled * motor_pwm_maxperiod * motors[longestMotor].speed * motor_pwm_minperiod / 1000.0;  //adds time required by longest running motor
+	}
+
+	minInt = minInt / 1000.0; // Convert minInt from milliseconds to seconds
+
+	return minInt;
 }

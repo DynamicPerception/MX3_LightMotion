@@ -60,7 +60,8 @@ void uiCursorToggleRun(byte p_dir) {
     camera_flag = false;
   } 
   else {
-    startProgram();    
+	  refreshMotors(true); // Make sure the motors have the correct power settings before starting
+	  startProgram();    
   }
     
   eepromWrite();
@@ -102,7 +103,7 @@ void uiCursorAdjustSMS(byte p_dir) {
   // Arrays to store the current mode speed. Allows
   // for restoring of last used speed in each state
   static float continuous_speed[3];
-  static float SMS_speed[3];
+  static float SMS_dist[3];
 
   // Emperically tested PWM settings for each mode
   const int CONTINUOUS_PERIOD = 1200;
@@ -114,18 +115,14 @@ void uiCursorAdjustSMS(byte p_dir) {
 	  for (byte i = 0; i < MOTOR_COUNT; i++) {
 
 		  // Save the continuous speeds for later
-		  continuous_speed[i] = motorSpeed(i);
+		  continuous_speed[i] = motors[i].target_speed;
 
 		  // Set PWM period
 		  motor_pwm_minperiod = SMS_PERIOD;
 
-		  // We don't really want to reset the direction, do we?
-		  // motorDir(i, 0);
-
 		  // Restore the speeds last used in SMS mode
-		  motorSpeed(i, SMS_speed[i] );
+		  motorSpeed(i, SMS_dist[i]);
 		  OMEEPROM::write(EE_M0FLAG + (EE_MOTOR_SPACE * i), motors[i].flags);
-		  OMEEPROM::write(EE_MORSPEED + (EE_MOTOR_SPACE * i), motors[i].speed);
 	  }
   }
   // Continuous mode
@@ -133,15 +130,20 @@ void uiCursorAdjustSMS(byte p_dir) {
 	  for(byte i = 0; i < MOTOR_COUNT; i++ ) {
 		  
 		  // Save the SMS speeds for later
-		  SMS_speed[i] = motorSpeed(i);
-		  
+		  SMS_dist[i] = motors[i].target_sms_distance;
+		 
+		  // Restore the speeds last used in continuous mode
+		  motors[i].target_speed = continuous_speed[i];
+
+		  // Refresh the motor power settings. Do this just once, since refeshMotors() refreshes them all
+		  if (i == (MOTOR_COUNT - 1))
+			  refreshMotors(true);
+
 		  // Set PWM period
 		  motor_pwm_minperiod = CONTINUOUS_PERIOD;
 		  
-		  // Restore the speeds last used in continuous mode
-		  motorSpeed(i, continuous_speed[i] );
+		  // Save the new settings
 		  OMEEPROM::write(EE_M0FLAG + (EE_MOTOR_SPACE * i), motors[i].flags);
-		  OMEEPROM::write(EE_MORSPEED + (EE_MOTOR_SPACE * i), motors[i].speed);
 	  }
   }
 
@@ -543,6 +545,9 @@ void uiCursorChangeMotSpd(byte p_dir, float p_mod) {
 
 			// Set the motor power perecent directly
 			motorSpeed(ui_curMotor, curSpd);
+
+			// Save new SMS distance
+			OMEEPROM::write((EE_DES_SMSDIST0 + EE_MOTOR_SPACE_V1_1 * ui_curMotor), motors[ui_curMotor].target_sms_distance);
 		}
 
 		// Continuous speed change
@@ -559,6 +564,9 @@ void uiCursorChangeMotSpd(byte p_dir, float p_mod) {
 
 			// Set the motor power percent via the speed calculation function
 			motorSpeedCalc(ui_curMotor, curSpd);
+
+			// Save new continuous speed
+			OMEEPROM::write((EE_DES_SPEED0 + EE_MOTOR_SPACE_V1_1 * ui_curMotor), motors[ui_curMotor].target_speed);
 		}
 	}
 	// EZ mode

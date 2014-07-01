@@ -40,6 +40,8 @@ const unsigned int SECOND = 1000;
   // milliseconds per minute
 const unsigned int MILLIS_PER_MIN = 60000;
 
+const int SEC_PER_HR = 3600;
+
   // seconds per minute
 const int SEC_PER_MIN = 60;
 
@@ -185,7 +187,7 @@ const unsigned long    CAMFOC_MIN = 0;
 const unsigned long    CAMEXP_MAX = 65535;
 const unsigned long    CAMEXP_MIN = 0;
 const int				CAMFL_MAX = 600;
-const int				CAMFL_MIN = 18;
+const int				CAMFL_MIN = 8;
 
 /*
 

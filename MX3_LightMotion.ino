@@ -176,10 +176,10 @@ MoCoBus setup and debugging features
 
   USBSerial.begin(57600);
   
-  lcd.print("Waiting...");
-   while( ! USBSerial ) {
-     delay(10); // do nothing
-    }
+  //lcd.print("Waiting...");
+  // while( ! USBSerial ) {
+  //   delay(10); // do nothing
+  //  }
     
    delay(20);
    
