@@ -83,14 +83,14 @@ void uiMenuSetup() {
   lcd.setCursor(0, 1);
   lcd.print(MX3_SUBSTR);
   
- // delay(3000);
+  delay(3000);
 
   lcd.clear();
   lcd.print(MX3_C1STR);
   lcd.setCursor(0,1);
   lcd.print(MX3_C2STR);
 
-  // delay(2000); 
+  delay(2000); 
   uiClear();
   
 }
