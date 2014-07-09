@@ -183,8 +183,8 @@ MENU_SELECT_ITEM  ui_sel_altouta     = { ALT_OUT_A,         {"Out After"} };
 MENU_SELECT_ITEM  ui_sel_altstopmot  = { ALT_STOP_MOTORS, {"Stop Motors"} };
 MENU_SELECT_ITEM  ui_sel_altpause	 = { ALT_PAUSE_PRGM, { "Pause Program" } };
 
-MENU_SELECT_ITEM ui_sel_falling = { FALLING, {"Ending"} };
-MENU_SELECT_ITEM ui_sel_rising  = { RISING,  {"Beginning"} };
+MENU_SELECT_ITEM ui_sel_falling = { FALLING, {"Beginning"} };
+MENU_SELECT_ITEM ui_sel_rising  = { RISING,  {"Ending"} };
 
 MENU_SELECT_ITEM ui_sel_high = { HIGH, {"High"} };
 MENU_SELECT_ITEM ui_sel_low  = { LOW,  {"Low"} };
