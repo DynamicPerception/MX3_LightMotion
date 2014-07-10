@@ -525,7 +525,7 @@ void EZmodeUpdate(byte p_motor){
 
 	const float REF_DISTANCE = 3.048;			// Reference distance in meters for center value calculation
 	const float MOVE_PROPORTION = 1.16E-3;		// Proportion of the frame the camera should move during each linear SMS shot as a baseline
-	const float ROT_MOVE_PROPORTION = 3.03E-3;  // Proportion of the angle of view the camera should move during each rotational SMS shot as a baseline
+	const float ROT_MOVE_PROPORTION = 1.51E-3;  // Proportion of the angle of view the camera should move during each rotational SMS shot as a baseline
 	const float SENSOR_WIDTH = 36;				// Width of the camera sensor in mm
 
 	// Calculate the center value to be used based on the focal length
