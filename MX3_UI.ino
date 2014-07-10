@@ -627,7 +627,7 @@ void uiMotorScreen(byte p_motor) {
 	}
 
 	float		spd;					// The speed or SMS distance to display on the LCD
-	byte		spdPrec;			// Number of decimal places of precision to use in the SMS distance / continuous speed readout
+	byte		spdPrec;				// Number of decimal places of precision to use in the SMS distance / continuous speed readout
 	static byte old_units = STANDARD;	// Variable to keep track of the units we were using the last time the screen refreshed
 
 	// If we're returning from being in percent mode, update the target speed/distance with that dicated by the last percent/time setting

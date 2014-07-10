@@ -524,7 +524,7 @@ void EZmodeUpdate(byte p_motor){
 	// Remember, rotary values are deg/move and deg/min, and linear are inch/move and inch/minute.
 
 	const float REF_DISTANCE = 3.048;			// Reference distance in meters for center value calculation
-	const float MOVE_PROPORTION = 2.31E-3;		// Proportion of the frame the camera should move during each linear SMS shot as a baseline
+	const float MOVE_PROPORTION = 1.16E-3;		// Proportion of the frame the camera should move during each linear SMS shot as a baseline
 	const float ROT_MOVE_PROPORTION = 3.03E-3;  // Proportion of the angle of view the camera should move during each rotational SMS shot as a baseline
 	const float SENSOR_WIDTH = 36;				// Width of the camera sensor in mm
 
@@ -537,7 +537,7 @@ void EZmodeUpdate(byte p_motor){
 		//USBSerial.print(motors[p_motor].ez_center_val, 5);
 		//USBSerial.println(" deg/move");
 	}
-	// if running in linear mode
+	// If running in linear mode
 	else if (!(motors[p_motor].flags & MOTOR_ROT_FLAG)) {
 		motors[p_motor].ez_center_val = ((REF_DISTANCE * SENSOR_WIDTH * MOVE_PROPORTION) / camera_focal_length) * INCH_PER_METER;
 
