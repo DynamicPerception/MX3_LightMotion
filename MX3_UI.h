@@ -412,7 +412,7 @@ MENU_VALUE   ui_in_glUnt       = { TYPE_SELECT, 0,    0,   MENU_TARGET(&ui_sl_gl
 MENU_VALUE	 ui_in_glEZX	   = { TYPE_SELECT, 0,	  0,   MENU_TARGET(&ui_sl_glEZX),		  EE_EZX };
 
 MENU_ITEM    ui_it_glUnt	   = { { "Unit Type" },		ITEM_VALUE,  0, MENU_TARGET(&ui_in_glUnt) };
-MENU_ITEM	 ui_it_glEZX	   = { { "EZ Advanced" },		ITEM_VALUE,  0, MENU_TARGET(&ui_in_glEZX) };
+MENU_ITEM	 ui_it_glEZX	   = { { "EZ Advanced" },	ITEM_VALUE,  0, MENU_TARGET(&ui_in_glEZX) };
 MENU_ITEM    ui_it_glLCD       = { {"LCD AutoOff Sec"}, ITEM_VALUE,  0, MENU_TARGET(&ui_in_glLCD) };
 MENU_ITEM    ui_it_glInc       = { {"Step Ratio"},		ITEM_VALUE,  0, MENU_TARGET(&ui_in_glInc) };
 MENU_ITEM    ui_it_glPer       = { {"Motor Timing"},    ITEM_VALUE,  0, MENU_TARGET(&ui_in_glPer) };
@@ -420,7 +420,7 @@ MENU_ITEM    ui_it_glVFD       = { {"VFD Brightness"},  ITEM_ACTION, 0, MENU_TAR
 MENU_ITEM    ui_it_glSav       = { {"Save Memory"},     ITEM_ACTION, 0, MENU_TARGET(uiMenuSaveMem) };
 MENU_ITEM    ui_it_glLod       = { {"Load Memory"},     ITEM_ACTION, 0, MENU_TARGET(uiMenuLoadMem) };
 MENU_ITEM    ui_it_glMem       = { {"Reset Memory"},    ITEM_ACTION, 0, MENU_TARGET(uiMenuResetMem) };
-MENU_ITEM    ui_it_glHet       = { {"Cold Mode"},       ITEM_VALUE,  0, MENU_TARGET(&ui_in_glHet) };
+MENU_ITEM    ui_it_glHet       = { {"VFD Auto-Off"},    ITEM_VALUE,  0, MENU_TARGET(&ui_in_glHet) };
 MENU_ITEM    ui_it_glJmp       = { {"Jump!"},           ITEM_ACTION, 0, MENU_TARGET(uiJump) };
 
 
