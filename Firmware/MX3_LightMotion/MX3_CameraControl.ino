@@ -36,14 +36,15 @@ See dynamicperception.com for more information
 
  // necessary camera control variables
 
-unsigned int  camera_max_shots = 0;
-unsigned long     camera_fired = 0;
-byte             camera_repeat = 0;
+unsigned int    camera_max_shots = 0;
+unsigned long       camera_fired = 0;
+byte               camera_repeat = 0;
 unsigned long  camera_exposure = 120;
 unsigned long      camera_wait = 100;
-unsigned long     camera_focus = 0;
-byte               camera_bulb = 0;
-byte            camera_focLock = 1;
+unsigned long       camera_focus = 0;
+int			camera_focal_length = 50;
+byte                 camera_bulb = 0;
+byte              camera_focLock = 1;
 float             camera_delay = 1.0;
 
 

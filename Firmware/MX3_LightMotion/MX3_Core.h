@@ -37,6 +37,25 @@ const float CM_CONSTANT = 2.54;
   // milliseconds in a second
 const unsigned int SECOND = 1000;
 
+  // milliseconds per minute
+const unsigned int MILLIS_PER_MIN = 60000;
+
+const int SEC_PER_HR = 3600;
+
+  // seconds per minute
+const int SEC_PER_MIN = 60;
+
+// minutes per hour
+const int MIN_PER_HR = 60;
+
+  // inches per meter
+const float INCH_PER_METER = 39.37;
+
+// EZ Mode Constants
+const float EZADJUST_MAX = 3.0;			// Max EZ adjust value
+const float EZADJUST_MIN = 0.1;			// Min EZ adjust value
+const float EZADJUST_INCREMENT = 0.1;	// By how much the EZ adjust value should change per button press
+
  /*  state transitions
  
   ST_BLOCK - do not allow any action to occur (some event is in process, block the state engine)
@@ -64,8 +83,19 @@ const byte  ST_ALTP = 6;
   
 */
 
-const byte   MM_HOLD = 0;
-const byte MM_SELECT = 1;
+const byte		       MM_HOLD = 0;
+const byte 			 MM_SELECT = 1;
+const byte		  MM_ENDURANCE = 2;
+
+
+/*
+
+MoCoBus Settings
+
+*/
+
+const boolean	       MOCOBUS_MASTER = false;
+const boolean			 MOCOBUS_NODE = true;
 
 
 /*
@@ -77,7 +107,7 @@ const byte MM_SELECT = 1;
 const unsigned int    MAX_CURRENT = 6000;
 const float              MAX_TEMP = 90.0;
 const unsigned int  SENS_RST_TIME = 30000;
-const unsigned int SENS_POLL_TIME = 10000;
+const unsigned int SENS_POLL_TIME = 5000;
 const byte      SENS_CURRENT_FLAG = B00000001;
 const byte         SENS_TEMP_FLAG = B00000010;
 const byte         SENS_VOLT_FLAG = B00000100;
@@ -123,6 +153,7 @@ const byte         ALT_DIR = 5;
 const byte       ALT_OUT_B = 6;
 const byte       ALT_OUT_A = 7;
 const byte ALT_STOP_MOTORS = 8;
+const byte  ALT_PAUSE_PRGM = 9;
 
 const byte ALT_OUT_FLAG_B = B00010000;
 const byte ALT_OUT_FLAG_A = B00000001;
@@ -149,10 +180,14 @@ const float          CAM_MIN_BULB = 0.25;
 
 const unsigned long   CAMWAIT_MAX = 65535;
 const unsigned long   CAMWAIT_MIN = 0;
+const unsigned long	  CAMDELAY_MAX = 65535;
+const unsigned long   CAMDELAY_MIN = 0;
 const unsigned long    CAMFOC_MAX = 65535;
 const unsigned long    CAMFOC_MIN = 0;
 const unsigned long    CAMEXP_MAX = 65535;
 const unsigned long    CAMEXP_MIN = 0;
+const int				CAMFL_MAX = 600;
+const int				CAMFL_MIN = 8;
 
 /*
 
@@ -165,13 +200,13 @@ const unsigned long    CAMEXP_MIN = 0;
  
 
 
-const byte MOTOR_ENABLE_FLAG = B10000000;
-const byte   MOTOR_HIGH_FLAG = B01000000;
-const byte    MOTOR_DIR_FLAG = B00100000;
-const byte    MOTOR_ROT_FLAG = B00010000;
-const byte    MOTOR_UEN_FLAG = B00001000;
-const byte   MOTOR_CDIR_FLAG = B00000100;
-const byte   MOTOR_RAMP_FLAG = B00000010;
+const byte MOTOR_ENABLE_FLAG = B10000000; // Motor is enabled
+const byte   MOTOR_HIGH_FLAG = B01000000; // PWM on
+const byte    MOTOR_INVERT_FLAG = B00100000; // Direction invert
+const byte    MOTOR_ROT_FLAG = B00010000; // 1 - Rotary, 0 - Linear
+const byte    MOTOR_UEN_FLAG = B00001000; // Global user enabled
+const byte   MOTOR_CDIR_FLAG = B00000100; // Current direction
+const byte   MOTOR_RAMP_FLAG = B00000010; // Ramping
 
 const byte MOTOR_COUNT = 3;
 
@@ -217,24 +252,31 @@ struct MotorDefinition {
  volatile float offError;
  volatile float onError;
  
-  /** Stored Speed Value */
+  /** Stored Speed Value (Motor power setting from 0.0-1.0) */
  float speed;
  
   /** Stored set speed (used when ramping) */
   
  float setSpeed;
- 
+
+ /** The adjust value used in EZ mode */
+ float ez_adjust;
+
+ /** EZ mode base move value to be modified by adjust multiplier */
+ float	ez_center_val;
+
    /** Volatile, used by motor_run_isr for overflow */
- volatile unsigned long restPeriods;
+ // M. Ploof: Count of how many cycles have occured while the motor is doing an SMS move
+ volatile unsigned long currentMoveCycles;
  
  /** needed to change the speed of the motor for SMS mode */ 
- int smsOnPeriods;
+ int pwmOnCycles;
  
- /** falg to determine if the motor is currently ramping */
+ /** flag to determine if the motor is currently ramping */
  bool inRamp;
  
-  /** Time Periods (on periods for every off period) */
- float onTimePeriods;
+  /** Time Periods (ratio of on periods to off periods) */
+ float onCycleRatio;
  
    /** max output shaft RPM of motor */
  float rpm;
@@ -246,8 +288,7 @@ struct MotorDefinition {
      input.  However, if units are "degrees" (rotational), and the motor output shaft connects to a 
      1:1 right-angle gearbox, the ratio would be 1.0; whereas a 15:1 gearbox would use 15.0 as ratio.
     */
-    
- float ratio;
+  float ratio;
  
   /** Ramp Shots Start */
  unsigned int ramp_start;
@@ -272,13 +313,23 @@ struct MotorDefinition {
  
  /** desired direction for the motor to move, 0 or 1 */
  bool desiredDirection;
+
+ /** Which preset is the motor using (0 for none) */
+ byte motorPreset;
+
+ /** The target speed in in/min, cm/min, or deg/min */
+ float target_speed;
+
+ /** The target SMS distance in in/move, cm/move, or deg/move */
+ float target_sms_distance;
  
-   /** Default Constructor */
+ 
+ /** Default Constructor */
    
  MotorDefinition() {
-   flags = 0;
-   restPeriods = 0;
-   onTimePeriods = 1.0;
+   flags = B00001000;		// Defaults to motor enabled
+   currentMoveCycles = 0;
+   onCycleRatio = 1.0;
    rpm = 8.13;
    ratio = 3.229;
    ramp_start = 0;
@@ -286,17 +337,20 @@ struct MotorDefinition {
    lead = 0;
    speed = 0.01;
    setSpeed = 0.01;
+   ez_adjust = 1.0;
+   ez_center_val = 0.2;
    forceRampStart = 0;
    startShots = 0;
-   smsOnPeriods = 0;
+   pwmOnCycles = 0;
    inRamp = 0;
    speedSteps = 0;
    desiredDirection = 0;
+   motorPreset = 0;
+   target_speed = 1.0;
+   target_sms_distance = 0.2;
  }
  
 };
-
-
 
 /* 
 
@@ -307,7 +361,7 @@ struct MotorDefinition {
 
  // stored memory layout version
  // this number MUST be changed every time the memory layout is changed
-const unsigned int MEMORY_VERSION    = 39;
+const unsigned int MEMORY_VERSION    = 41;
 
 
 /* Locations of each variable to be stored, note correct spacing
@@ -356,8 +410,8 @@ const int EE_MPRESET   = EE_PERIOD    + 2; // selected presets
 const int EE_VOLTH     = EE_MPRESET   + 4; // voltage threshold
 const int EE_VOLWARN   = EE_VOLTH     + 4; // voltage warning flag
 const int EE_HEATER    = EE_VOLWARN   + 1; // heater on/off flag 
-const int EE_METRIC    = EE_HEATER    + 1; // metric display on/off
-const int EE_INCREMENT = EE_METRIC    + 1; // motor speed increment
+const int EE_UNITS     = EE_HEATER    + 1; // unit type
+const int EE_INCREMENT = EE_UNITS	  + 1; // motor speed increment
 
 //SAVE STATE 0
 
@@ -402,8 +456,9 @@ const int EE_MPRESET_SS0   = EE_PERIOD_SS0    + 2; // selected presets
 const int EE_VOLTH_SS0     = EE_MPRESET_SS0   + 4; // voltage threshold
 const int EE_VOLWARN_SS0   = EE_VOLTH_SS0     + 4; // voltage warning flag
 const int EE_HEATER_SS0    = EE_VOLWARN_SS0   + 1; // heater on/off flag 
-const int EE_METRIC_SS0    = EE_HEATER_SS0    + 1; // metric display on/off
-const int EE_INCREMENT_SS0 = EE_METRIC_SS0    + 1; // motor speed increment
+const int EE_UNITS_SS0     = EE_HEATER_SS0    + 1; // unit type
+const int EE_INCREMENT_SS0 = EE_UNITS_SS0     + 1; // motor speed increment
+
 
 //SAVE STATE 1
 
@@ -448,8 +503,9 @@ const int EE_MPRESET_SS1   = EE_PERIOD_SS1    + 2; // selected presets
 const int EE_VOLTH_SS1     = EE_MPRESET_SS1   + 4; // voltage threshold
 const int EE_VOLWARN_SS1   = EE_VOLTH_SS1     + 4; // voltage warning flag
 const int EE_HEATER_SS1    = EE_VOLWARN_SS1   + 1; // heater on/off flag 
-const int EE_METRIC_SS1    = EE_HEATER_SS1    + 1; // metric display on/off
-const int EE_INCREMENT_SS1 = EE_METRIC_SS1    + 1; // motor speed increment
+const int EE_UNITS_SS1    = EE_HEATER_SS1     + 1; // unit type on/off
+const int EE_INCREMENT_SS1 = EE_UNITS_SS1     + 1; // motor speed increment
+
 
 //SAVE STATE 2
 
@@ -495,7 +551,107 @@ const int EE_MPRESET_SS2   = EE_PERIOD_SS2    + 2; // selected presets
 const int EE_VOLTH_SS2     = EE_MPRESET_SS2   + 4; // voltage threshold
 const int EE_VOLWARN_SS2   = EE_VOLTH_SS2     + 4; // voltage warning flag
 const int EE_HEATER_SS2    = EE_VOLWARN_SS2   + 1; // heater on/off flag 
-const int EE_METRIC_SS2    = EE_HEATER_SS2    + 1; // metric display on/off
-const int EE_INCREMENT_SS2 = EE_METRIC_SS2    + 1; // motor speed increment
+const int EE_UNITS_SS2     = EE_HEATER_SS2     + 1; // unit type on/off
+const int EE_INCREMENT_SS2 = EE_UNITS_SS2     + 1; // motor speed increment
+
+
+// EEPROM Block starting at address 500 reserved for values added in and after Vesion 1.10 of the MX3 firmware.
+// Each group of settins is allocated 500 bytes of memory, but this can be changed by modifying the start values
+// of the memory blocks for each of the save state groups.
+
+/** Default Save State **/
+
+// MoCoBus Settings 
+const int EE_V1_1_MAIN_START = 500;						// Address at which to start storing the default save state settings
+const int EE_NODE			= EE_V1_1_MAIN_START;		// is the device a node on the MoCoBus? (byte)
+const int EE_ADDR			= EE_NODE + 1;				// The device's address on the bus (byte)
+
+// Camera Settings
+const int EE_CAMFL			= EE_ADDR + 1;				// Camera focal length (mm) (int)
+	
+// Motor Settings
+const int EE_MOTOR_SPACE_V1_1 = 12;						// How many addresses to move ahead for each motor when restoring or saving V1.1 and newer motor values
+const int EE_DES_SPEED0 = EE_CAMFL + 2;					// Target speed for motor 0 (float)
+const int EE_DES_SMSDIST0 = EE_DES_SPEED0 + 4;			// Target SMS distance for motor0 (float)
+const int EE_EZADJ0 = EE_DES_SMSDIST0 + 4;				// Adjust value for EZ mode (float)
+
+// EZ Mode Settings
+const int EE_EZMODE = EE_EZADJ0 + (EE_MOTOR_SPACE_V1_1 * MOTOR_COUNT);	// Whether EZ mode is active (boolean)
+const int EE_EZX = EE_EZMODE + 1;										// Whether the EZ extended / EZ manual mode is enabled (boolean)
+
+// Controller Meta-Settings
+const int EE_FACTORY_RESET = EE_EZX + 1;								// Whether the controller has just been reset to factory defaults
+
+
+/** User Save State 0**/
+
+// MoCoBus Settings 
+const int EE_V1_1_SS0_START = 1000;								// Address at which to start storing user saved settings 0
+const int EE_NODE_SS0 = EE_INCREMENT_SS0 + 4;					// is the device a node on the MoCoBus?
+const int EE_ADDR_SS0 = EE_NODE_SS0 + 1;						// The device's address on the bus (byte)
+
+// Camera Settings
+const int EE_CAMFL_SS0 = EE_ADDR_SS0 + 1;						// Camera focal length (mm) (int)
+
+// Motor Settings
+const int EE_MOTOR_SPACE_V1_1_SS0 = 12;							// How many addresses to move ahead for each motor when restoring or saving V1.1 and newer motor values
+const int EE_DES_SPEED0_SS0 = EE_CAMFL + 2;						// Target speed for motor 0 (float)
+const int EE_DES_SMSDIST0_SS0 = EE_DES_SPEED0 + 4;				// Target SMS distance for motor0 (float)
+const int EE_EZADJ0_SS0 = EE_DES_SMSDIST0_SS0 + 4;				// Adjust value for EZ mode (float)
+
+// EZ Mode Settings
+const int EE_EZMODE_SS0 = EE_EZADJ0_SS0 + (EE_MOTOR_SPACE_V1_1_SS0 * MOTOR_COUNT);	// Whether EZ mode is active (boolean)
+const int EE_EZX_SS0 = EE_EZMODE_SS0 + 1;											// Whether the EZ extended / EZ manual mode is enabled (boolean)
+
+// Controller Meta-Settings
+const int EE_FACTORY_RESET_SS0 = EE_EZX_SS0 + 1;								// Whether the controller has just been reset to factory defaults
+
+
+/** User Save State 1**/
+
+// MoCoBus Settings 
+const int EE_V1_1_SS1_START = 1500;								// Address at which to start storing user saved settings 1
+const int EE_NODE_SS1 = EE_INCREMENT_SS1 + 4;					// is the device a node on the MoCoBus?
+const int EE_ADDR_SS1 = EE_NODE_SS1 + 1;						// The device's address on the bus (byte)
+
+// Camera Settings
+const int EE_CAMFL_SS1 = EE_ADDR_SS1 + 1;						// Camera focal length (mm) (int)
+
+// Motor Settings
+const int EE_MOTOR_SPACE_V1_1_SS1 = 12;							// How many addresses to move ahead for each motor when restoring or saving V1.1 and newer motor values
+const int EE_DES_SPEED0_SS1 = EE_CAMFL + 2;						// Target speed for motor 0 (float)
+const int EE_DES_SMSDIST0_SS1 = EE_DES_SPEED0 + 4;				// Target SMS distance for motor0 (float)
+const int EE_EZADJ0_SS1 = EE_DES_SMSDIST0_SS1 + 4;				// Adjust value for EZ mode (float)
+
+// EZ Mode Settings
+const int EE_EZMODE_SS1 = EE_EZADJ0_SS1 + (EE_MOTOR_SPACE_V1_1_SS1 * MOTOR_COUNT);	// Whether EZ mode is active (boolean)
+const int EE_EZX_SS1 = EE_EZMODE_SS1 + 1;											// Whether the EZ extended / EZ manual mode is enabled (boolean)
+
+// Controller Meta-Settings
+const int EE_FACTORY_RESET_SS1 = EE_EZX_SS1 + 1;								// Whether the controller has just been reset to factory defaults
+
+
+/** User Save State 2**/
+
+// MoCoBus Settings 
+const int EE_V1_1_SS2_START = 2000;								// Address at which to start storing user saved settings 2
+const int EE_NODE_SS2 = EE_INCREMENT_SS2 + 4;					// is the device a node on the MoCoBus?
+const int EE_ADDR_SS2 = EE_NODE_SS2 + 1;						// The device's address on the bus (byte)
+
+// Camera Settings
+const int EE_CAMFL_SS2 = EE_ADDR_SS2 + 1;						// Camera focal length (mm) (int)
+
+// Motor Settings
+const int EE_MOTOR_SPACE_V1_1_SS2 = 12;							// How many addresses to move ahead for each motor when restoring or saving V1.1 and newer motor values
+const int EE_DES_SPEED0_SS2 = EE_CAMFL + 2;						// Target speed for motor 0 (float)
+const int EE_DES_SMSDIST0_SS2 = EE_DES_SPEED0 + 4;				// Target SMS distance for motor0 (float)
+const int EE_EZADJ0_SS2 = EE_DES_SMSDIST0_SS2 + 4;				// Adjust value for EZ mode (float)
+
+// EZ Mode Settings
+const int EE_EZMODE_SS2 = EE_EZADJ0_SS2 + (EE_MOTOR_SPACE_V1_1_SS2* MOTOR_COUNT);	// Whether EZ mode is active (boolean)
+const int EE_EZX_SS2 = EE_EZMODE_SS2 + 1;											// Whether the EZ extended / EZ manual mode is enabled (boolean)
+
+// Controller Meta-Settings
+const int EE_FACTORY_RESET_SS2 = EE_EZX_SS2 + 1;								// Whether the controller has just been reset to factory defaults
 
 

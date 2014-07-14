@@ -96,41 +96,64 @@ void altSetup() {
  */
  
 void altHandler(byte p_which) {
+  
+	// Debounce the trigger signal to avoid rapid-fire function execution
+	if((millis() - trigLast) >= ALT_TRIG_THRESH ) {
     
-  if((millis() - trigLast) >= ALT_TRIG_THRESH ) {
-    
-    trigLast = millis();
-    
-    if( alt_inputs[p_which] == ALT_START) 
-        startProgram();
-    else if( alt_inputs[p_which] == ALT_STOP_MOTORS && running == true){
-      for(byte i = 0; i < MOTOR_COUNT; i++ ){
-        motorStopThis(i);
-        // disable motor
-        motors[i].flags &= ~MOTOR_UEN_FLAG;
-        motor_running = false;
-        OMEEPROM::write(EE_M0FLAG + (EE_MOTOR_SPACE * i), motors[i].flags);
-      }
-    }
-    else if( alt_inputs[p_which] == ALT_STOP)
-        stopProgram();
-    else if( alt_inputs[p_which] == ALT_TOGGLE) {
-        if( running )
-          stopProgram();
-        else
-          startProgram();
-    }
-    else if( alt_inputs[p_which] == ALT_EXTINT ) {
-          // set camera ok to fire
-        alt_force_shot = true;
-          // do not clear the state, as we may be in the middle of a move
-          // when a trigger is received! (or some other activity, for that matter)
-        // Engine.state(ST_CLEAR);
-    }
-    else if( alt_inputs[p_which] == ALT_DIR)
-        motorDirFlip();
+		// Reset the debounce time counter
+		trigLast = millis();
+		
+		/** Check to see with alt state is active and execute the appropriate function **/
+		
+		// "Start"
+		if( alt_inputs[p_which] == ALT_START) 
+			startProgram();
+		
+		// "Stop Motors"
+		else if( alt_inputs[p_which] == ALT_STOP_MOTORS && running == true){
+			for(byte i = 0; i < MOTOR_COUNT; i++ ){
+			motorStopThis(i);
+			// disable motor
+			motors[i].flags &= ~MOTOR_UEN_FLAG;
+			motor_running = false;
+			OMEEPROM::write(EE_M0FLAG + (EE_MOTOR_SPACE * i), motors[i].flags);
+			}
+		}
+		
+		// "Stop"
+		else if( alt_inputs[p_which] == ALT_STOP)
+			stopProgram(false);
+		
+		// "Toggle"
+		else if( alt_inputs[p_which] == ALT_TOGGLE) {
+			if( running )
+				stopProgram(false);
+			else
+				startProgram();
+		}
+
+		// "Ext. Interval"
+		else if( alt_inputs[p_which] == ALT_EXTINT ) {
+				// set camera ok to fire
+			alt_force_shot = true;
+				// do not clear the state, as we may be in the middle of a move
+				// when a trigger is received! (or some other activity, for that matter)
+			// Engine.state(ST_CLEAR);
+		}
+
+		// "Direction Flip"
+		else if (alt_inputs[p_which] == ALT_DIR)
+			motorDirFlip();
+
+		// "Pause Program"
+		else if (alt_inputs[p_which] == ALT_PAUSE_PRGM){
+			if (running)
+				pauseProgram();
+			else
+				startProgram();
+		}
         
-  } //end if millis...
+	} //end if millis...
 }
 
 /** Handler for ISR One */

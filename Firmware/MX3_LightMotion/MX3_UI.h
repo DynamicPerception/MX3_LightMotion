@@ -79,15 +79,17 @@ const int BUT_MAP[5][2] = {
 // ====== Memory Strings Used in the UI ========
 
 const char MX3_VERSTR[]  =  "LightMotion";
-const char MX3_SUBSTR[]  =  "v.1.09 Antelope ";
+const char MX3_SUBSTR[]  =  "v.1.10 Otter  ";
 const char MX3_C1STR[]   =  "(c) 2014 Dynamic";
 const char MX3_C2STR[]   =  "Perception";
   // run, stop, and ext must be exact same length, pad with spaces
 const char STR_RUN[]     =  "On ";
 const char STR_STOP[]    =  "Off";
+const char STR_PAUSE[]	 =	"Pse";
 const char STR_TIM[]     =  "TIM";
 const char STR_EXT[]     =  "Ext";
-const char STR_TIME[]    =  "Time: ";
+const char STR_TIME[]    =  "Tm: ";
+const char STR_EZ[]		 =  "EZ?";
 const char STR_CAM[]     =  "Cam ";
 const char STR_BULB[]    =  "B ";
 const char STR_ECAM[]    =  "C ";
@@ -120,7 +122,7 @@ const char STR_LOD2[]    =  "Slot: ";
 const char STR_LOD3[]    =  "Memory Loaded";
 const char STR_LOD4[]    =  "Press Enter";
 const char STR_SMS[]     =  "SMS ";
-const char STR_CONT[]    =  "Cont";
+const char STR_CONT[]    =  "Con";
 const char STR_WARN1[]   =  "Unavailable     ";
 const char STR_WARN2[]   =  "Stop First      ";
 const char STR_DOT       =  '.';
@@ -153,6 +155,7 @@ const byte         UI_SCREEN_CAMERA  = 1;
 const byte         UI_SCREEN_MOTOR1  = 2;
 const byte         UI_SCREEN_MOTOR2  = 3;
 const byte         UI_SCREEN_MOTOR3  = 4;
+const byte		   UI_SCREEN_EZMODE  = 5;
 const unsigned int UI_ERR_REFRESH_TM = 5000;
 const unsigned int UI_ERR_BLINK_TM   = 1000;
 
@@ -173,20 +176,27 @@ MENU_SELECT_ITEM   ui_sel_off = { 0, {"Off"} };
 MENU_SELECT_ITEM  ui_sel_altstart    = { ALT_START,             {"Start"} };
 MENU_SELECT_ITEM  ui_sel_altstop     = { ALT_STOP,               {"Stop"} };
 MENU_SELECT_ITEM  ui_sel_alttog      = { ALT_TOGGLE,           {"Toggle"} };
-MENU_SELECT_ITEM  ui_sel_altext      = { ALT_EXTINT,         {"Ext. Int"} };
-MENU_SELECT_ITEM  ui_sel_altdir      = { ALT_DIR,                {"Dir."} };
-MENU_SELECT_ITEM  ui_sel_altoutb     = { ALT_OUT_B,            {"Out B4"} };
-MENU_SELECT_ITEM  ui_sel_altouta     = { ALT_OUT_A,           {"Out Aft"} };
+MENU_SELECT_ITEM  ui_sel_altext      = { ALT_EXTINT,    {"Ext. Interval"} };
+MENU_SELECT_ITEM  ui_sel_altdir      = { ALT_DIR,      {"Direction Flip"} };
+MENU_SELECT_ITEM  ui_sel_altoutb     = { ALT_OUT_B,        {"Out Before"} };
+MENU_SELECT_ITEM  ui_sel_altouta     = { ALT_OUT_A,         {"Out After"} };
 MENU_SELECT_ITEM  ui_sel_altstopmot  = { ALT_STOP_MOTORS, {"Stop Motors"} };
+MENU_SELECT_ITEM  ui_sel_altpause	 = { ALT_PAUSE_PRGM, { "Pause Program" } };
 
-MENU_SELECT_ITEM ui_sel_falling = { FALLING, {"Falling"} };
-MENU_SELECT_ITEM ui_sel_rising  = { RISING,  {"Rising"} };
+MENU_SELECT_ITEM ui_sel_falling = { FALLING, {"Beginning"} };
+MENU_SELECT_ITEM ui_sel_rising  = { RISING,  {"Ending"} };
 
 MENU_SELECT_ITEM ui_sel_high = { HIGH, {"High"} };
 MENU_SELECT_ITEM ui_sel_low  = { LOW,  {"Low"} };
 
+// List of unit types
+MENU_SELECT_ITEM   ui_sel_units_standard	= { STANDARD, { "in" } };
+MENU_SELECT_ITEM   ui_sel_units_metric		= { METRIC, { "cm" } };
+MENU_SELECT_ITEM   ui_sel_units_percent		= { PERCENT, { "% / Sec" } };
+
+MENU_SELECT_LIST  ui_sel_list_units[] = { &ui_sel_units_standard, &ui_sel_units_metric, &ui_sel_units_percent };
 MENU_SELECT_LIST  ui_sel_list_onoff[]  = { &ui_sel_off, &ui_sel_on };
-MENU_SELECT_LIST  ui_sel_list_alt[]    = { &ui_sel_off, &ui_sel_altstart, &ui_sel_altstop, &ui_sel_alttog, &ui_sel_altext, &ui_sel_altdir, &ui_sel_altoutb, &ui_sel_altouta, &ui_sel_altstopmot };
+MENU_SELECT_LIST  ui_sel_list_alt[] = { &ui_sel_off, &ui_sel_altstart, &ui_sel_altstop, &ui_sel_alttog, &ui_sel_altext, &ui_sel_altdir, &ui_sel_altoutb, &ui_sel_altouta, &ui_sel_altstopmot, &ui_sel_altpause };
 MENU_SELECT_LIST  ui_sel_list_altOut[] = { &ui_sel_off, &ui_sel_altoutb, &ui_sel_altouta };
 MENU_SELECT_LIST  ui_sel_list_dir[]    = { &ui_sel_falling, &ui_sel_rising };
 MENU_SELECT_LIST  ui_sel_list_hilo[]    = { &ui_sel_high, &ui_sel_low };
@@ -202,21 +212,23 @@ MENU_VALUE   ui_in_camBulb     = { TYPE_SELECT,           0,           0, MENU_T
 MENU_VALUE   ui_in_camLock     = { TYPE_SELECT,           0,           0, MENU_TARGET(&ui_sl_camLock),    EE_CAMLOCK };
 MENU_VALUE   ui_in_camExposure = { TYPE_ULONG,   CAMEXP_MAX,  CAMEXP_MIN, MENU_TARGET(&camera_exposure),  EE_CAMEXP };
 MENU_VALUE   ui_in_camFocus    = { TYPE_ULONG,   CAMFOC_MAX,  CAMFOC_MIN, MENU_TARGET(&camera_focus),     EE_CAMFOC };
+MENU_VALUE   ui_in_camFocLen   = { TYPE_INT,	  CAMFL_MAX,   CAMFL_MIN, MENU_TARGET(&camera_focal_length), EE_CAMFL };
 MENU_VALUE   ui_in_camWait     = { TYPE_ULONG,  CAMWAIT_MAX, CAMWAIT_MIN, MENU_TARGET(&camera_wait),      EE_CAMWAIT };
-MENU_VALUE   ui_in_camDelay    = { TYPE_FLOAT_10,         0,           0, MENU_TARGET(&camera_delay),     EE_CAMDEL };
-MENU_VALUE   ui_in_timeDelay    = { TYPE_INT,          65535,           0, MENU_TARGET(&camera_timer),     EE_CAMTIMER };
+MENU_VALUE   ui_in_camDelay	   = { TYPE_FLOAT_10, CAMDELAY_MAX, CAMDELAY_MIN, MENU_TARGET(&camera_delay), EE_CAMDEL };
+MENU_VALUE   ui_in_timeDelay   = { TYPE_INT,          65535,           0, MENU_TARGET(&camera_timer),     EE_CAMTIMER };
 
-MENU_ITEM    ui_it_camMaxShot  = { {"Max Shots"},      ITEM_VALUE, 0, MENU_TARGET(&ui_in_camMaxShots) };
-MENU_ITEM    ui_it_camRepeat   = { {"Repeat Shots"},   ITEM_VALUE, 0, MENU_TARGET(&ui_in_camRepeat) };
-MENU_ITEM    ui_it_camBulb     = { {"Bulb Exposure"},  ITEM_VALUE, 0, MENU_TARGET(&ui_in_camBulb) };
-MENU_ITEM    ui_it_camExposure = { {"Exp. Time   mS"}, ITEM_VALUE, 0, MENU_TARGET(&ui_in_camExposure) };
-MENU_ITEM    ui_it_camFocus    = { {"Focus       mS"}, ITEM_VALUE, 0, MENU_TARGET(&ui_in_camFocus) };
-MENU_ITEM    ui_it_camWait     = { {"Exp Delay   mS"}, ITEM_VALUE, 0, MENU_TARGET(&ui_in_camWait) };
-MENU_ITEM    ui_it_camDelay    = { {"Interval   Sec"}, ITEM_VALUE, 0, MENU_TARGET(&ui_in_camDelay) };
-MENU_ITEM    ui_it_camLock     = { {"Focus Lock"},     ITEM_VALUE, 0, MENU_TARGET(&ui_in_camLock) };
+MENU_ITEM    ui_it_camMaxShot  = { {"Max Shots      "},      ITEM_VALUE, 0, MENU_TARGET(&ui_in_camMaxShots) };
+MENU_ITEM    ui_it_camRepeat   = { {"Repeat Shots   "},   ITEM_VALUE, 0, MENU_TARGET(&ui_in_camRepeat) };
+MENU_ITEM    ui_it_camBulb     = { {"Bulb Exposure  "},  ITEM_VALUE, 0, MENU_TARGET(&ui_in_camBulb) };
+MENU_ITEM    ui_it_camExposure = { {"Exp. Time    mS"}, ITEM_VALUE, 0, MENU_TARGET(&ui_in_camExposure) };
+MENU_ITEM    ui_it_camFocus    = { {"Focus        mS"}, ITEM_VALUE, 0, MENU_TARGET(&ui_in_camFocus) };
+MENU_ITEM    ui_it_camFocLen   = { {"Focal Length mm"}, ITEM_VALUE, 0, MENU_TARGET(&ui_in_camFocLen) };
+MENU_ITEM    ui_it_camWait     = { {"Exp Delay    mS"}, ITEM_VALUE, 0, MENU_TARGET(&ui_in_camWait) };
+MENU_ITEM    ui_it_camDelay    = { {"Interval    Sec"}, ITEM_VALUE, 0, MENU_TARGET(&ui_in_camDelay) };
+MENU_ITEM    ui_it_camLock     = { {"Focus Lock     "},     ITEM_VALUE, 0, MENU_TARGET(&ui_in_camLock) };
 MENU_ITEM    ui_it_timeDelay   = { {"Start Timer min"}, ITEM_VALUE, 0, MENU_TARGET(&ui_in_timeDelay) };
 
-MENU_LIST    ui_list_cam[]     = { &ui_it_camDelay, &ui_it_camMaxShot, &ui_it_camBulb, &ui_it_camExposure, &ui_it_camWait, &ui_it_camFocus, &ui_it_camRepeat, &ui_it_camLock, &ui_it_timeDelay };
+MENU_LIST    ui_list_cam[] = { &ui_it_camDelay, &ui_it_camMaxShot, &ui_it_camBulb, &ui_it_camExposure, &ui_it_camWait, &ui_it_camFocus, &ui_it_camFocLen, &ui_it_camRepeat, &ui_it_camLock, &ui_it_timeDelay };
 
 MENU_ITEM    ui_it_camList     = { {"Camera"}, ITEM_MENU, MENU_SIZE(ui_list_cam), MENU_TARGET(&ui_list_cam) };
 
@@ -224,26 +236,30 @@ MENU_ITEM    ui_it_camList     = { {"Camera"}, ITEM_MENU, MENU_SIZE(ui_list_cam)
   // ======= Motor Menus
   
 
-// ===== Manual Move Menu
+// ===== Manual Move Menuaxis 1
 
 MENU_SELECT_ITEM  ui_sel_holdMove = { MM_HOLD,  {"Hold"} };
 MENU_SELECT_ITEM  ui_sel_selectStop  = { MM_SELECT,   {"Start/Stop"} };
-MENU_SELECT_LIST  ui_sel_list_mm[]  = { &ui_sel_holdMove, &ui_sel_selectStop };
+// MENU_SELECT_ITEM  ui_sel_endurance = { MM_ENDURANCE,  {"Endurance"} };
+
+// MENU_SELECT_LIST  ui_sel_list_mm[]  = { &ui_sel_holdMove, &ui_sel_selectStop, &ui_sel_endurance};
+MENU_SELECT_LIST  ui_sel_list_mm[] = { &ui_sel_holdMove, &ui_sel_selectStop};
 
 MENU_SELECT  ui_sl_mmSetting    = { &mmSetting, MENU_SELECT_SIZE(ui_sel_list_mm),    MENU_TARGET(&ui_sel_list_mm) };
 MENU_VALUE   ui_in_mmSetting    = { TYPE_SELECT, 0, 0, MENU_TARGET(&ui_sl_mmSetting),   EE_MMSETTING };
 
 
+MENU_ITEM    ui_it_mmSetting	= { { "Movement Type" }, ITEM_VALUE, 0, MENU_TARGET(&ui_in_mmSetting) };
 MENU_ITEM    ui_it_mm0_man      = { {"Axis 1"},  ITEM_ACTION, 0, MENU_TARGET(uiMenuManualOne) };
 MENU_ITEM    ui_it_mm1_man      = { {"Axis 2"},  ITEM_ACTION, 0, MENU_TARGET(uiMenuManualTwo) };
 MENU_ITEM    ui_it_mm2_man      = { {"Axis 3"},  ITEM_ACTION, 0, MENU_TARGET(uiMenuManualThree) };
-MENU_ITEM    ui_it_mmSetting    = { {"Movement Type"}, ITEM_VALUE,  0, MENU_TARGET(&ui_in_mmSetting) };
+MENU_ITEM	 ui_it_mocobus		= { {"MoCoBus"}, ITEM_ACTION, 0, MENU_TARGET(uiMenuManualMocobus) };
 
-MENU_LIST    ui_list_mm[]      = { &ui_it_mmSetting, &ui_it_mm0_man, &ui_it_mm1_man, &ui_it_mm2_man };
+MENU_LIST    ui_list_mm[]      = { &ui_it_mmSetting, &ui_it_mm0_man, &ui_it_mm1_man, &ui_it_mm2_man, &ui_it_mocobus };
 MENU_ITEM    ui_it_mm      = { {"Manual Move"}, ITEM_MENU, MENU_SIZE(ui_list_mm), MENU_TARGET(&ui_list_mm) };  
   
 
-  // motor 1 inputs
+// motor 1 inputs
   
 MENU_FLAG    ui_flag_m0_rot    = { 4, (byte*) &motors[0].flags };
 MENU_FLAG    ui_flag_m0_flip   = { 5, (byte*) &motors[0].flags };
@@ -255,12 +271,14 @@ MENU_VALUE   ui_in_m0_ratio    = { TYPE_FLOAT_1000, 5000, 0, MENU_TARGET(&motors
 
 MENU_ITEM    ui_it_m0_pres     = { {"Motor Preset"}, ITEM_ACTION, 0, MENU_TARGET(uiMenuPresetOne) };
 MENU_ITEM    ui_it_m0_man      = { {"Manual Move"},  ITEM_ACTION, 0, MENU_TARGET(uiMenuManualOne) };
+MENU_ITEM	 ui_it_m0_dist	   = { { "Set Dist/hr" }, ITEM_ACTION, 0, MENU_TARGET(uiDistEstimate0) };
+MENU_ITEM	 ui_it_m0_shots	   = { { "Set Shots/hr" }, ITEM_ACTION, 0, MENU_TARGET(uiShotsEstimate0) };
 MENU_ITEM    ui_it_m0_rot      = { {"Rotary"},       ITEM_VALUE,  0, MENU_TARGET(&ui_in_m0_rot) };
 MENU_ITEM    ui_it_m0_flip     = { {"Invert Dir"},   ITEM_VALUE,  0, MENU_TARGET(&ui_in_m0_flip) };
 MENU_ITEM    ui_it_m0_rpm      = { {"RPM"},          ITEM_VALUE,  0, MENU_TARGET(&ui_in_m0_rpm) };
 MENU_ITEM    ui_it_m0_ratio    = { {"Ratio"},        ITEM_VALUE,  0, MENU_TARGET(&ui_in_m0_ratio) };
 
-MENU_LIST    ui_list_m0[]      = { &ui_it_m0_man, &ui_it_m0_pres, &ui_it_m0_rot, &ui_it_m0_flip, &ui_it_m0_rpm, &ui_it_m0_ratio, &ui_it_mmSetting };
+MENU_LIST    ui_list_m0[]	   = { &ui_it_m0_man, &ui_it_m0_dist, &ui_it_m0_shots, &ui_it_m0_pres, &ui_it_m0_rot, &ui_it_m0_flip, &ui_it_m0_rpm, &ui_it_m0_ratio, &ui_it_mmSetting };
 MENU_ITEM    ui_it_m0List      = { {"Axis 1"}, ITEM_MENU, MENU_SIZE(ui_list_m0), MENU_TARGET(&ui_list_m0) };
 
   // motor 2 inputs
@@ -275,12 +293,14 @@ MENU_VALUE   ui_in_m1_ratio    = { TYPE_FLOAT_1000, 5000, 0, MENU_TARGET(&motors
 
 MENU_ITEM    ui_it_m1_pres     = { {"Motor Preset"}, ITEM_ACTION, 0, MENU_TARGET(uiMenuPresetTwo) };
 MENU_ITEM    ui_it_m1_man      = { {"Manual Move"},  ITEM_ACTION, 0, MENU_TARGET(uiMenuManualTwo) };
+MENU_ITEM	 ui_it_m1_dist	   = { { "Set Dist/hr" }, ITEM_ACTION, 0, MENU_TARGET(uiDistEstimate1) };
+MENU_ITEM	 ui_it_m1_shots    = { { "Set Shots/hr" }, ITEM_ACTION, 0, MENU_TARGET(uiShotsEstimate1) };
 MENU_ITEM    ui_it_m1_rot      = { {"Rotary"},       ITEM_VALUE,  0, MENU_TARGET(&ui_in_m1_rot) };
 MENU_ITEM    ui_it_m1_flip     = { {"Invert Dir"},   ITEM_VALUE,  0, MENU_TARGET(&ui_in_m1_flip) };
 MENU_ITEM    ui_it_m1_rpm      = { {"RPM"},          ITEM_VALUE,  0, MENU_TARGET(&ui_in_m1_rpm) };
 MENU_ITEM    ui_it_m1_ratio    = { {"Ratio"},        ITEM_VALUE,  0, MENU_TARGET(&ui_in_m1_ratio) };
 
-MENU_LIST    ui_list_m1[]      = { &ui_it_m1_man, &ui_it_m1_pres, &ui_it_m1_rot, &ui_it_m1_flip, &ui_it_m1_rpm, &ui_it_m1_ratio, &ui_it_mmSetting };
+MENU_LIST    ui_list_m1[] = { &ui_it_m1_man, &ui_it_m1_dist, &ui_it_m1_shots, &ui_it_m1_pres, &ui_it_m1_rot, &ui_it_m1_flip, &ui_it_m1_rpm, &ui_it_m1_ratio, &ui_it_mmSetting };
 MENU_ITEM    ui_it_m1List      = { {"Axis 2"}, ITEM_MENU, MENU_SIZE(ui_list_m1), MENU_TARGET(&ui_list_m1) };
 
   // motor 3 inputs
@@ -295,12 +315,14 @@ MENU_VALUE   ui_in_m2_ratio    = { TYPE_FLOAT_1000, 5000, 0, MENU_TARGET(&motors
 
 MENU_ITEM    ui_it_m2_pres     = { {"Motor Preset"}, ITEM_ACTION, 0, MENU_TARGET(uiMenuPresetThree) };
 MENU_ITEM    ui_it_m2_man      = { {"Manual Move"},  ITEM_ACTION, 0, MENU_TARGET(uiMenuManualThree) };
+MENU_ITEM	 ui_it_m2_dist = { { "Set Dist/hr" }, ITEM_ACTION, 0, MENU_TARGET(uiDistEstimate2) };
+MENU_ITEM	 ui_it_m2_shots = { { "Set Shots/hr" }, ITEM_ACTION, 0, MENU_TARGET(uiShotsEstimate2) };
 MENU_ITEM    ui_it_m2_rot      = { {"Rotary"},       ITEM_VALUE,  0, MENU_TARGET(&ui_in_m2_rot) };
 MENU_ITEM    ui_it_m2_flip     = { {"Invert Dir"},   ITEM_VALUE,  0, MENU_TARGET(&ui_in_m2_flip) };
 MENU_ITEM    ui_it_m2_rpm      = { {"RPM"},          ITEM_VALUE,  0, MENU_TARGET(&ui_in_m2_rpm) };
 MENU_ITEM    ui_it_m2_ratio    = { {"Ratio"},        ITEM_VALUE,  0, MENU_TARGET(&ui_in_m2_ratio) };
 
-MENU_LIST    ui_list_m2[]      = { &ui_it_m2_man, &ui_it_m2_pres, &ui_it_m2_rot, &ui_it_m2_flip, &ui_it_m2_rpm, &ui_it_m2_ratio, &ui_it_mmSetting };
+MENU_LIST    ui_list_m2[] = { &ui_it_m2_man, &ui_it_m2_dist, &ui_it_m2_shots, &ui_it_m2_pres, &ui_it_m2_rot, &ui_it_m2_flip, &ui_it_m2_rpm, &ui_it_m2_ratio, &ui_it_mmSetting };
 MENU_ITEM    ui_it_m2List      = { {"Axis 3"}, ITEM_MENU, MENU_SIZE(ui_list_m2), MENU_TARGET(&ui_list_m2) };
 
 
@@ -363,36 +385,47 @@ MENU_ITEM    ui_it_volen    = { {"Voltage Warn"},   ITEM_VALUE,  0, MENU_TARGET(
 MENU_LIST    ui_list_sen[]  = { &ui_it_vol, &ui_it_cur, &ui_it_temp0, &ui_it_temp1, &ui_it_temp2, &ui_it_volen, &ui_it_volth };
 MENU_ITEM    ui_it_sen      = { {"Sensors"}, ITEM_MENU, MENU_SIZE(ui_list_sen), MENU_TARGET(&ui_list_sen) };
 
+// ===== MoCoBus Node Menu
+
+MENU_VALUE		  ui_in_addr				 = { TYPE_BYTE, 255, 2, MENU_TARGET(&dev_addr), EE_ADDR };
+
+MENU_ITEM		  ui_it_active				 = { { "Node Active " }, ITEM_ACTION, 0, MENU_TARGET(nodeMode) };
+MENU_ITEM		  ui_it_addr				 = { { "Node Address" }, ITEM_VALUE, 0, MENU_TARGET(&ui_in_addr) };
+MENU_LIST		  ui_list_node[]			 = { &ui_it_addr, &ui_it_active };
+
+// Menu item shows up in the "Settings" sub-menu
+MENU_ITEM		  ui_it_node				 = { { "MoCoBus Node" }, ITEM_MENU, MENU_SIZE(ui_list_node), MENU_TARGET(&ui_list_node) };
+
+
  // ===== Global Options
 
 MENU_SELECT  ui_sl_glHet       = { &sensor_enHeater, MENU_SELECT_SIZE(ui_sel_list_onoff), MENU_TARGET(&ui_sel_list_onoff) };
-MENU_SELECT  ui_sl_glMet       = { &disp_metric,     MENU_SELECT_SIZE(ui_sel_list_onoff), MENU_TARGET(&ui_sel_list_onoff) };
+MENU_SELECT  ui_sl_glUnt	   = { &units, MENU_SELECT_SIZE(ui_sel_list_units), MENU_TARGET(&ui_sel_list_units) };
+MENU_SELECT  ui_sl_glEZX	   = { &ez_extended, MENU_SELECT_SIZE(ui_sel_list_onoff), MENU_TARGET(&ui_sel_list_onoff) };
 
-MENU_VALUE   ui_in_glLCD       = { TYPE_BYTE,   0,    0,  MENU_TARGET(&lcdDisable),          EE_LCDOFF };  
+
+MENU_VALUE   ui_in_glLCD       = { TYPE_BYTE,   0,    0,   MENU_TARGET(&lcdDisable),          EE_LCDOFF };  
 MENU_VALUE   ui_in_glInc       = { TYPE_FLOAT_1000, 1, 0,  MENU_TARGET(&motorIncrement), EE_INCREMENT };
-MENU_VALUE   ui_in_glPer       = { TYPE_UINT,  5000, 50,  MENU_TARGET(&motor_pwm_minperiod), EE_PERIOD };   
-MENU_VALUE   ui_in_glHet       = { TYPE_SELECT, 0,    0,  MENU_TARGET(&ui_sl_glHet),         EE_HEATER };
-MENU_VALUE   ui_in_glMet       = { TYPE_SELECT, 0,    0,  MENU_TARGET(&ui_sl_glMet),         EE_METRIC };
+MENU_VALUE   ui_in_glPer       = { TYPE_UINT,  5000, 50,   MENU_TARGET(&motor_pwm_minperiod), EE_PERIOD };   
+MENU_VALUE   ui_in_glHet       = { TYPE_SELECT, 0,    0,   MENU_TARGET(&ui_sl_glHet),         EE_HEATER };
+MENU_VALUE   ui_in_glUnt       = { TYPE_SELECT, 0,    0,   MENU_TARGET(&ui_sl_glUnt),         EE_UNITS };
+MENU_VALUE	 ui_in_glEZX	   = { TYPE_SELECT, 0,	  0,   MENU_TARGET(&ui_sl_glEZX),		  EE_EZX };
 
-MENU_ITEM    ui_it_glMet       = { {"Metric Display"},  ITEM_VALUE,  0, MENU_TARGET(&ui_in_glMet) };
+MENU_ITEM    ui_it_glUnt	   = { { "Unit Type" },		ITEM_VALUE,  0, MENU_TARGET(&ui_in_glUnt) };
+MENU_ITEM	 ui_it_glEZX	   = { { "EZ Advanced" },	ITEM_VALUE,  0, MENU_TARGET(&ui_in_glEZX) };
 MENU_ITEM    ui_it_glLCD       = { {"LCD AutoOff Sec"}, ITEM_VALUE,  0, MENU_TARGET(&ui_in_glLCD) };
-MENU_ITEM    ui_it_glInc       = { {"Step Ratio"}, ITEM_VALUE,  0, MENU_TARGET(&ui_in_glInc) };
+MENU_ITEM    ui_it_glInc       = { {"Step Ratio"},		ITEM_VALUE,  0, MENU_TARGET(&ui_in_glInc) };
 MENU_ITEM    ui_it_glPer       = { {"Motor Timing"},    ITEM_VALUE,  0, MENU_TARGET(&ui_in_glPer) };
 MENU_ITEM    ui_it_glVFD       = { {"VFD Brightness"},  ITEM_ACTION, 0, MENU_TARGET(uiVFDBrightness) };
 MENU_ITEM    ui_it_glSav       = { {"Save Memory"},     ITEM_ACTION, 0, MENU_TARGET(uiMenuSaveMem) };
 MENU_ITEM    ui_it_glLod       = { {"Load Memory"},     ITEM_ACTION, 0, MENU_TARGET(uiMenuLoadMem) };
 MENU_ITEM    ui_it_glMem       = { {"Reset Memory"},    ITEM_ACTION, 0, MENU_TARGET(uiMenuResetMem) };
-MENU_ITEM    ui_it_glHet       = { {"Cold Mode"},       ITEM_VALUE,  0, MENU_TARGET(&ui_in_glHet) };
+MENU_ITEM    ui_it_glHet       = { {"VFD Auto-Off"},    ITEM_VALUE,  0, MENU_TARGET(&ui_in_glHet) };
 MENU_ITEM    ui_it_glJmp       = { {"Jump!"},           ITEM_ACTION, 0, MENU_TARGET(uiJump) };
 
 
-
-
-
-MENU_LIST    ui_list_gl[]      = { &ui_it_alt, &ui_it_sen, &ui_it_glMet, &ui_it_glLCD, &ui_it_glInc, &ui_it_glPer,  &ui_it_glHet, &ui_it_glVFD, &ui_it_glSav, &ui_it_glLod, &ui_it_glMem, &ui_it_glJmp };
+MENU_LIST    ui_list_gl[] = { &ui_it_node, &ui_it_alt, &ui_it_sen, &ui_it_glUnt, &ui_it_glEZX,  &ui_it_glLCD, &ui_it_glInc, &ui_it_glPer, &ui_it_glHet, &ui_it_glVFD, &ui_it_glSav, &ui_it_glLod, &ui_it_glMem, &ui_it_glJmp };
 MENU_ITEM    ui_it_glList      = { {"Settings"}, ITEM_MENU, MENU_SIZE(ui_list_gl), MENU_TARGET(&ui_list_gl) };
-
-
 
 
 
@@ -500,15 +533,16 @@ struct uiDisplayCursors {
  // main screen
 const uiDisplayCursorTarget  ui_ct_main1     = { 0, 0,  uiCursorToggleRun, 0 };
 const uiDisplayCursorTarget  ui_ct_main2     = { 0, 4,  uiCursorAdjustInt, 0 };
-const uiDisplayCursorTarget  ui_ct_main3     = { 0, 12, uiCursorAdjustSMS, 0 };
+const uiDisplayCursorTarget  ui_ct_main3     = { 0, 10, uiCursorAdjustSMS, 0 };
+const uiDisplayCursorTarget  ui_ct_main4	 = { 1, 13, uiCursorEZmode, 0 };
 
-const uiDisplayCursorTarget* ui_dctl_main[]  = { &ui_ct_main1, &ui_ct_main2, &ui_ct_main3 };
+const uiDisplayCursorTarget* ui_dctl_main[] = { &ui_ct_main1, &ui_ct_main2, &ui_ct_main3, &ui_ct_main4 };
 const uiDisplayCursors       ui_dc_main      = { DCT_SIZE(ui_dctl_main), DCT_PTR(&ui_dctl_main) };
 
  // camera screen
 const uiDisplayCursorTarget  ui_ct_cam1      = { 1, 0,  uiCursorChangeCamBulb,     &ui_it_camList };
 const uiDisplayCursorTarget  ui_ct_cam2      = { 1, 2,  uiCursorChangeShutterTime, &ui_it_camList };
-const uiDisplayCursorTarget  ui_ct_cam3      = { 1, 11, uiCursorChangeFocusTime,   &ui_it_camList };
+const uiDisplayCursorTarget  ui_ct_cam3      = { 1, 13, uiCursorChangeFocalLength, &ui_it_camList };
 
 const uiDisplayCursorTarget* ui_dctl_cam[]   = { &ui_ct_cam1, &ui_ct_cam2, &ui_ct_cam3 };
 const uiDisplayCursors       ui_dc_cam       = { DCT_SIZE(ui_dctl_cam), DCT_PTR(&ui_dctl_cam) };
@@ -516,19 +550,37 @@ const uiDisplayCursors       ui_dc_cam       = { DCT_SIZE(ui_dctl_cam), DCT_PTR(
  // motor screens
 const uiDisplayCursorTarget  ui_ct_mot1      = { 0, 7,  uiCursorChangeMotEn,   0 };
 const uiDisplayCursorTarget  ui_ct_mot2      = { 1, 0,  uiCursorChangeMotDir,  0 };
-const uiDisplayCursorTarget  ui_ct_mot3      = { 1, 2,  uiCursorChangeMotSpd,  0 };
-const uiDisplayCursorTarget  ui_ct_mot4      = { 0, 13, uiCursorChangeMotLead, 0 };
-const uiDisplayCursorTarget  ui_ct_mot5_0    = { 1, 13, uiCursorChangeMotRamp, &ui_it_cmot0 };
-const uiDisplayCursorTarget  ui_ct_mot5_1    = { 1, 13, uiCursorChangeMotRamp, &ui_it_cmot1 };
-const uiDisplayCursorTarget  ui_ct_mot5_2    = { 1, 13, uiCursorChangeMotRamp, &ui_it_cmot2 };
 
-const uiDisplayCursorTarget* ui_dctl_mot0[]   = { &ui_ct_mot1, &ui_ct_mot2, &ui_ct_mot3, &ui_ct_mot4, &ui_ct_mot5_0 };
-const uiDisplayCursorTarget* ui_dctl_mot1[]   = { &ui_ct_mot1, &ui_ct_mot2, &ui_ct_mot3, &ui_ct_mot4, &ui_ct_mot5_1 };
-const uiDisplayCursorTarget* ui_dctl_mot2[]   = { &ui_ct_mot1, &ui_ct_mot2, &ui_ct_mot3, &ui_ct_mot4, &ui_ct_mot5_2 };
+const uiDisplayCursorTarget  ui_ct_mot3_1	 = { 1, 2,	uiCursorChangeMotSpd_10,  0 };
+const uiDisplayCursorTarget  ui_ct_mot3_2	 = { 1, 3,	uiCursorChangeMotSpd_1,  0 };
+const uiDisplayCursorTarget  ui_ct_mot3_3	 = { 1, 5,  uiCursorChangeMotSpd_0_1,  0 };
+const uiDisplayCursorTarget  ui_ct_mot3_4	 = { 1, 6,  uiCursorChangeMotSpd_0_01,  0 };
+const uiDisplayCursorTarget  ui_ct_mot4      = { 0, 13, uiCursorChangeMotLead, 0 };
+const uiDisplayCursorTarget  ui_ct_mot5_0 = { 1, 13, uiCursorChangeMotRamp, &ui_it_cmot0 };
+const uiDisplayCursorTarget  ui_ct_mot5_1 = { 1, 13, uiCursorChangeMotRamp, &ui_it_cmot1 };
+const uiDisplayCursorTarget  ui_ct_mot5_2 = { 1, 13, uiCursorChangeMotRamp, &ui_it_cmot2 };
+
+const uiDisplayCursorTarget* ui_dctl_mot0[] = { &ui_ct_mot1, &ui_ct_mot2, &ui_ct_mot3_1, &ui_ct_mot3_2, &ui_ct_mot3_3, &ui_ct_mot3_4, &ui_ct_mot4, &ui_ct_mot5_0 };
+const uiDisplayCursorTarget* ui_dctl_mot1[] = { &ui_ct_mot1, &ui_ct_mot2, &ui_ct_mot3_1, &ui_ct_mot3_2, &ui_ct_mot3_3, &ui_ct_mot3_4, &ui_ct_mot4, &ui_ct_mot5_0 };
+const uiDisplayCursorTarget* ui_dctl_mot2[] = { &ui_ct_mot1, &ui_ct_mot2, &ui_ct_mot3_1, &ui_ct_mot3_2, &ui_ct_mot3_3, &ui_ct_mot3_4, &ui_ct_mot4, &ui_ct_mot5_0 };
 
 const uiDisplayCursors       ui_dc_mot0       = { DCT_SIZE(ui_dctl_mot0), DCT_PTR(&ui_dctl_mot0) };
 const uiDisplayCursors       ui_dc_mot1       = { DCT_SIZE(ui_dctl_mot0), DCT_PTR(&ui_dctl_mot1) };
 const uiDisplayCursors       ui_dc_mot2       = { DCT_SIZE(ui_dctl_mot0), DCT_PTR(&ui_dctl_mot2) };
+
+// EZ Mode Screen
+
+const uiDisplayCursorTarget ui_ct_EZdir0 = { 1, 0, uiCursorEZdir0, &ui_it_m0List };
+const uiDisplayCursorTarget ui_ct_EZadjust0 = { 1, 3, uiCursorEZadjust0, &ui_it_m0List };
+
+const uiDisplayCursorTarget ui_ct_EZdir1 = { 1, 6, uiCursorEZdir1, &ui_it_m1List };
+const uiDisplayCursorTarget ui_ct_EZadjust1 = { 1, 9, uiCursorEZadjust1, &ui_it_m1List };
+
+const uiDisplayCursorTarget ui_ct_EZdir2 = { 1, 12, uiCursorEZdir2, &ui_it_m2List };
+const uiDisplayCursorTarget ui_ct_EZadjust2 = { 1, 15, uiCursorEZadjust2, &ui_it_m2List };
+
+const uiDisplayCursorTarget* ui_dct1_EZmode[] = { &ui_ct_main1, &ui_ct_main2, &ui_ct_main3, &ui_ct_EZdir0, &ui_ct_EZadjust0, &ui_ct_EZdir1, &ui_ct_EZadjust1, &ui_ct_EZdir2, &ui_ct_EZadjust2 };
+const uiDisplayCursors	ui_dc_EZmode = { DCT_SIZE(ui_dct1_EZmode), DCT_PTR(&ui_dct1_EZmode) };
 
  // screens with no targets
 const uiDisplayCursors ui_dc_none = { 0, 0 };
@@ -536,6 +588,6 @@ const uiDisplayCursors ui_dc_none = { 0, 0 };
  // all screen cursors...
  
     // main, camera, m1, m2, m3 
-const uiDisplayCursors*  ui_dc_list[] = { &ui_dc_main, &ui_dc_cam, &ui_dc_mot0, &ui_dc_mot1, &ui_dc_mot2 };
+const uiDisplayCursors*  ui_dc_list[] = { &ui_dc_main, &ui_dc_cam, &ui_dc_mot0, &ui_dc_mot1, &ui_dc_mot2, &ui_dc_EZmode };
 
 
