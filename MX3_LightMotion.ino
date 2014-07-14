@@ -107,11 +107,14 @@ MX3 Declarations
 
 */
 
-  // predefine this function to declare the default argument
+// predefine this function to declare the default argument
 void stopProgram(boolean force_clear = true);
 
+// Variable to track whether the controller been reset to factory defaults
+boolean		   factory_reset = true;
 
-  // Prep Control Variables that must be defined early
+
+// Prep Control Variables that must be defined early
 boolean				ez_mode = false;
 boolean			ez_extended = false;
 boolean          motion_sms = false;
@@ -139,6 +142,8 @@ bool               camera_flag = false;
 
 float correction_table[100];
 const float STATIC_CORRECTION = 1.05;
+const float DEFAULT_LIN_PCT = 0.25; // Default percent of max speed to use for linear motors
+const float DEFAULT_ROT_PCT = 0.10; // Default percent of max speed to use for rotary motors
 
 
  // initialize core objects
@@ -244,6 +249,37 @@ MoCoBus setup and debugging features
 			 + 1.0822107570207381e+001 * pow(degrees, 4);
 	 }
  }
+
+ // Check to see if there was a factory reset
+ if(factory_reset) {
+
+	 // Prompt user to set the motor presets and set a default
+	 for (byte i = 0; i < MOTOR_COUNT; i++) {
+		 uiMenuPreset(i);
+		 if (motors[i].flags & MOTOR_ROT_FLAG) {
+			 motors[i].target_speed = DEFAULT_ROT_PCT * motorMaxSpeed(i);
+		 }
+		 else {
+			 motors[i].target_speed = DEFAULT_LIN_PCT * motorMaxSpeed(i);
+		 }
+		 // Set default direction, +/R
+		 motors[i].flags |= (MOTOR_CDIR_FLAG);
+	 }
+
+	 // Change to continuous mode
+	 motion_sms = false;
+
+	 // Change to manual mode
+	 ez_mode = false;
+
+	 // Turn off the factory_reset variable
+	 factory_reset = false;
+
+	 // Save EEPROM settings
+	 eepromWrite();
+ }
+
+ lcd.clear();
 
  // Refresh the motor power based on the initial battery setting
  refreshMotors(true);

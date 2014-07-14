@@ -98,6 +98,10 @@ void uiMenuResetMem() {
  
  lcd.clear();
  OMEEPROM::saved(false);
+
+ // Save the factory reset variable
+ factory_reset = true;
+ OMEEPROM::write(EE_FACTORY_RESET, factory_reset);
  
  lcd.print(STR_RES3);
  lcd.setCursor(0, 1);

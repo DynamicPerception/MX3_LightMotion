@@ -327,7 +327,7 @@ struct MotorDefinition {
  /** Default Constructor */
    
  MotorDefinition() {
-   flags = 0;
+   flags = B00001000;		// Defaults to motor enabled
    currentMoveCycles = 0;
    onCycleRatio = 1.0;
    rpm = 8.13;
@@ -555,7 +555,7 @@ const int EE_UNITS_SS2     = EE_HEATER_SS2     + 1; // unit type on/off
 const int EE_INCREMENT_SS2 = EE_UNITS_SS2     + 1; // motor speed increment
 
 
-// EEPROM Block starting at address 500 reserved for values added in and after Vesion 1.1 of the MX3 firmware.
+// EEPROM Block starting at address 500 reserved for values added in and after Vesion 1.10 of the MX3 firmware.
 // Each group of settins is allocated 500 bytes of memory, but this can be changed by modifying the start values
 // of the memory blocks for each of the save state groups.
 
@@ -579,6 +579,9 @@ const int EE_EZADJ0 = EE_DES_SMSDIST0 + 4;				// Adjust value for EZ mode (float
 const int EE_EZMODE = EE_EZADJ0 + (EE_MOTOR_SPACE_V1_1 * MOTOR_COUNT);	// Whether EZ mode is active (boolean)
 const int EE_EZX = EE_EZMODE + 1;										// Whether the EZ extended / EZ manual mode is enabled (boolean)
 
+// Controller Meta-Settings
+const int EE_FACTORY_RESET = EE_EZX + 1;								// Whether the controller has just been reset to factory defaults
+
 
 /** User Save State 0**/
 
@@ -599,6 +602,9 @@ const int EE_EZADJ0_SS0 = EE_DES_SMSDIST0_SS0 + 4;				// Adjust value for EZ mod
 // EZ Mode Settings
 const int EE_EZMODE_SS0 = EE_EZADJ0_SS0 + (EE_MOTOR_SPACE_V1_1_SS0 * MOTOR_COUNT);	// Whether EZ mode is active (boolean)
 const int EE_EZX_SS0 = EE_EZMODE_SS0 + 1;											// Whether the EZ extended / EZ manual mode is enabled (boolean)
+
+// Controller Meta-Settings
+const int EE_FACTORY_RESET_SS0 = EE_EZX_SS0 + 1;								// Whether the controller has just been reset to factory defaults
 
 
 /** User Save State 1**/
@@ -621,6 +627,9 @@ const int EE_EZADJ0_SS1 = EE_DES_SMSDIST0_SS1 + 4;				// Adjust value for EZ mod
 const int EE_EZMODE_SS1 = EE_EZADJ0_SS1 + (EE_MOTOR_SPACE_V1_1_SS1 * MOTOR_COUNT);	// Whether EZ mode is active (boolean)
 const int EE_EZX_SS1 = EE_EZMODE_SS1 + 1;											// Whether the EZ extended / EZ manual mode is enabled (boolean)
 
+// Controller Meta-Settings
+const int EE_FACTORY_RESET_SS1 = EE_EZX_SS1 + 1;								// Whether the controller has just been reset to factory defaults
+
 
 /** User Save State 2**/
 
@@ -641,5 +650,8 @@ const int EE_EZADJ0_SS2 = EE_DES_SMSDIST0_SS2 + 4;				// Adjust value for EZ mod
 // EZ Mode Settings
 const int EE_EZMODE_SS2 = EE_EZADJ0_SS2 + (EE_MOTOR_SPACE_V1_1_SS2* MOTOR_COUNT);	// Whether EZ mode is active (boolean)
 const int EE_EZX_SS2 = EE_EZMODE_SS2 + 1;											// Whether the EZ extended / EZ manual mode is enabled (boolean)
+
+// Controller Meta-Settings
+const int EE_FACTORY_RESET_SS2 = EE_EZX_SS2 + 1;								// Whether the controller has just been reset to factory defaults
 
 

@@ -88,7 +88,7 @@ void uiCursorAdjustInt(byte p_dir) {
       
 }
 
-/** Adjust SMS setting
+/** Toggle SMS setting
 */
 
 void uiCursorAdjustSMS(byte p_dir) {
@@ -158,7 +158,7 @@ void uiCursorAdjustSMS(byte p_dir) {
   OMEEPROM::write(EE_SMS, motion_sms);  
 }
 
-/** Enter EZ Mode **/
+/** Toggle EZ Mode **/
 
 void uiCursorEZmode(byte p_dir){
 
@@ -214,18 +214,19 @@ void uiCursorEZmode(byte p_dir){
 			}
 		}
 
+		// Prompt user to set the motor presets
 		for (byte i = 0; i < MOTOR_COUNT; i++) {
-			// Prompt user to set the motor presets
 			uiMenuPreset(i);
 		}
 
+		// Reset the ez_adjust value to 1.0
 		for (byte i = 0; i < MOTOR_COUNT; i++) {
-			// Reset the ez_adjust value to 1.0
 			motors[i].ez_adjust = 1.0;
 		}
 
+		// Switch to SMS mode
+		motion_sms = true;
 		
-
 		// Update the motor speeds using the default EZ settings
 		EZmodeUpdateAll();
 	}
