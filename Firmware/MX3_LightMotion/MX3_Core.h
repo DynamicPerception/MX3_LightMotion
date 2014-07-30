@@ -580,7 +580,8 @@ const int EE_EZMODE = EE_EZADJ0 + (EE_MOTOR_SPACE_V1_1 * MOTOR_COUNT);	// Whethe
 const int EE_EZX = EE_EZMODE + 1;										// Whether the EZ extended / EZ manual mode is enabled (boolean)
 
 // Controller Meta-Settings
-const int EE_FACTORY_RESET = EE_EZX + 1;								// Whether the controller has just been reset to factory defaults
+const int EE_FACTORY_RESET = EE_EZX + 1;								// Whether the controller has just been reset to factory defaults (boolean)
+const int EE_FIRST_BOOT = EE_FACTORY_RESET + 1;							// Whehter this is the first time this controller has booted (boolean)
 
 
 /** User Save State 0**/
@@ -604,7 +605,8 @@ const int EE_EZMODE_SS0 = EE_EZADJ0_SS0 + (EE_MOTOR_SPACE_V1_1_SS0 * MOTOR_COUNT
 const int EE_EZX_SS0 = EE_EZMODE_SS0 + 1;											// Whether the EZ extended / EZ manual mode is enabled (boolean)
 
 // Controller Meta-Settings
-const int EE_FACTORY_RESET_SS0 = EE_EZX_SS0 + 1;								// Whether the controller has just been reset to factory defaults
+const int EE_FACTORY_RESET_SS0 = EE_EZX_SS0 + 1;								// Whether the controller has just been reset to factory defaults (boolean)
+const int EE_FIRST_BOOT_SS0 = EE_FACTORY_RESET_SS0 + 1;							// Whehter this is the first time this controller has booted (boolean)
 
 
 /** User Save State 1**/
@@ -628,7 +630,8 @@ const int EE_EZMODE_SS1 = EE_EZADJ0_SS1 + (EE_MOTOR_SPACE_V1_1_SS1 * MOTOR_COUNT
 const int EE_EZX_SS1 = EE_EZMODE_SS1 + 1;											// Whether the EZ extended / EZ manual mode is enabled (boolean)
 
 // Controller Meta-Settings
-const int EE_FACTORY_RESET_SS1 = EE_EZX_SS1 + 1;								// Whether the controller has just been reset to factory defaults
+const int EE_FACTORY_RESET_SS1 = EE_EZX_SS1 + 1;								// Whether the controller has just been reset to factory defaults (boolean)
+const int EE_FIRST_BOOT_SS1 = EE_FACTORY_RESET_SS1 + 1;							// Whehter this is the first time this controller has booted (boolean)
 
 
 /** User Save State 2**/
@@ -652,6 +655,7 @@ const int EE_EZMODE_SS2 = EE_EZADJ0_SS2 + (EE_MOTOR_SPACE_V1_1_SS2* MOTOR_COUNT)
 const int EE_EZX_SS2 = EE_EZMODE_SS2 + 1;											// Whether the EZ extended / EZ manual mode is enabled (boolean)
 
 // Controller Meta-Settings
-const int EE_FACTORY_RESET_SS2 = EE_EZX_SS2 + 1;								// Whether the controller has just been reset to factory defaults
+const int EE_FACTORY_RESET_SS2 = EE_EZX_SS2 + 1;								// Whether the controller has just been reset to factory defaults (boolean)
+const int EE_FIRST_BOOT_SS2 = EE_FACTORY_RESET_SS2 + 1;							// Whehter this is the first time this controller has booted (boolean)
 
 

@@ -1190,17 +1190,21 @@ Determins the minimum camera interval, accounting for camera settings, motor mov
 */
 
 float calcMinInterval() {
-
+	USBSerial.println("Setting min interval");
 	float minInt = 0.0;
-
+	USBSerial.println(minInt);
+	
 	// minimum interval calculation
 	//if( camera_bulb )
 	minInt += camera_exposure;
+	USBSerial.println(minInt);
 	//else
 	//  minInt += CAM_MIN_TRIG;
 
 	minInt += camera_wait;
+	USBSerial.println(minInt);
 	minInt += camera_focus;
+	USBSerial.println(minInt);
 
 	if (alt_out_flags & ALT_OUT_ANY_B){ //checks to see if any aux i/o are on before the camera shoots
 		minInt += alt_before_ms;
@@ -1226,10 +1230,16 @@ float calcMinInterval() {
 			}
 		}
 
+		USBSerial.println(motor_pwm_maxperiod);
+		USBSerial.println(motors[longestMotor].speed);
+		USBSerial.println(motor_pwm_minperiod);
+
 		minInt += motorEnabled * motor_pwm_maxperiod * motors[longestMotor].speed * motor_pwm_minperiod / 1000.0;  //adds time required by longest running motor
+
 	}
 
 	minInt = minInt / 1000.0; // Convert minInt from milliseconds to seconds
+	USBSerial.println(minInt);
 
 	return minInt;
 }

@@ -131,6 +131,7 @@ void eepromWrite() {
   write(EE_EZX, ez_extended);
 
   write(EE_FACTORY_RESET, factory_reset);
+  write(EE_FIRST_BOOT, first_boot);
   
 }
 
@@ -200,6 +201,7 @@ void eepromRestore() {
   read(EE_EZX, ez_extended);
 
   read(EE_FACTORY_RESET, factory_reset);
+  read(EE_FIRST_BOOT, first_boot);
   
 }
 
@@ -269,6 +271,7 @@ void eepromWrite_SS0() {
   write(EE_EZX_SS0, ez_extended);
 
   write(EE_FACTORY_RESET_SS0, factory_reset);
+  write(EE_FIRST_BOOT_SS0, first_boot);
   
 }
 
@@ -337,6 +340,7 @@ void eepromWrite_SS1() {
   write(EE_EZX_SS1, ez_extended);
 
   write(EE_FACTORY_RESET_SS1, factory_reset);
+  write(EE_FIRST_BOOT_SS1, first_boot);
   
 }
 
@@ -405,6 +409,7 @@ void eepromWrite_SS2() {
   write(EE_EZX_SS2, ez_extended);
 
   write(EE_FACTORY_RESET_SS2, factory_reset);
+  write(EE_FIRST_BOOT_SS2, first_boot);
   
 }
 
@@ -472,6 +477,7 @@ void eepromRestore_SS0() {
   read(EE_EZX_SS0, ez_extended);
 
   read(EE_FACTORY_RESET_SS0, factory_reset);
+  read(EE_FIRST_BOOT_SS0, first_boot);
    
 }
 
@@ -539,6 +545,7 @@ void eepromRestore_SS1() {
   read(EE_EZX_SS1, ez_extended);
 
   read(EE_FACTORY_RESET_SS1, factory_reset);
+  read(EE_FIRST_BOOT_SS1, first_boot);
   
 }
 
@@ -606,6 +613,7 @@ void eepromRestore_SS2() {
   read(EE_EZX_SS2, ez_extended);
 
   read(EE_FACTORY_RESET_SS2, factory_reset);
+  read(EE_FIRST_BOOT_SS2, first_boot);
   
 }
 
