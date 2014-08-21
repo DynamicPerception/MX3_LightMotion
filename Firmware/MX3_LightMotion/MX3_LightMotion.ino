@@ -110,10 +110,8 @@ MX3 Declarations
 // predefine this function to declare the default argument
 void stopProgram(boolean force_clear = true);
 
-// Has the controller been reset to factory defaults
-boolean		   factory_reset = false;
-// Is this the first boot up of this controller?
-boolean			  first_boot = true;
+// Should the device load with factory default settings?
+boolean			  factory_reset = true;
 
 
 // Prep Control Variables that must be defined early
@@ -255,7 +253,7 @@ MoCoBus setup and debugging features
 
  // Check whether the device just had the bootloader installed
  // If it has, set the motors to 8.13rpm dolly, 3.07rpm pan/tilt, and 3.07rpm pan/tilt, respectively
- if (first_boot) {
+ if (factory_reset) {
 
 	 // Set rotary flags
 	 motors[0].flags &= ~MOTOR_ROT_FLAG;
@@ -277,41 +275,13 @@ MoCoBus setup and debugging features
 	 motors[1].motorPreset = 7;
 	 motors[2].motorPreset = 7;
 
-	 // Disable first boot variable
-	 first_boot = false;
+	 // Disable factory_reset variable
+	 factory_reset= false;
 
 	 // Save EEPROM settings
+	 
 	 eepromWrite();
 
- }
-
- // Check to see if there was a factory reset
- if(factory_reset) {
-
-	 // Prompt user to set the motor presets and set a default
-	 for (byte i = 0; i < MOTOR_COUNT; i++) {
-		 uiMenuPreset(i);
-		 if (motors[i].flags & MOTOR_ROT_FLAG) {
-			 motors[i].target_speed = DEFAULT_ROT_PCT * motorMaxSpeed(i);
-		 }
-		 else {
-			 motors[i].target_speed = DEFAULT_LIN_PCT * motorMaxSpeed(i);
-		 }
-		 // Set default direction, +/R
-		 motors[i].flags |= (MOTOR_CDIR_FLAG);
-	 }
-
-	 // Change to continuous mode
-	 motion_sms = false;
-
-	 // Change to manual mode
-	 ez_mode = false;
-
-	 // Turn off the factory_reset variable
-	 factory_reset = false;
-
-	 // Save EEPROM settings
-	 eepromWrite();
  }
 
  lcd.clear();
