@@ -38,14 +38,14 @@ See dynamicperception.com for more information
 
 unsigned int    camera_max_shots = 0;
 unsigned long       camera_fired = 0;
-byte               camera_repeat = 0;
-unsigned long  camera_exposure = 120;
-unsigned long      camera_wait = 100;
+byte            camera_mirror_up = 0;
+unsigned long  camera_exposure = 120;	// Wait time in ms
+unsigned long      camera_wait = 100;	// Wait time in ms
 unsigned long       camera_focus = 0;
 int			camera_focal_length = 50;
 byte                 camera_bulb = 0;
 byte              camera_focLock = 1;
-float             camera_delay = 1.0;
+float             camera_delay = 1.0;	// Interval time in seconds
 
 
 /** Initialize Camera
@@ -148,41 +148,46 @@ void camCallBack(byte code) {
       
       // we may have exposure repeat cycle to manage
       // after the post-exposure delay
-    checkCameraRepeat();
+    checkMirrorUp();
   }
   
 
 }
 
- /** Camera Repeat Cycle Checking
+ /** Camera Mirror Up Move Checking
  
-  Checks to see if a camera repeat must occur, and sets proper state as needed
+  Checks to see if the camera must fire another exposure because of the mirror up setting is enabled
   
   @author
   C. A. Church
+
+  @modified
+  M. Ploof
   */
   
-void checkCameraRepeat() {
+void checkMirrorUp() {
   
-    static byte repdone = 0;
+    static boolean mirror_up_done = false;
     
-      // if we don't have camera repeat function enabled,
-      // then go ahead and clear for alt out post shot check
-    if( camera_repeat == 0 ) {
-      Engine.state(ST_ALTP);
-      return;
+		// if we don't have the mirror up function enabled,
+		// then go ahead and clear for alt out post shot check
+	if (camera_mirror_up == 0) {
+		Engine.state(ST_ALTP);
+		return;
     }
-    else if( repdone >= camera_repeat ) {
-       // we've done all of the repeat cycles
-      repdone = 0;
-       // clear for check post-exposure alt output trigger
-      Engine.state(ST_ALTP);
-      return;
+	else if (mirror_up_done == true) {
+        // reset the mirror up move var
+		mirror_up_done = false;
+		// clear for check post-exposure alt output trigger
+		Engine.state(ST_ALTP);
+		return;
     }
    
-     // trigger another exposure
-   repdone++;
-   Engine.state(ST_EXP);
+	// counteract the exposure incrementing due to the mirror trigger
+	camera_fired--; 
+    // trigger another exposure
+	mirror_up_done = true;
+    Engine.state(ST_EXP);
 }
 
 
