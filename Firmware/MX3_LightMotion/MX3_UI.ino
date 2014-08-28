@@ -1037,12 +1037,34 @@ M. Ploof
 
 void uiEstimate(byte p_motor, byte p_which) {
 
+	// can't do manual move when running
+	if (running) {
+		lcd.home();
+		lcd.print(STR_WARN1);
+		lcd.setCursor(0, 1);
+		lcd.print(STR_WARN2);
+		delay(1000);
+		return;
+	}
+
 	Menu.enable(false);
 	lcd.noBlink();
 
-	long int dist_est;	// Estimate of the distance/hr based on currnt speed / SMS settings --> Can by modified by user to alter speed setting
+	long int dist_est;	// Estimate of the distance/hr based on current speed / SMS settings --> Can by modified by user to alter speed setting
 	int shots_est;	// Estimate of shots/hr
 	byte button;
+
+	float minInt = calcMinInterval();	// Minimum camera interval 
+
+	USBSerial.print("The camera delay upon entering the function is ");
+	USBSerial.println(camera_delay);
+
+	// camera_delay might not have been updated if the speed was last set with distance/hr function, so update it here
+	if (camera_delay < minInt)
+		camera_delay = minInt;
+
+	USBSerial.print("The camera delay after checking against minInt is ");
+	USBSerial.println(camera_delay);
 
 	shots_est = (SEC_PER_MIN / camera_delay) * MIN_PER_HR;
 
@@ -1057,7 +1079,7 @@ void uiEstimate(byte p_motor, byte p_which) {
 	// Handle it if the number is too larget for the display
 	if (dist_est > 9999)
 		lcd.print(">9999");
-	else{
+	else {
 		lcd.print(" ");
 		lcd.print(dist_est);
 	}
@@ -1075,12 +1097,11 @@ void uiEstimate(byte p_motor, byte p_which) {
 	lcd.print("Shots/hr: ");
 	lcd.print(shots_est);
 
+	float interval = camera_delay;		// Inverval calculated from modified shots/hr estimate
+
 	while (1) {
 
 		button = Menu.checkInput();
-
-		float minInt = calcMinInterval();	// Minimum interval 
-		float interval;						// Inverval calculated from modified shots/hr estimate
 
 		// Modifying the distance per hour
 		if (p_which == MOD_DIST) {
@@ -1148,17 +1169,49 @@ void uiEstimate(byte p_motor, byte p_which) {
 
 				interval = (float) SEC_PER_HR / shots_est;
 
+				USBSerial.print("After modification, the interval is: ");
+				USBSerial.println(interval);
+
 				// If the new calculated interval is less than allowed, set it to the minimum and bounce the shots_est down to the previous value
 				if (interval < minInt) {
 					interval = minInt;
 					shots_est--;
 				}
 
-				// Clear the old distance estimate, then print the new one
+				// Clear the old shots estimate, then print the new one
 				lcd.setCursor(9, 1);
 				lcd.print("       ");
 				lcd.setCursor(10, 1);
 				lcd.print(shots_est);
+
+				// if SMS mode, then update the dist/hr value
+				if (motion_sms) {
+
+					// Update the distance estimate
+					dist_est = motors[p_motor].target_sms_distance * shots_est;
+
+					// Clear the old distance estimate, then print the new one
+					lcd.setCursor(8, 0);
+					lcd.print("        ");
+					lcd.setCursor(8, 0);
+					// Handle it if the number is too larget for the display
+					if (dist_est > 9999)
+						lcd.print(">9999");
+					else{
+						lcd.print(" ");
+						lcd.print(dist_est);
+					}
+
+					// Print the appropriate unit again
+					if (!(motors[p_motor].flags & MOTOR_ROT_FLAG)) {
+						if (units == STANDARD || units == PERCENT)
+							lcd.print("in");
+						else if (units == METRIC)
+							lcd.print("cm");
+					}
+					else
+						lcd.print("deg");
+				}
 			}
 
 			// If the user presses the select button, convert the new shots estimate back into the new interval
@@ -1166,6 +1219,8 @@ void uiEstimate(byte p_motor, byte p_which) {
 
 				// Save the calculated interval
 				camera_delay = interval;
+				USBSerial.print("The camera delay setting is ");
+				USBSerial.println(camera_delay);
 				OMEEPROM::write(EE_CAMDEL, camera_delay);
 
 				// Break out of the while loop
