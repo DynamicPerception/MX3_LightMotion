@@ -136,19 +136,24 @@ void camCallBack(byte code) {
   
   if( code == OM_CAM_FFIN ) {
       // focus done
+	  USBSerial.println("Focus done");
+
+	  // before completing the regular exposure, check to see the mirror needs to be moved up
+	  checkMirrorUp();
+
     Engine.state(ST_EXP);
   }
   else if( code == OM_CAM_EFIN ) {
       // exposure done
+	  USBSerial.println("Exposure done");
     camera_fired++;
     Engine.state(ST_WAIT);
   }
   else if( code == OM_CAM_WFIN ) {
       // wait done
+	  USBSerial.println("Wait done");
+	  Engine.state(ST_ALTP);
       
-      // we may have exposure repeat cycle to manage
-      // after the post-exposure delay
-    checkMirrorUp();
   }
   
 
@@ -169,25 +174,29 @@ void checkMirrorUp() {
   
     static boolean mirror_up_done = false;
     
-		// if we don't have the mirror up function enabled,
-		// then go ahead and clear for alt out post shot check
+	// if we don't have the MUP function enabled,
+	// then go ahead and clear for alt out post shot check
 	if (camera_mirror_up == 0) {
-		Engine.state(ST_ALTP);
+		Engine.state(ST_EXP);
 		return;
-    }
-	else if (mirror_up_done == true) {
-        // reset the mirror up move var
-		mirror_up_done = false;
-		// clear for check post-exposure alt output trigger
-		Engine.state(ST_ALTP);
-		return;
-    }
-   
-	// counteract the exposure incrementing due to the mirror trigger
-	camera_fired--; 
-    // trigger another exposure
-	mirror_up_done = true;
-    Engine.state(ST_EXP);
+	}
+
+	else {
+		USBSerial.println("Raising mirror now!");
+		
+		// send the mirror up signal
+		Camera.expose(200);
+		
+		// don't count the mirror up signal as a shot
+		camera_fired--;
+
+		delay(500);
+
+		USBSerial.println("Done with mirror raise!");
+		// go into the normal exposure routine
+		Engine.state(ST_EXP);
+	}
+	
 }
 
 

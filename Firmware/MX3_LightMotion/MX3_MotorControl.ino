@@ -153,11 +153,6 @@ void motorSpeed(byte p_motor, float p_rel, boolean p_ramp) {
 	//      motors[p_motor].onCycleRatio = onCycleRatio;
 	//  }
 
-	USBSerial.print("Requested power for motor");
-	USBSerial.print(p_motor);
-	USBSerial.print(": ");
-	USBSerial.println(p_rel);
-
 	// Let the user know if the desired speed is too high or low for continuous mode
 	if (p_rel < 0.05 && !motion_sms && ez_mode) {
 		lcd.clear();
@@ -787,21 +782,11 @@ void motorSpeedCalc(byte p_motor, float p_desired_spd_dist, boolean p_ramp) {
 
 		// If running in rotary SMS mode... 
 		if (motion_sms && (motors[p_motor].flags & MOTOR_ROT_FLAG)){
-			USBSerial.println("Ready for some correction Action-Jackson");
+			
 			// and the user wants a move of less than 1 degree, apply the empirical correction factor from the correction table
 			if (p_desired_spd_dist <= 1.0){
 				byte lookup_val = motors[p_motor].target_sms_distance * 100;
-				USBSerial.print("Desired move size is: ");
-				USBSerial.println(motors[p_motor].target_sms_distance, 4);
-				USBSerial.print("Lookup value is: ");
-				USBSerial.println(lookup_val);
-				USBSerial.print("Table value is: ");
-				USBSerial.println(correction_table[lookup_val], 4);
-				USBSerial.print("Time setting was: ");
-				USBSerial.println(p_desired_spd_dist, 5);
 				p_desired_spd_dist *= correction_table[lookup_val];
-				USBSerial.print("Time setting is now: ");
-				USBSerial.println(p_desired_spd_dist, 5);
 			}
 			// and the user wants a move between 1 and 5 degrees, apply the empirical static correction factor
 			else if (p_desired_spd_dist > 1.0 && p_desired_spd_dist <= 5.0)

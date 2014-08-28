@@ -74,7 +74,7 @@ void eepromWrite() {
   write(EE_SMS, motion_sms);
   write(EE_ALTDIR, alt_direction);
   write(EE_MAXSHOT, camera_max_shots);
-  write(EE_CAMMIRUP, camera_mirror_up);
+  write(EE_CAMMUP, camera_mirror_up);
   write(EE_CAMDEL, camera_delay);
   write(EE_CAMEXP, camera_exposure);
   write(EE_CAMWAIT, camera_wait);
@@ -145,7 +145,7 @@ void eepromRestore() {
   read(EE_MMSETTING, mmSetting);  
   read(EE_ALTDIR, alt_direction);
   read(EE_MAXSHOT, camera_max_shots);
-  read(EE_CAMMIRUP, camera_mirror_up);
+  read(EE_CAMMUP, camera_mirror_up);
   read(EE_CAMDEL, camera_delay);
   read(EE_CAMEXP, camera_exposure);
   read(EE_CAMWAIT, camera_wait);
@@ -214,7 +214,7 @@ void eepromWrite_SS0() {
   write(EE_SMS_SS0, motion_sms);
   write(EE_ALTDIR_SS0, alt_direction);
   write(EE_MAXSHOT_SS0, camera_max_shots);
-  write(EE_CAMMIRUP_SS0, camera_mirror_up);
+  write(EE_CAMMUP_SS0, camera_mirror_up);
   write(EE_CAMDEL_SS0, camera_delay);
   write(EE_CAMEXP_SS0, camera_exposure);
   write(EE_CAMWAIT_SS0, camera_wait);
@@ -283,7 +283,7 @@ void eepromWrite_SS1() {
   write(EE_SMS_SS1, motion_sms);
   write(EE_ALTDIR_SS1, alt_direction);
   write(EE_MAXSHOT_SS1, camera_max_shots);
-  write(EE_CAMMIRUP_SS1, camera_mirror_up);
+  write(EE_CAMMUP_SS1, camera_mirror_up);
   write(EE_CAMDEL_SS1, camera_delay);
   write(EE_CAMEXP_SS1, camera_exposure);
   write(EE_CAMWAIT_SS1, camera_wait);
@@ -351,7 +351,7 @@ void eepromWrite_SS2() {
   write(EE_SMS_SS2, motion_sms);
   write(EE_ALTDIR_SS2, alt_direction);
   write(EE_MAXSHOT_SS2, camera_max_shots);
-  write(EE_CAMMIRUP_SS2, camera_mirror_up);
+  write(EE_CAMMUP_SS2, camera_mirror_up);
   write(EE_CAMDEL_SS2, camera_delay);
   write(EE_CAMEXP_SS2, camera_exposure);
   write(EE_CAMWAIT_SS2, camera_wait);
@@ -417,7 +417,7 @@ void eepromRestore_SS0() {
   read(EE_SMS_SS0, motion_sms);
   read(EE_ALTDIR_SS0, alt_direction);
   read(EE_MAXSHOT_SS0, camera_max_shots);
-  read(EE_CAMMIRUP_SS0, camera_mirror_up);
+  read(EE_CAMMUP_SS0, camera_mirror_up);
   read(EE_CAMDEL_SS0, camera_delay);
   read(EE_CAMEXP_SS0, camera_exposure);
   read(EE_CAMWAIT_SS0, camera_wait);
@@ -484,7 +484,7 @@ void eepromRestore_SS1() {
   read(EE_SMS_SS1, motion_sms);
   read(EE_ALTDIR_SS1, alt_direction);
   read(EE_MAXSHOT_SS1, camera_max_shots);
-  read(EE_CAMMIRUP_SS1, camera_mirror_up);
+  read(EE_CAMMUP_SS1, camera_mirror_up);
   read(EE_CAMDEL_SS1, camera_delay);
   read(EE_CAMEXP_SS1, camera_exposure);
   read(EE_CAMWAIT_SS1, camera_wait);
@@ -551,7 +551,7 @@ void eepromRestore_SS2() {
   read(EE_SMS_SS2, motion_sms);
   read(EE_ALTDIR_SS2, alt_direction);
   read(EE_MAXSHOT_SS2, camera_max_shots);
-  read(EE_CAMMIRUP_SS2, camera_mirror_up);
+  read(EE_CAMMUP_SS2, camera_mirror_up);
   read(EE_CAMDEL_SS2, camera_delay);
   read(EE_CAMEXP_SS2, camera_exposure);
   read(EE_CAMWAIT_SS2, camera_wait);

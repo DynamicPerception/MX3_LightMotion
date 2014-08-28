@@ -78,7 +78,7 @@ void cycleCamera() {
       return;
   }
   
-    // if in external interval mode, don't do anything is a force shot isn't
+    // if in external interval mode, don't do anything if a force shot isn't
     // registered
     
   if( alt_ext_int && ! alt_force_shot )

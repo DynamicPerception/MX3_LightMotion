@@ -208,7 +208,7 @@ MENU_SELECT  ui_sl_camLock     = { &camera_focLock, MENU_SELECT_SIZE(ui_sel_list
 MENU_SELECT  ui_sl_mirrorUp	   = { &camera_mirror_up, MENU_SELECT_SIZE(ui_sel_list_onoff), MENU_TARGET(&ui_sel_list_onoff)};
 
 MENU_VALUE   ui_in_camMaxShots = { TYPE_UINT,         65535,           0, MENU_TARGET(&camera_max_shots), EE_MAXSHOT };
-MENU_VALUE   ui_in_camMirrorUp = { TYPE_SELECT,			  0,		   0, MENU_TARGET(&ui_sl_mirrorUp),   EE_CAMMIRUP };
+MENU_VALUE   ui_in_camMirrorUp = { TYPE_SELECT,			  0,		   0, MENU_TARGET(&ui_sl_mirrorUp),   EE_CAMMUP };
 MENU_VALUE   ui_in_camBulb     = { TYPE_SELECT,           0,           0, MENU_TARGET(&ui_sl_camBulb),    EE_CAMBULB };
 MENU_VALUE   ui_in_camLock     = { TYPE_SELECT,           0,           0, MENU_TARGET(&ui_sl_camLock),    EE_CAMLOCK };
 MENU_VALUE   ui_in_camExposure = { TYPE_ULONG,   CAMEXP_MAX,  CAMEXP_MIN, MENU_TARGET(&camera_exposure),  EE_CAMEXP };
