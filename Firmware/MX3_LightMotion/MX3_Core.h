@@ -371,8 +371,8 @@ const int EE_NONE      = 0; // do not store
 const int EE_SMS       = 1; // motion_sms
 const int EE_MMSETTING = EE_SMS       + 1; // manual move settings  
 const int EE_MAXSHOT   = EE_MMSETTING + 1; // camera max shots      2
-const int EE_CAMREP    = EE_MAXSHOT   + 2; // camera_repeat         4 
-const int EE_CAMDEL    = EE_CAMREP    + 1; // camera_delay          5
+const int EE_CAMMIRUP  = EE_MAXSHOT   + 2; // camera_mirror_up      4 
+const int EE_CAMDEL    = EE_CAMMIRUP  + 1; // camera_delay          5
 const int EE_CAMEXP    = EE_CAMDEL    + 4; // cam_exposure          9
 const int EE_CAMWAIT   = EE_CAMEXP    + 4; // cam_wait              13
 const int EE_CAMFOC    = EE_CAMWAIT   + 4; // cam_focus             17 
@@ -415,17 +415,17 @@ const int EE_INCREMENT = EE_UNITS	  + 1; // motor speed increment
 
 //SAVE STATE 0
 
-const int EE_NONE_SS0      = 0;                   // do not store
+const int EE_NONE_SS0      = 0;                     // do not store
 const int EE_SMS_SS0       = EE_INCREMENT     + 4;  // motion_sms
 const int EE_MAXSHOT_SS0   = EE_SMS_SS0       + 1;  // camera max shots
-const int EE_CAMREP_SS0    = EE_MAXSHOT_SS0   + 2;  // camera_repeat
-const int EE_CAMDEL_SS0    = EE_CAMREP_SS0    + 1;  // camera_delay
+const int EE_CAMMIRUP_SS0  = EE_MAXSHOT_SS0   + 2;  // camera_mirror_up
+const int EE_CAMDEL_SS0    = EE_CAMMIRUP_SS0  + 1;  // camera_delay
 const int EE_CAMEXP_SS0    = EE_CAMDEL_SS0    + 4;  // cam_exposure
 const int EE_CAMWAIT_SS0   = EE_CAMEXP_SS0    + 4;  // cam_wait
 const int EE_CAMFOC_SS0    = EE_CAMWAIT_SS0   + 4;  // cam_focus
 const int EE_CAMBULB_SS0   = EE_CAMFOC_SS0    + 4;  // bulb mode
 const int EE_CAMLOCK_SS0   = EE_CAMBULB_SS0   + 1;  // focus lock
-const int EE_CAMTIMER_SS0  = EE_CAMLOCK_SS0   + 1; // focus lock                    
+const int EE_CAMTIMER_SS0  = EE_CAMLOCK_SS0   + 1;  // focus lock                    
 
 const int EE_M0FLAG_SS0    = EE_CAMTIMER_SS0  + 4;  // flags
 const int EE_M0RPM_SS0     = EE_M0FLAG_SS0  + 1;  // rpm
@@ -462,25 +462,25 @@ const int EE_INCREMENT_SS0 = EE_UNITS_SS0     + 1; // motor speed increment
 
 //SAVE STATE 1
 
-const int EE_NONE_SS1      = 0;                   // do not store
+const int EE_NONE_SS1      = 0;                     // do not store
 const int EE_SMS_SS1       = EE_INCREMENT_SS0 + 4;  // motion_sms
 const int EE_MAXSHOT_SS1   = EE_SMS_SS1       + 1;  // camera max shots
-const int EE_CAMREP_SS1    = EE_MAXSHOT_SS1   + 2;  // camera_repeat
-const int EE_CAMDEL_SS1    = EE_CAMREP_SS1    + 1;  // camera_delay
+const int EE_CAMMIRUP_SS1  = EE_MAXSHOT_SS1   + 2;  // camera_mirror_up
+const int EE_CAMDEL_SS1    = EE_CAMMIRUP_SS1  + 1;  // camera_delay
 const int EE_CAMEXP_SS1    = EE_CAMDEL_SS1    + 4;  // cam_exposure
 const int EE_CAMWAIT_SS1   = EE_CAMEXP_SS1    + 4;  // cam_wait
 const int EE_CAMFOC_SS1    = EE_CAMWAIT_SS1   + 4;  // cam_focus
 const int EE_CAMBULB_SS1   = EE_CAMFOC_SS1    + 4;  // bulb mode
 const int EE_CAMLOCK_SS1   = EE_CAMBULB_SS1   + 1;  // focus lock
-const int EE_CAMTIMER_SS1  = EE_CAMLOCK_SS1   + 1; // focus lock            
+const int EE_CAMTIMER_SS1  = EE_CAMLOCK_SS1   + 1;  // focus lock            
 
-const int EE_M0FLAG_SS1    = EE_CAMTIMER_SS1 + 4;  // flags
-const int EE_M0RPM_SS1     = EE_M0FLAG_SS1  + 1;  // rpm
-const int EE_M0RATIO_SS1   = EE_M0RPM_SS1   + 4;  // ratio
-const int EE_MORSPEED_SS1  = EE_M0RATIO_SS1 + 4;  // speed
-const int EE_M0RAMP_SS1    = EE_MORSPEED_SS1 + 4; // ramping in
-const int EE_M0RAMPE_SS1   = EE_M0RAMP_SS1  + 2;  // ramping out
-const int EE_M0LEAD_SS1    = EE_M0RAMPE_SS1 + 2;  // lead-in/out
+const int EE_M0FLAG_SS1    = EE_CAMTIMER_SS1 + 4;	// flags
+const int EE_M0RPM_SS1     = EE_M0FLAG_SS1   + 1;	// rpm
+const int EE_M0RATIO_SS1   = EE_M0RPM_SS1    + 4;	// ratio
+const int EE_MORSPEED_SS1  = EE_M0RATIO_SS1  + 4;	// speed
+const int EE_M0RAMP_SS1    = EE_MORSPEED_SS1 + 4;	// ramping in
+const int EE_M0RAMPE_SS1   = EE_M0RAMP_SS1   + 2;   // ramping out
+const int EE_M0LEAD_SS1    = EE_M0RAMPE_SS1  + 2;   // lead-in/out
 
   // note: for each motor, we move the previous defs ahead 21 bytes * motor num
 
@@ -503,32 +503,32 @@ const int EE_MPRESET_SS1   = EE_PERIOD_SS1    + 2; // selected presets
 const int EE_VOLTH_SS1     = EE_MPRESET_SS1   + 4; // voltage threshold
 const int EE_VOLWARN_SS1   = EE_VOLTH_SS1     + 4; // voltage warning flag
 const int EE_HEATER_SS1    = EE_VOLWARN_SS1   + 1; // heater on/off flag 
-const int EE_UNITS_SS1    = EE_HEATER_SS1     + 1; // unit type on/off
+const int EE_UNITS_SS1     = EE_HEATER_SS1     + 1; // unit type on/off
 const int EE_INCREMENT_SS1 = EE_UNITS_SS1     + 1; // motor speed increment
 
 
 //SAVE STATE 2
 
-const int EE_NONE_SS2      = 0;                   // do not store
+const int EE_NONE_SS2      = 0;						// do not store
 const int EE_SMS_SS2       = EE_INCREMENT_SS1 + 4;  // motion_sms
 const int EE_MAXSHOT_SS2   = EE_SMS_SS2       + 1;  // camera max shots
-const int EE_CAMREP_SS2    = EE_MAXSHOT_SS2   + 2;  // camera_repeat
-const int EE_CAMDEL_SS2    = EE_CAMREP_SS2    + 1;  // camera_delay
+const int EE_CAMMIRUP_SS2  = EE_MAXSHOT_SS2   + 2;  // camera_mirror_up
+const int EE_CAMDEL_SS2    = EE_CAMMIRUP_SS2  + 1;  // camera_delay
 const int EE_CAMEXP_SS2    = EE_CAMDEL_SS2    + 4;  // cam_exposure
 const int EE_CAMWAIT_SS2   = EE_CAMEXP_SS2    + 4;  // cam_wait
 const int EE_CAMFOC_SS2    = EE_CAMWAIT_SS2   + 4;  // cam_focus
 const int EE_CAMBULB_SS2   = EE_CAMFOC_SS2    + 4;  // bulb mode
 const int EE_CAMLOCK_SS2   = EE_CAMBULB_SS2   + 1;  // focus lock
-const int EE_CAMTIMER_SS2  = EE_CAMLOCK_SS2   + 1; // focus lock            
+const int EE_CAMTIMER_SS2  = EE_CAMLOCK_SS2   + 1;  // focus lock            
 
 
-const int EE_M0FLAG_SS2    = EE_CAMTIMER_SS2 + 4;  // flags
-const int EE_M0RPM_SS2     = EE_M0FLAG_SS2  + 1;  // rpm
-const int EE_M0RATIO_SS2   = EE_M0RPM_SS2   + 4;  // ratio
-const int EE_MORSPEED_SS2  = EE_M0RATIO_SS2 + 4;  // speed
-const int EE_M0RAMP_SS2    = EE_MORSPEED_SS2 + 4; // ramping in
-const int EE_M0RAMPE_SS2   = EE_M0RAMP_SS2  + 2;  // ramping out
-const int EE_M0LEAD_SS2    = EE_M0RAMPE_SS2 + 2;  // lead-in/out
+const int EE_M0FLAG_SS2    = EE_CAMTIMER_SS2 + 4;	// flags
+const int EE_M0RPM_SS2     = EE_M0FLAG_SS2  + 1;	// rpm
+const int EE_M0RATIO_SS2   = EE_M0RPM_SS2   + 4;	// ratio
+const int EE_MORSPEED_SS2  = EE_M0RATIO_SS2 + 4;	// speed
+const int EE_M0RAMP_SS2    = EE_MORSPEED_SS2 + 4;	// ramping in
+const int EE_M0RAMPE_SS2   = EE_M0RAMP_SS2  + 2;	// ramping out
+const int EE_M0LEAD_SS2    = EE_M0RAMPE_SS2 + 2;	// lead-in/out
 
   // note: for each motor, we move the previous defs ahead 21 bytes * motor num
 
@@ -580,7 +580,7 @@ const int EE_EZMODE = EE_EZADJ0 + (EE_MOTOR_SPACE_V1_1 * MOTOR_COUNT);	// Whethe
 const int EE_EZX = EE_EZMODE + 1;										// Whether the EZ extended / EZ manual mode is enabled (boolean)
 
 // Controller Meta-Settings
-const int EE_FACTORY_RESET = EE_EZX + 1;								// Whether the controller has just been reset to factory defaults
+const int EE_FACTORY_RESET = EE_EZX + 1;								// Whether the controller has just been reset to factory defaults (boolean)
 
 
 /** User Save State 0**/
@@ -604,7 +604,7 @@ const int EE_EZMODE_SS0 = EE_EZADJ0_SS0 + (EE_MOTOR_SPACE_V1_1_SS0 * MOTOR_COUNT
 const int EE_EZX_SS0 = EE_EZMODE_SS0 + 1;											// Whether the EZ extended / EZ manual mode is enabled (boolean)
 
 // Controller Meta-Settings
-const int EE_FACTORY_RESET_SS0 = EE_EZX_SS0 + 1;								// Whether the controller has just been reset to factory defaults
+const int EE_FACTORY_RESET_SS0 = EE_EZX_SS0 + 1;								// Whether the controller has just been reset to factory defaults (boolean)
 
 
 /** User Save State 1**/
@@ -628,8 +628,7 @@ const int EE_EZMODE_SS1 = EE_EZADJ0_SS1 + (EE_MOTOR_SPACE_V1_1_SS1 * MOTOR_COUNT
 const int EE_EZX_SS1 = EE_EZMODE_SS1 + 1;											// Whether the EZ extended / EZ manual mode is enabled (boolean)
 
 // Controller Meta-Settings
-const int EE_FACTORY_RESET_SS1 = EE_EZX_SS1 + 1;								// Whether the controller has just been reset to factory defaults
-
+const int EE_FACTORY_RESET_SS1 = EE_EZX_SS1 + 1;								// Whether the controller has just been reset to factory defaults (boolean)
 
 /** User Save State 2**/
 
@@ -652,6 +651,6 @@ const int EE_EZMODE_SS2 = EE_EZADJ0_SS2 + (EE_MOTOR_SPACE_V1_1_SS2* MOTOR_COUNT)
 const int EE_EZX_SS2 = EE_EZMODE_SS2 + 1;											// Whether the EZ extended / EZ manual mode is enabled (boolean)
 
 // Controller Meta-Settings
-const int EE_FACTORY_RESET_SS2 = EE_EZX_SS2 + 1;								// Whether the controller has just been reset to factory defaults
+const int EE_FACTORY_RESET_SS2 = EE_EZX_SS2 + 1;								// Whether the controller has just been reset to factory defaults (boolean)
 
 

@@ -79,7 +79,7 @@ const int BUT_MAP[5][2] = {
 // ====== Memory Strings Used in the UI ========
 
 const char MX3_VERSTR[]  =  "LightMotion";
-const char MX3_SUBSTR[]  =  "v.1.10 Otter  ";
+const char MX3_SUBSTR[]  =  "v.1.10.1 Otter ";
 const char MX3_C1STR[]   =  "(c) 2014 Dynamic";
 const char MX3_C2STR[]   =  "Perception";
   // run, stop, and ext must be exact same length, pad with spaces
@@ -205,9 +205,10 @@ MENU_SELECT_LIST  ui_sel_list_hilo[]    = { &ui_sel_high, &ui_sel_low };
 
 MENU_SELECT  ui_sl_camBulb     = { &camera_bulb,    MENU_SELECT_SIZE(ui_sel_list_onoff), MENU_TARGET(&ui_sel_list_onoff) };
 MENU_SELECT  ui_sl_camLock     = { &camera_focLock, MENU_SELECT_SIZE(ui_sel_list_onoff), MENU_TARGET(&ui_sel_list_onoff) };
+MENU_SELECT  ui_sl_mirrorUp	   = { &camera_mirror_up, MENU_SELECT_SIZE(ui_sel_list_onoff), MENU_TARGET(&ui_sel_list_onoff)};
 
 MENU_VALUE   ui_in_camMaxShots = { TYPE_UINT,         65535,           0, MENU_TARGET(&camera_max_shots), EE_MAXSHOT };
-MENU_VALUE   ui_in_camRepeat   = { TYPE_BYTE,             0,           0, MENU_TARGET(&camera_repeat),    EE_CAMREP };
+MENU_VALUE   ui_in_camMirrorUp = { TYPE_SELECT,			  0,		   0, MENU_TARGET(&ui_sl_mirrorUp),   EE_CAMMIRUP };
 MENU_VALUE   ui_in_camBulb     = { TYPE_SELECT,           0,           0, MENU_TARGET(&ui_sl_camBulb),    EE_CAMBULB };
 MENU_VALUE   ui_in_camLock     = { TYPE_SELECT,           0,           0, MENU_TARGET(&ui_sl_camLock),    EE_CAMLOCK };
 MENU_VALUE   ui_in_camExposure = { TYPE_ULONG,   CAMEXP_MAX,  CAMEXP_MIN, MENU_TARGET(&camera_exposure),  EE_CAMEXP };
@@ -218,7 +219,7 @@ MENU_VALUE   ui_in_camDelay	   = { TYPE_FLOAT_10, CAMDELAY_MAX, CAMDELAY_MIN, ME
 MENU_VALUE   ui_in_timeDelay   = { TYPE_INT,          65535,           0, MENU_TARGET(&camera_timer),     EE_CAMTIMER };
 
 MENU_ITEM    ui_it_camMaxShot  = { {"Max Shots      "},      ITEM_VALUE, 0, MENU_TARGET(&ui_in_camMaxShots) };
-MENU_ITEM    ui_it_camRepeat   = { {"Repeat Shots   "},   ITEM_VALUE, 0, MENU_TARGET(&ui_in_camRepeat) };
+MENU_ITEM    ui_it_camMirrorUp = { { "Mirror Up      " }, ITEM_VALUE, 0, MENU_TARGET(&ui_in_camMirrorUp) };
 MENU_ITEM    ui_it_camBulb     = { {"Bulb Exposure  "},  ITEM_VALUE, 0, MENU_TARGET(&ui_in_camBulb) };
 MENU_ITEM    ui_it_camExposure = { {"Exp. Time    mS"}, ITEM_VALUE, 0, MENU_TARGET(&ui_in_camExposure) };
 MENU_ITEM    ui_it_camFocus    = { {"Focus        mS"}, ITEM_VALUE, 0, MENU_TARGET(&ui_in_camFocus) };
@@ -228,7 +229,7 @@ MENU_ITEM    ui_it_camDelay    = { {"Interval    Sec"}, ITEM_VALUE, 0, MENU_TARG
 MENU_ITEM    ui_it_camLock     = { {"Focus Lock     "},     ITEM_VALUE, 0, MENU_TARGET(&ui_in_camLock) };
 MENU_ITEM    ui_it_timeDelay   = { {"Start Timer min"}, ITEM_VALUE, 0, MENU_TARGET(&ui_in_timeDelay) };
 
-MENU_LIST    ui_list_cam[] = { &ui_it_camDelay, &ui_it_camMaxShot, &ui_it_camBulb, &ui_it_camExposure, &ui_it_camWait, &ui_it_camFocus, &ui_it_camFocLen, &ui_it_camRepeat, &ui_it_camLock, &ui_it_timeDelay };
+MENU_LIST    ui_list_cam[] = { &ui_it_camDelay, &ui_it_camMaxShot, &ui_it_camBulb, &ui_it_camExposure, &ui_it_camWait, &ui_it_camFocus, &ui_it_camFocLen, &ui_it_camMirrorUp, &ui_it_camLock, &ui_it_timeDelay };
 
 MENU_ITEM    ui_it_camList     = { {"Camera"}, ITEM_MENU, MENU_SIZE(ui_list_cam), MENU_TARGET(&ui_list_cam) };
 

@@ -1086,9 +1086,9 @@ void uiEstimate(byte p_motor, byte p_which) {
 		if (p_which == MOD_DIST) {
 			// Don't allow blind modification of the estimate value when it's too large to display
 			if (dist_est <= 9999 && (button == BUTTON_INCREASE || button == BUTTON_DECREASE)) {
-				if (button == BUTTON_INCREASE)
+				if (button == BUTTON_INCREASE && (dist_est < 9999))
 					dist_est++;
-				else if (button == BUTTON_DECREASE)
+				else if (button == BUTTON_DECREASE && (dist_est > 1))
 					dist_est--;
 				// Clear the old distance estimate, then print the new one
 				lcd.setCursor(8, 0);
@@ -1143,15 +1143,15 @@ void uiEstimate(byte p_motor, byte p_which) {
 			if (button == BUTTON_INCREASE || button == BUTTON_DECREASE) {
 				if (button == BUTTON_INCREASE)
 					shots_est++;
-				else if (button == BUTTON_DECREASE)
+				else if (button == BUTTON_DECREASE && (shots_est > 1))
 					shots_est--;
 
 				interval = (float) SEC_PER_HR / shots_est;
 
-				// If the new calculated interval is less than allowed, set it to the minimum and bounce the shots_est up to the previous value
+				// If the new calculated interval is less than allowed, set it to the minimum and bounce the shots_est down to the previous value
 				if (interval < minInt) {
 					interval = minInt;
-					shots_est++;
+					shots_est--;
 				}
 
 				// Clear the old distance estimate, then print the new one
@@ -1190,17 +1190,21 @@ Determins the minimum camera interval, accounting for camera settings, motor mov
 */
 
 float calcMinInterval() {
-
+	USBSerial.println("Setting min interval");
 	float minInt = 0.0;
-
+	USBSerial.println(minInt);
+	
 	// minimum interval calculation
 	//if( camera_bulb )
 	minInt += camera_exposure;
+	USBSerial.println(minInt);
 	//else
 	//  minInt += CAM_MIN_TRIG;
 
 	minInt += camera_wait;
+	USBSerial.println(minInt);
 	minInt += camera_focus;
+	USBSerial.println(minInt);
 
 	if (alt_out_flags & ALT_OUT_ANY_B){ //checks to see if any aux i/o are on before the camera shoots
 		minInt += alt_before_ms;
@@ -1226,10 +1230,16 @@ float calcMinInterval() {
 			}
 		}
 
+		USBSerial.println(motor_pwm_maxperiod);
+		USBSerial.println(motors[longestMotor].speed);
+		USBSerial.println(motor_pwm_minperiod);
+
 		minInt += motorEnabled * motor_pwm_maxperiod * motors[longestMotor].speed * motor_pwm_minperiod / 1000.0;  //adds time required by longest running motor
+
 	}
 
 	minInt = minInt / 1000.0; // Convert minInt from milliseconds to seconds
+	USBSerial.println(minInt);
 
 	return minInt;
 }

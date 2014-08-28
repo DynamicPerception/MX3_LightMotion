@@ -110,8 +110,8 @@ MX3 Declarations
 // predefine this function to declare the default argument
 void stopProgram(boolean force_clear = true);
 
-// Variable to track whether the controller been reset to factory defaults
-boolean		   factory_reset = true;
+// Should the device load with factory default settings?
+boolean			  factory_reset = true;
 
 
 // Prep Control Variables that must be defined early
@@ -169,6 +169,7 @@ MotorDefinition motors[] = { MotorDefinition(), MotorDefinition(), MotorDefiniti
 // PWM Cycle count used for ghetto timer in battery test mode in MX3_UI_MenuActions.ino
 long cycle_count = 0;
 
+
 void setup() {
 
 /*
@@ -183,12 +184,12 @@ MoCoBus setup and debugging features
 
   USBSerial.begin(57600);
   
-  //lcd.print("Waiting...");
-  // while( ! USBSerial ) {
-  //   delay(10); // do nothing
-  //  }
+ // lcd.print("Waiting...");
+ //  while( ! USBSerial ) {
+ //    delay(10); // do nothing
+ //   }
     
-   delay(20);
+  // delay(20);
    
    USBSerial.println("Communication established");
 
@@ -250,33 +251,37 @@ MoCoBus setup and debugging features
 	 }
  }
 
- // Check to see if there was a factory reset
- if(factory_reset) {
+ // Check whether the device just had the bootloader installed
+ // If it has, set the motors to 8.13rpm dolly, 3.07rpm pan/tilt, and 3.07rpm pan/tilt, respectively
+ if (factory_reset) {
 
-	 // Prompt user to set the motor presets and set a default
-	 for (byte i = 0; i < MOTOR_COUNT; i++) {
-		 uiMenuPreset(i);
-		 if (motors[i].flags & MOTOR_ROT_FLAG) {
-			 motors[i].target_speed = DEFAULT_ROT_PCT * motorMaxSpeed(i);
-		 }
-		 else {
-			 motors[i].target_speed = DEFAULT_LIN_PCT * motorMaxSpeed(i);
-		 }
-		 // Set default direction, +/R
-		 motors[i].flags |= (MOTOR_CDIR_FLAG);
-	 }
+	 // Set rotary flags
+	 motors[0].flags &= ~MOTOR_ROT_FLAG;
+	 motors[1].flags |= MOTOR_ROT_FLAG;
+	 motors[2].flags |= MOTOR_ROT_FLAG;
 
-	 // Change to continuous mode
-	 motion_sms = false;
+	 // Set motor RPM speeds
+	 motors[0].rpm = 8.13;
+	 motors[1].rpm = 3.07;
+	 motors[2].rpm = 3.07;
 
-	 // Change to manual mode
-	 ez_mode = false;
+	 // Set dolly / rotary stage gear ratios
+	 motors[0].ratio = 3.346;
+	 motors[1].ratio = 0.306;
+	 motors[2].ratio = 0.306;
 
-	 // Turn off the factory_reset variable
-	 factory_reset = false;
+	 // Set preset value
+	 motors[0].motorPreset = 6;
+	 motors[1].motorPreset = 7;
+	 motors[2].motorPreset = 7;
+
+	 // Disable factory_reset variable
+	 factory_reset= false;
 
 	 // Save EEPROM settings
+	 
 	 eepromWrite();
+
  }
 
  lcd.clear();
