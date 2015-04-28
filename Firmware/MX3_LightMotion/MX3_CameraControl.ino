@@ -57,12 +57,12 @@ float             camera_delay = 1.0;	// Interval time in seconds
 void camSetup() {
   
   if( camera_bulb ) {
-    Camera.exposeTime(camera_exposure);
-    Camera.waitTime(camera_wait);
+    Camera.triggerTime(camera_exposure);
+    Camera.delayTime(camera_wait);
   }
   else {
-    Camera.exposeTime(camera_exposure); //CAM_MIN_TRIG);
-    Camera.waitTime(camera_wait);
+    Camera.triggerTime(camera_exposure); //CAM_MIN_TRIG);
+    Camera.delayTime(camera_wait);
   }
   
   Camera.focusTime(camera_focus);
