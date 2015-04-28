@@ -135,13 +135,13 @@ void camCallBack(byte code) {
   
   
   if( code == OM_CAM_FFIN ) {
-      // focus done
-	  USBSerial.println("Focus done");
+    // focus done
+	USBSerial.println("Focus done");
 
-	  // before completing the regular exposure, check to see the mirror needs to be moved up
-	  checkMirrorUp();
+	// before completing the regular exposure, check to see the mirror needs to be moved up
+	checkMirrorUp();
 
-    Engine.state(ST_EXP);
+	Engine.state(ST_EXP);
   }
   else if( code == OM_CAM_EFIN ) {
       // exposure done

@@ -1217,7 +1217,7 @@ void uiMenuPreset(byte p_motor) {
 	Menu.enable(false);
  
 	byte totalPresets = sizeof(motorPresets) / sizeof(MotorPreset);
-	byte    curPreset = motorPresetSelected[p_motor];
+	byte curPreset = motorPresetSelected[p_motor];
 	byte lowest_preset;
 
 	// If EZ mode is active, disallow custom presets
@@ -1285,7 +1285,7 @@ void uiMenuPreset(byte p_motor) {
 	else if( button == BUTTON_INCREASE ) 
 		curPreset = (curPreset == totalPresets - 1) ? lowest_preset : curPreset + 1;
 	else if (button == BUTTON_DECREASE)
-		curPreset = curPreset == lowest_preset ? totalPresets - 1 : curPreset - 1;     
+		curPreset = curPreset <= lowest_preset ? totalPresets - 1 : curPreset - 1;     
 
 	thsPreset = motorPresets[curPreset];
 
